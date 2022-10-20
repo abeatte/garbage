@@ -18,7 +18,7 @@ const initDefaultTiles = ({width, height}) => {
             if (h == 0 || h == height-1 || w == 0 || w == width-1) {
                 tiles[idx] = "fire";
             } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
-                tiles[idx] = "rock";
+                tiles[idx] = Math.random() < 0.05 ? "grass" : "rock";
             } else {
                 tiles[idx] = "sand";
             }

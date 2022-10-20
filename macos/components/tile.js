@@ -9,11 +9,14 @@
  } from 'react-native';
 import { Children } from 'react/cjs/react.production.min';
 
-// const TYPES = "void" | "water" | "fire" | "rock" | "sand";
+// const TYPES = "void" | "water" | "fire" | "rock" | "sand" | "grass";
 
  const Tile = ({children, type}) => {
   let style;
   switch(type) {
+    case "grass":
+      style = styles.grass;
+      break;
     case "water":
       style = styles.water;
       break;
@@ -41,6 +44,11 @@ import { Children } from 'react/cjs/react.production.min';
     width: 25,
     height: 25,
     backgroundColor: "black",
+   },
+   grass: {
+    width: 25,
+    height: 25,
+    backgroundColor: "green",
    },
    water: {
     width: 25,
