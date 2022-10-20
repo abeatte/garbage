@@ -7,10 +7,11 @@
   StyleSheet,
   View,
  } from 'react-native';
+import { Children } from 'react/cjs/react.production.min';
 
 // const TYPES = "void" | "water" | "fire" | "rock" | "sand";
 
- const Tile = ({type}) => {
+ const Tile = ({children, type}) => {
   let style;
   switch(type) {
     case "water":
@@ -31,9 +32,9 @@
       style = styles.void;
   }
     return (
-      <View style={style}/>
+      <View style={style}>{children}</View>
     );
- };
+ }; 
 
  const styles = StyleSheet.create({
   void: {
