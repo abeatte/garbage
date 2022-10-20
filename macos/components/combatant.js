@@ -7,9 +7,18 @@ import {
     Text,
 } from 'react-native';
 
-const Combatant = () => {
-    console.log('combatant entering');
-    return (<Text style={{fontWeight: "bold", color: "darkorange"}}>{"X"}</Text>);
+class Combatant extends React.Component {
+    constructor({color}) {
+        super();
+
+        this.state = {
+            color,
+        };
+    }
+
+    render() {
+        return (<Text style={{fontWeight: "bold", color: this.state.color}}>{"X"}</Text>);
+    }
 }
 
 export default Combatant;

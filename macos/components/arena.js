@@ -10,6 +10,8 @@ import {
 import Combatant from "./combatant";
 import Tile from "./tile";
 
+const COLORS = ["darkorange", "cyan", "aquamarine", "brown", "darkorchid"];
+
 const initDefaultTiles = ({width, height}) => {
     const tiles = [];
     let idx = 0;
@@ -25,49 +27,120 @@ const initDefaultTiles = ({width, height}) => {
             idx++;
         }
     }
+
     return tiles;
 };
 
-const initCombatantStartingPos = ({tiles}) => {
+const initCombatantStartingPos = ({tiles, combatants}) => {
     let starting_pos;
     for (let i = 0; i < 10 && !starting_pos; i++) {
         const potential_pos = Math.round(Math.random() * tiles.length);
         const potential_tile = tiles[potential_pos];
-        if (potential_tile != "fire" && potential_tile != "water") {
+        if (!combatants[potential_pos] && potential_tile != "fire" && potential_tile != "water") {
             starting_pos = potential_pos;
         }
     }
 
-    return starting_pos ?? 0;
+    return starting_pos;
 };
 
-const Arena = () => {
-    const width = 24;
-    const height = 12;
-    const tiles = initDefaultTiles({width, height});
+const getRandomColor = () => {
+    return COLORS[Math.round(Math.random() * COLORS.length)];
+}
 
-    const combatant_position = initCombatantStartingPos({tiles});
-    console.log('combatant_position', combatant_position);
+/**
+ * [ 0, 1, 2, 3, | 
+ * | 4, 5, 6, 7, | 
+ * | 8, 9, 10, 11]
+ *  
+ * @returns fitness between 0 and 100
+ */
+const evalPosition = ({position, tiles, window_width}) => {
+    const tr = position - window_width - 1;
+    const t = position - window_width;
+    const tl = position - window_width + 1
+    const r= position - 1;
+    const l = position + 1;
+    const br = position + window_width - 1;
+    const b = position + window_width;
+    const bl = position + window_width + 1;
 
-    const rows = [];
-    let idx = 0;
-    for(let h = 0; h < height; h++) { 
-        const cells = []
-        for (let w = 0; w < width; w++) {
-            cells.push(
-                <Tile type={tiles[idx++]} key={idx}>
-                    {combatant_position == idx ? (<Combatant/>) : null}
-                </Tile>
-            );
-        }
-        rows.push(<View style={styles.row} key={`row-${h}`}>{cells}</View>)
+    if (tiles[c_pos] == "grass") {
+        return 100;       
+    } else if (
+        (t > -1 && t < tiles.length && tiles[t] == "grass") ||
+        (l > -1 && l < tiles.length && tiles[l] == "grass") ||
+        (r > -1 && r < tiles.length && tiles[r] == "grass") ||
+        (b> -1 && b < tiles.length && tiles[b] == "grass")
+    ) {
+        return 15;
+    } else if (
+        (tr > -1 && tr < tiles.length && tiles[tr] == "grass") ||
+        (tl > -1 && tl < tiles.length && tiles[tl] == "grass") ||
+        (br > -1 && br < tiles.length && tiles[br] == "grass") ||
+        (bl > -1 && bl < tiles.length && tiles[bl] == "grass")
+    ) {
+        return 10;
+    } else {
+        return 0;
     }
-    return (
-        <View style={styles.arena}>
-            {rows}
-        </View>
-    );
 };
+
+const calcFitness = ({combatants, tiles, window_height, window_width}) => {
+    Object.keys(combatants).forEach((position) => {
+        const combatant = combatants[position];
+        combatant.fitness = evalPosition({position, tiles, window_width});
+    });
+}
+
+class Arena extends React.Component {
+    constructor() {
+        super();
+
+        const window_width = 24;
+        const window_height = 12;
+        const num_combatants = 12;
+
+        const tiles = initDefaultTiles({width: window_width, height: window_height});
+        const combatants = [];
+        for (let i = 0; i < num_combatants; i++) {
+            const c_pos = initCombatantStartingPos({tiles, combatants});
+            combatants[c_pos] = {
+                fitness: 0,
+                color: getRandomColor(),
+            };
+        }
+        
+
+        this.state = {
+            window_width,
+            window_height,
+            tiles,
+            combatants,
+        };
+    }
+
+    render() {
+        const rows = [];
+        let idx = 0;
+        for(let h = 0; h < this.state.window_height; h++) { 
+            const cells = []
+            for (let w = 0; w < this.state.window_width; w++) {
+                cells.push(
+                    <Tile type={this.state.tiles[idx++]} key={idx}>
+                        {this.state.combatants[idx] ? (<Combatant color={this.state.combatants[idx].color}/>) : null}
+                    </Tile>
+                );
+            }
+            rows.push(<View style={styles.row} key={`row-${h}`}>{cells}</View>)
+        }
+        return (
+            <View style={styles.arena}>
+                {rows}
+            </View>
+        );
+    }
+}
 
 const styles = StyleSheet.create({
     arena: {
