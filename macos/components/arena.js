@@ -2,7 +2,7 @@
  * 
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
     View,
@@ -11,6 +11,7 @@ import Combatant from "./combatant";
 import Tile from "./tile";
 
 const COLORS = ["darkorange", "cyan", "aquamarine", "brown", "darkorchid"];
+const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3};
 
 const initDefaultTiles = ({width, height}) => {
     const tiles = [];
@@ -86,6 +87,40 @@ const evalPosition = ({position, tiles, window_width}) => {
     }
 };
 
+const calcMovements = ({combatants, window_width, tiles}) => {
+    const new_combatants = [];
+    Object.keys(combatants).forEach((position) => {
+        const dir = Math.round(Math.random()*Object.values(DIRECTION).length);
+        const combatant = combatants[position];
+        let new_position = position;
+        switch (dir) {
+            case DIRECTION.left:
+                new_position = position + 1;
+                break;
+            case DIRECTION.up:
+                new_position = position - window_width;
+                break;
+            case DIRECTION.right:
+                new_position = position - 1;
+                break;
+            case DIRECTION.down:
+                new_position = position + window_width;
+                break;
+            default:
+                new_position = position;
+                break;
+        }
+
+        if (new_position > -1 && new_position < tiles.length) {
+            new_combatants[new_position] = combatant;
+        } else {
+            new_combatants[position] = combatant;
+        }
+    });
+
+    return new_combatants;
+}
+
 const calcFitness = ({combatants, tiles, window_height, window_width}) => {
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position];
@@ -100,7 +135,7 @@ class Arena extends React.Component {
         const window_width = 24;
         const window_height = 12;
         const num_combatants = 12;
-
+    
         const tiles = initDefaultTiles({width: window_width, height: window_height});
         const combatants = [];
         for (let i = 0; i < num_combatants; i++) {
@@ -110,35 +145,51 @@ class Arena extends React.Component {
                 color: getRandomColor(),
             };
         }
-        
 
         this.state = {
             window_width,
             window_height,
             tiles,
-            combatants,
-        };
+            combatants
+        }
+    }
+
+    tick() {
+        const combatants = this.state.combatants;
+        const window_width = this.state.window_width
+        const tiles = this.state.tiles;
+
+        const c2 = calcMovements({combatants, window_width, tiles});
+        this.setState({combatants: c2});
+      }
+
+    componentDidMount() {
+        this.interval = setInterval(() => this.tick(), 250);
+      }
+    
+    componentWillUnmount() {
+    clearInterval(this.interval);
     }
 
     render() {
-        const rows = [];
-        let idx = 0;
-        for(let h = 0; h < this.state.window_height; h++) { 
-            const cells = []
-            for (let w = 0; w < this.state.window_width; w++) {
-                cells.push(
-                    <Tile type={this.state.tiles[idx++]} key={idx}>
-                        {this.state.combatants[idx] ? (<Combatant color={this.state.combatants[idx].color}/>) : null}
-                    </Tile>
-                );
-            }
-            rows.push(<View style={styles.row} key={`row-${h}`}>{cells}</View>)
+    const rows = [];
+    let idx = 0;
+    for(let h = 0; h < this.state.window_height; h++) { 
+        const cells = []
+        for (let w = 0; w < this.state.window_width; w++) {
+            cells.push(
+                <Tile type={this.state.tiles[idx++]} key={idx}>
+                    {this.state.combatants[idx] ? (<Combatant color={this.state.combatants[idx].color}/>) : null}
+                </Tile>
+            );
         }
-        return (
-            <View style={styles.arena}>
-                {rows}
-            </View>
-        );
+        rows.push(<View style={styles.row} key={`row-${h}`}>{cells}</View>)
+    }
+    return (
+        <View style={styles.arena}>
+            {rows}
+        </View>
+    );
     }
 }
 
