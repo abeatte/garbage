@@ -7,10 +7,11 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import Combatant, { COLORS } from "./combatant";
+import Combatant, { COLORS, MIN_HEALTH } from "./combatant";
 import Dashboard from "./Dashboard";
-import Tile from "./tile";
+import Tile, { TYPE } from "./tile";
 
+const NUM_COMBATANTS = 12;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 
 const initDefaultTiles = ({width, height}) => {
@@ -19,11 +20,11 @@ const initDefaultTiles = ({width, height}) => {
     for (h = 0; h < height; h++) {
         for (w = 0; w < width; w++) {
             if (h == 0 || h == height-1 || w == 0 || w == width-1) {
-                tiles[idx] = "fire";
+                tiles[idx] = TYPE.fire;
             } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
-                tiles[idx] = Math.random() < 0.05 ? "grass" : Math.random() < 0.1 ? "water" : "rock";
+                tiles[idx] = Math.random() < 0.05 ? TYPE.grass : Math.random() < 0.1 ? TYPE.water : TYPE.rock;
             } else {
-                tiles[idx] = "sand";
+                tiles[idx] = TYPE.sand;
             }
             idx++;
         }
@@ -37,7 +38,7 @@ const initCombatantStartingPos = ({tiles, combatants}) => {
     for (let i = 0; i < 10 && !starting_pos; i++) {
         const potential_pos = Math.round(Math.random() * (tiles.length - 1));
         const potential_tile = tiles[potential_pos];
-        if (!combatants[potential_pos] && potential_tile != "fire" && potential_tile != "water") {
+        if (!combatants[potential_pos] && potential_tile != TYPE.fire && potential_tile != TYPE.water) {
             starting_pos = potential_pos;
         }
     }
@@ -49,42 +50,83 @@ const getRandomColor = () => {
     return COLORS[Math.round(Math.random() * (COLORS.length - 1))];
 }
 
+const getSurroundingPos = ({position, window_width, tiles, combatants}) => {
+    const ret = {positions: {}, tiles: {}, combatants: {}};
+
+    ret.positions.tr = position - window_width - 1;
+    ret.positions.t = position - window_width;
+    ret.positions.tl = position - window_width + 1
+    ret.positions.r = position - 1;
+    ret.positions.c = position;
+    ret.positions.l = position + 1;
+    ret.positions.br = position + window_width - 1;
+    ret.positions.b = position + window_width;
+    ret.positions.bl = position + window_width + 1;
+
+    ret.tiles.tr = tiles[ret.positions.tr];
+    ret.tiles.t = tiles[ret.positions.t];
+    ret.tiles.tl = tiles[ret.positions.tl];
+    ret.tiles.l = tiles[ret.positions.l];
+    ret.tiles.c = tiles[ret.positions.c];
+    ret.tiles.r = tiles[ret.positions.r];
+    ret.tiles.br = tiles[ret.positions.br];
+    ret.tiles.b = tiles[ret.positions.b];
+    ret.tiles.bl = tiles[ret.positions.bl];
+
+    ret.combatants.tr = combatants[ret.positions.tr];
+    ret.combatants.t = combatants[ret.positions.t];
+    ret.combatants.tl = combatants[ret.positions.tl];
+    ret.combatants.l = combatants[ret.positions.l];
+    ret.combatants.c = combatants[ret.positions.c];
+    ret.combatants.r = combatants[ret.positions.r];
+    ret.combatants.br = combatants[ret.positions.br];
+    ret.combatants.b = combatants[ret.positions.b];
+    ret.combatants.bl = combatants[ret.positions.bl];
+
+    return ret;
+};
+
 /**
  * @returns fitness between 0 and 100
  */
-const evalPosition = ({position, tiles, window_width}) => {
-    const tr = position - window_width - 1;
-    const t = position - window_width;
-    const tl = position - window_width + 1
-    const r= position - 1;
-    const l = position + 1;
-    const br = position + window_width - 1;
-    const b = position + window_width;
-    const bl = position + window_width + 1;
-
-    if (tiles[position] == "fire") {
+const evalPosition = ({positions, combatants, tiles}) => {
+    if (tiles.c == TYPE.fire) {
+        // fire hurts bad
         return -50;
-    } else if (tiles[position] == "water" || tiles[position] == "sand") {
+    } else if (tiles.c == TYPE.water) {
+        // water hurts a bit
         return -5;
-    } else if (tiles[position] == "grass") {
-        return 100;       
+    } else if (tiles.c == TYPE.grass) {
+        // grass is very good
+        return 50;       
     } else if (
-        (t > -1 && t < tiles.length && tiles[t] == "grass") ||
-        (l > -1 && l < tiles.length && tiles[l] == "grass") ||
-        (r > -1 && r < tiles.length && tiles[r] == "grass") ||
-        (b> -1 && b < tiles.length && tiles[b] == "grass")
+        (tiles.t == TYPE.grass) ||
+        (tiles.l == TYPE.grass) ||
+        (tiles.r == TYPE.grass) ||
+        (tiles.b == TYPE.grass)
     ) {
-        return 15;
-    } else if (
-        (tr > -1 && tr < tiles.length && tiles[tr] == "grass") ||
-        (tl > -1 && tl < tiles.length && tiles[tl] == "grass") ||
-        (br > -1 && br < tiles.length && tiles[br] == "grass") ||
-        (bl > -1 && bl < tiles.length && tiles[bl] == "grass")
-    ) {
+        // non-diagonal next to grass is pretty good
         return 10;
+    } else if (
+        (tiles.tr == TYPE.grass) ||
+        (tiles.tl == TYPE.grass) ||
+        (tiles.br == TYPE.grass) ||
+        (tiles.bl == TYPE.grass)
+    ) {
+        // diagonal next to grass is ok
+        return 5;
     } else {
+        // lame, you get nothing
         return 0;
     }
+};
+
+const processTick = ({combatants, window_width, tiles}) => {
+    const new_combatants = calcMovements({combatants, window_width, tiles});
+    updateCombatants({combatants: new_combatants, window_width, tiles});
+
+    return new_combatants;
+
 };
 
 const calcMovements = ({combatants, window_width, tiles}) => {
@@ -121,7 +163,20 @@ const calcMovements = ({combatants, window_width, tiles}) => {
                 new_position = current_position;
                 break;            
         }
-        new_combatants[new_position] = !!new_combatants[new_position] ? compete(combatant, new_combatants[new_position]) : combatant;
+
+        const occupient = new_combatants[new_position];
+        if (!occupient) {
+            // space is empty; OK to move there if you are healthy enough
+            if (evalHealth(combatant)) {
+                new_combatants[new_position] = combatant;
+            } // else you die
+        } else  if (occupient.color == combatant.color) {
+            // space is occupied by a friendly
+            // TODO: handle friendlyEncounter (only reproduce if the surroundings are sufficient)
+        } else {
+            // space is occupied by a foe
+            new_combatants[new_position] = compete(combatant, occupient)
+        }
     });
 
     return new_combatants;
@@ -139,10 +194,19 @@ const compete = (a, b) => {
     return b_fitness > a_fitness ? b: a;
 }
 
-const updateCombatantsFitness = ({combatants, window_width, tiles}) => {
+/**
+ * @param {*} c combatant
+ * @returns true if combatant should live
+ */
+const evalHealth = (c) => {
+    return c.fitness > MIN_HEALTH;
+};
+
+const updateCombatants = ({combatants, window_width, tiles}) => {
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position];
-        combatant.fitness = evalPosition({position: parseInt(position), tiles, window_width});
+        const posData = getSurroundingPos({position, window_width, tiles, combatants});
+        combatant.fitness += evalPosition(posData);
     });
 }
 
@@ -191,9 +255,9 @@ class Arena extends React.Component {
         super();
 
         const tick = 0;
-        const window_width = 24;
-        const window_height = 12;
-        const num_combatants = 12;
+        const window_width = 10;
+        const window_height = 10;
+        const num_combatants = NUM_COMBATANTS;
     
         const tiles = initDefaultTiles({width: window_width, height: window_height});
         const combatants = {};
@@ -220,8 +284,7 @@ class Arena extends React.Component {
         const tiles = this.state.tiles;
         const tick = this.state.tick;
 
-        const c2 = calcMovements({combatants, window_width, tiles});
-        updateCombatantsFitness({combatants: c2, window_width, tiles});
+        const c2 = processTick({combatants, window_width, tiles});
         this.setState({combatants: c2, tick: tick+1});
       }
 
