@@ -7,6 +7,8 @@ import {
     Text,
 } from 'react-native';
 
+export const COLORS = ["darkorange", "cyan", "aquamarine", "brown", "darkorchid"];
+
 class Combatant extends React.Component {
     constructor({color}) {
         super();

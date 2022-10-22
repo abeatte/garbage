@@ -7,10 +7,10 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import Combatant from "./combatant";
+import Combatant, { COLORS } from "./combatant";
+import Dashboard from "./Dashboard";
 import Tile from "./tile";
 
-const COLORS = ["darkorange", "cyan", "aquamarine", "brown", "darkorchid"];
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 
 const initDefaultTiles = ({width, height}) => {
@@ -258,9 +258,16 @@ class Arena extends React.Component {
     // );
 
     return (
-        <View style={styles.arena}>
-            {rows}
-        </View>
+        <>
+            <View style={styles.arena}>
+                {rows}
+            </View>
+            <Dashboard 
+                combatants={this.state.combatants} 
+                tiles={this.state.tiles} 
+                tick={this.state.tick}
+            />
+        </>
     );
     }
 }
