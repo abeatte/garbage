@@ -2,7 +2,7 @@
  * 
  */
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
     StyleSheet,
     View,
@@ -11,17 +11,17 @@ import Combatant from "./combatant";
 import Tile from "./tile";
 
 const COLORS = ["darkorange", "cyan", "aquamarine", "brown", "darkorchid"];
-const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3};
+const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 
 const initDefaultTiles = ({width, height}) => {
-    const tiles = [];
+    const tiles = [width * height];
     let idx = 0;
     for (h = 0; h < height; h++) {
         for (w = 0; w < width; w++) {
             if (h == 0 || h == height-1 || w == 0 || w == width-1) {
                 tiles[idx] = "fire";
             } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
-                tiles[idx] = Math.random() < 0.05 ? "grass" : "rock";
+                tiles[idx] = Math.random() < 0.05 ? "grass" : Math.random() < 0.1 ? "water" : "rock";
             } else {
                 tiles[idx] = "sand";
             }
@@ -35,7 +35,7 @@ const initDefaultTiles = ({width, height}) => {
 const initCombatantStartingPos = ({tiles, combatants}) => {
     let starting_pos;
     for (let i = 0; i < 10 && !starting_pos; i++) {
-        const potential_pos = Math.round(Math.random() * tiles.length);
+        const potential_pos = Math.round(Math.random() * (tiles.length - 1));
         const potential_tile = tiles[potential_pos];
         if (!combatants[potential_pos] && potential_tile != "fire" && potential_tile != "water") {
             starting_pos = potential_pos;
@@ -50,10 +50,6 @@ const getRandomColor = () => {
 }
 
 /**
- * [ 0, 1, 2, 3, | 
- * | 4, 5, 6, 7, | 
- * | 8, 9, 10, 11]
- *  
  * @returns fitness between 0 and 100
  */
 const evalPosition = ({position, tiles, window_width}) => {
@@ -66,7 +62,11 @@ const evalPosition = ({position, tiles, window_width}) => {
     const b = position + window_width;
     const bl = position + window_width + 1;
 
-    if (tiles[c_pos] == "grass") {
+    if (tiles[c_pos] == "fire") {
+        return -50;
+    } else if (tiles[c_pos] == "water" || tiles[c_pos] == "sand") {
+        return -5;
+    } else if (tiles[c_pos] == "grass") {
         return 100;       
     } else if (
         (t > -1 && t < tiles.length && tiles[t] == "grass") ||
@@ -88,56 +88,103 @@ const evalPosition = ({position, tiles, window_width}) => {
 };
 
 const calcMovements = ({combatants, window_width, tiles}) => {
-    const new_combatants = [];
+    const new_combatants = {};
     Object.keys(combatants).forEach((position) => {
-        const dir = Math.round(Math.random()*Object.values(DIRECTION).length);
+        const dir = Math.floor(Math.random() * Object.values(DIRECTION).length)
         const combatant = combatants[position];
-        let new_position = position;
+        const current_position = parseInt(position);
+        let new_position = current_position;
         switch (dir) {
             case DIRECTION.left:
-                new_position = position + 1;
+                new_position = 
+                    current_position % window_width > 0 ? 
+                        current_position - 1 : current_position;
                 break;
             case DIRECTION.up:
-                new_position = position - window_width;
+                new_position = 
+                    current_position - window_width > -1 ? 
+                        current_position - window_width : current_position;
                 break;
             case DIRECTION.right:
-                new_position = position - 1;
+                new_position = 
+                    current_position % window_width < window_width - 1 ? 
+                        current_position + 1 : current_position;
                 break;
             case DIRECTION.down:
-                new_position = position + window_width;
+                new_position = 
+                    current_position + window_width < tiles.length ? 
+                        current_position + window_width : current_position;
                 break;
+            case DIRECTION.none:
+                // fallthrough
             default:
-                new_position = position;
-                break;
+                new_position = current_position;
+                break;            
         }
-
-        if (new_position > -1 && new_position < tiles.length) {
-            new_combatants[new_position] = combatant;
-        } else {
-            new_combatants[position] = combatant;
-        }
+        new_combatants[new_position] = combatant;
     });
 
     return new_combatants;
 }
 
-const calcFitness = ({combatants, tiles, window_height, window_width}) => {
-    Object.keys(combatants).forEach((position) => {
-        const combatant = combatants[position];
-        combatant.fitness = evalPosition({position, tiles, window_width});
-    });
+// const calcFitness = ({combatants, tiles, window_height, window_width}) => {
+//     Object.keys(combatants).forEach((position) => {
+//         const combatant = combatants[position];
+//         combatant.fitness = evalPosition({position, tiles, window_width});
+//     });
+// }
+
+/**
+ * ________________
+ * |  0|  1|  2|  3|
+ * |  4|  5| X |  7|
+ * |  8|  9| 10| 11|
+ * -----------------
+ */
+const printCombatants = ({tick, combatants, window_height, window_width}) => { 
+    let print = `tick: ${tick} \n`;
+
+    let bar = '-';
+    for (let i = 0; i < window_width; i++) {
+        bar += '----';
+    }
+    bar += '\n';
+
+    print += bar;
+    for (let i = 0; i < window_width * window_height; i++) {
+        if (i % window_width == 0) {
+            print += '|';
+        }
+        if (combatants[i]) {
+            print += ' X |';
+        } else {
+            if (i < 10) {
+                print += '  ';
+            } else if (i < 100) {
+                print += ' ';
+            }
+            print += `${i}|`;
+        }
+        if (i % window_width == window_width - 1) {
+            print += '\n';
+        }
+    }
+    print += `${bar}\n`;
+
+    console.debug(print);
 }
 
 class Arena extends React.Component {
     constructor() {
         super();
 
+        const tick = 0;
         const window_width = 24;
         const window_height = 12;
         const num_combatants = 12;
     
         const tiles = initDefaultTiles({width: window_width, height: window_height});
-        const combatants = [];
+        const combatants = {};
         for (let i = 0; i < num_combatants; i++) {
             const c_pos = initCombatantStartingPos({tiles, combatants});
             combatants[c_pos] = {
@@ -147,6 +194,7 @@ class Arena extends React.Component {
         }
 
         this.state = {
+            tick,
             window_width,
             window_height,
             tiles,
@@ -158,9 +206,10 @@ class Arena extends React.Component {
         const combatants = this.state.combatants;
         const window_width = this.state.window_width
         const tiles = this.state.tiles;
+        const tick = this.state.tick;
 
         const c2 = calcMovements({combatants, window_width, tiles});
-        this.setState({combatants: c2});
+        this.setState({combatants: c2, tick: tick+1});
       }
 
     componentDidMount() {
@@ -173,18 +222,28 @@ class Arena extends React.Component {
 
     render() {
     const rows = [];
-    let idx = 0;
-    for(let h = 0; h < this.state.window_height; h++) { 
-        const cells = []
-        for (let w = 0; w < this.state.window_width; w++) {
-            cells.push(
-                <Tile type={this.state.tiles[idx++]} key={idx}>
-                    {this.state.combatants[idx] ? (<Combatant color={this.state.combatants[idx].color}/>) : null}
-                </Tile>
-            );
+    let cells = [];
+    this.state.tiles.forEach((tile, idx) => {
+        cells.push(
+            <Tile type={tile} key={idx}>
+                {this.state.combatants[idx] ? (<Combatant color={this.state.combatants[idx].color}/>) : null}
+            </Tile>
+        );
+        if (idx % this.state.window_width == this.state.window_width - 1) {
+            rows.push(<View style={styles.row} key={`row-${Math.floor(idx/this.state.window_width)}`}>{cells}</View>)
+            cells = [];
         }
-        rows.push(<View style={styles.row} key={`row-${h}`}>{cells}</View>)
-    }
+    });
+
+    // printCombatants(
+    //     {
+    //         tick: this.state.tick, 
+    //         combatants: this.state.combatants, 
+    //         window_height: this.state.window_height , 
+    //         window_width: this.state.window_width,
+    //     }
+    // );
+
     return (
         <View style={styles.arena}>
             {rows}
