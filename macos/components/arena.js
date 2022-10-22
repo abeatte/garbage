@@ -142,7 +142,7 @@ const calcMovements = ({combatants, window_width, tiles}) => {
  * -----------------
  */
 const printCombatants = ({tick, combatants, window_height, window_width}) => { 
-    let print = `tick: ${tick} \n`;
+    let print = `tick: ${tick} | combatants: ${Object.keys(combatants).length}\n`;
 
     let bar = '-';
     for (let i = 0; i < window_width; i++) {
