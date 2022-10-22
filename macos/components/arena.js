@@ -62,11 +62,11 @@ const evalPosition = ({position, tiles, window_width}) => {
     const b = position + window_width;
     const bl = position + window_width + 1;
 
-    if (tiles[c_pos] == "fire") {
+    if (tiles[position] == "fire") {
         return -50;
-    } else if (tiles[c_pos] == "water" || tiles[c_pos] == "sand") {
+    } else if (tiles[position] == "water" || tiles[position] == "sand") {
         return -5;
-    } else if (tiles[c_pos] == "grass") {
+    } else if (tiles[position] == "grass") {
         return 100;       
     } else if (
         (t > -1 && t < tiles.length && tiles[t] == "grass") ||
@@ -127,12 +127,12 @@ const calcMovements = ({combatants, window_width, tiles}) => {
     return new_combatants;
 }
 
-// const calcFitness = ({combatants, tiles, window_height, window_width}) => {
-//     Object.keys(combatants).forEach((position) => {
-//         const combatant = combatants[position];
-//         combatant.fitness = evalPosition({position, tiles, window_width});
-//     });
-// }
+const updateCombatantsFitness = ({combatants, window_width, tiles}) => {
+    Object.keys(combatants).forEach((position) => {
+        const combatant = combatants[position];
+        combatant.fitness = evalPosition({position: parseInt(position), tiles, window_width});
+    });
+}
 
 /**
  * ________________
@@ -209,6 +209,7 @@ class Arena extends React.Component {
         const tick = this.state.tick;
 
         const c2 = calcMovements({combatants, window_width, tiles});
+        updateCombatantsFitness({combatants, window_width, tiles});
         this.setState({combatants: c2, tick: tick+1});
       }
 
