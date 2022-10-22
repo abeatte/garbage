@@ -9,20 +9,38 @@ import { COLORS } from "./combatant";
 
 const getColorStats = (combatants) => {
     const colors = COLORS.reduce((colors, color) => {
-        colors[color] = 0
+        colors[color] = []
         return colors;
     }, {});
 
     Object.values(combatants).forEach(combatant => {
-        colors[combatant.color] += 1;
+        colors[combatant.color].push(combatant);
     });
 
     const counts = Object.keys(colors).map(color => {
-        return (<Text key={color}>{`${color}: ${colors[color]}`}</Text>);
+        return (
+            <View key={color} style={styles.color_group}>
+                <Text style={styles.color_title}>{`${color}`}</Text><Text>{` (${colors[color].length}): `}</Text>
+                {colors[color].length < 1 ? 
+                    (<Text>{"[ ]"}</Text>) : 
+                    colors[color].map((c, idx, cs) => {
+                        return ( 
+                            <View key={idx} style={styles.row}>
+                                {idx == 0 && <Text>{"["}</Text>}
+                                <Text style={styles.fitness}>{c.fitness}</Text>
+                                {idx == cs.length - 1 && <Text>{"]"}</Text>}
+                            </View>
+                        );
+                    })
+                }
+            </View>
+        );
     }).sort((a, b) => a.key.localeCompare(b.key));
 
     return (
-        <View>{counts}</View>
+        <View>
+            <View>{counts}</View>
+        </View>
     );
 };
 
@@ -33,9 +51,7 @@ const Dashboard = ({combatants, tiles, tick, reset}) => {
             <View>
                 <Text style={styles.stat_group}>{`Tick: ${tick}`}</Text>
                 <Text>{`Combatants: ${Object.keys(combatants).length}`}</Text>
-                <View style={[styles.color_group, styles.stat_group]}>
-                    <Text style={styles.color_title}>{'Colors:'}</Text><Text>{colorStats}</Text>
-                </View>
+                {colorStats}
                 <Text style={styles.stat_group}>{}</Text>
                 <Text style={styles.stat_group}>{}</Text>
                 <Text style={styles.stat_group}>{}</Text>
@@ -50,6 +66,13 @@ const Dashboard = ({combatants, tiles, tick, reset}) => {
 };
 
 const styles = StyleSheet.create({
+    row: {
+        display: "flex",
+        flexDirection: "row",
+    },
+    fitness: {
+        paddingHorizontal: 5,
+    },
     stats: {
         display: "flex",
         flexDirection: "row",
@@ -65,7 +88,8 @@ const styles = StyleSheet.create({
         paddingStart: 24,
     },
     color_title: {
-        paddingEnd: 12,
+        fontWeight: "bold",
+        textTransform: "capitalize",
     },
 });
 
