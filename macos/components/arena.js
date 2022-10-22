@@ -121,10 +121,22 @@ const calcMovements = ({combatants, window_width, tiles}) => {
                 new_position = current_position;
                 break;            
         }
-        new_combatants[new_position] = combatant;
+        new_combatants[new_position] = !!new_combatants[new_position] ? compete(combatant, new_combatants[new_position]) : combatant;
     });
 
     return new_combatants;
+}
+
+/**
+ * Ties go to the a_combatant (the attacker)
+ * @param {*} a the attacking combatant
+ * @param {*} b the defending combatant
+ * @returns the fitter combatant
+ */
+const compete = (a, b) => {
+    const a_fitness = a.fitness;
+    const b_fitness = b.fitness;
+    return b_fitness > a_fitness ? b: a;
 }
 
 const updateCombatantsFitness = ({combatants, window_width, tiles}) => {
@@ -209,7 +221,7 @@ class Arena extends React.Component {
         const tick = this.state.tick;
 
         const c2 = calcMovements({combatants, window_width, tiles});
-        updateCombatantsFitness({combatants, window_width, tiles});
+        updateCombatantsFitness({combatants: c2, window_width, tiles});
         this.setState({combatants: c2, tick: tick+1});
       }
 
