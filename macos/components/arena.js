@@ -46,7 +46,7 @@ const initCombatantStartingPos = ({tiles, combatants}) => {
 };
 
 const getRandomColor = () => {
-    return COLORS[Math.round(Math.random() * COLORS.length)];
+    return COLORS[Math.round(Math.random() * (COLORS.length - 1))];
 }
 
 /**
