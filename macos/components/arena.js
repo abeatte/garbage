@@ -12,10 +12,11 @@ import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./tile";
 
 const TICK_INTERVAL = 500;
-const WINDOW_WIDTH = 20;
-const WINDOW_HEIGHT = 20;
+const WINDOW_WIDTH = 10;
+const WINDOW_HEIGHT = 10;
 const NUM_COMBATANTS = 12;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
+const MAX_YOUNGLING_TICK = 5;
 
 const initDefaultTiles = ({width, height}) => {
     const tiles = [width * height];
@@ -167,14 +168,26 @@ const calcMovements = ({combatants, window_width, tiles}) => {
         }
 
         const occupient = new_combatants[new_position];
-        if (!occupient) {
+        if (!evalHealth(combatant)) {
+            // you die
+        } else if (!occupient) {
             // space is empty; OK to move there if you are healthy enough
-            if (evalHealth(combatant)) {
-                new_combatants[new_position] = combatant;
-            } // else you die
-        } else  if (occupient.color == combatant.color) {
+            new_combatants[new_position] = combatant;
+        } else if(occupient.color == combatant.color) {                
+            new_combatants[current_position] = combatant;
             // space is occupied by a friendly
-            // TODO: handle friendlyEncounter (only reproduce if the surroundings are sufficient)
+            if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
+                combatant.spawning = occupient;
+                occupient.spawning = combatant;
+                spawnNextGen(
+                    getSurroundingPos({
+                        position: new_position, 
+                        window_width, 
+                        tiles, 
+                        combatants: new_combatants
+                    }), 
+                    new_combatants, tiles.length);
+            }
         } else {
             // space is occupied by a foe
             new_combatants[new_position] = compete(combatant, occupient)
@@ -182,6 +195,42 @@ const calcMovements = ({combatants, window_width, tiles}) => {
     });
 
     return new_combatants;
+}
+
+const spawnNextGen = ({positions, combatants, tiles}, live_combatants, arena_size) => {
+    const self = combatants.c;
+    const nearby_friends = [];
+    const nearby_enemies = [];
+    const empty_space = [];
+
+    Object.keys(combatants).forEach(ck => {
+        const c = combatants[ck];
+
+        if (!c) {
+            if (positions[ck] > -1 && positions[ck] < arena_size) {
+                empty_space.push(ck)
+            }
+        } else if (c.color == self.color) {
+            nearby_friends.push(c);
+        } else {
+            nearby_enemies.push(c);
+        }
+    });
+
+    if (nearby_enemies.length > 1) {
+        // too dangerous, nothing happens
+    } else {
+        // safe, let's do it!
+        const spawn_pos = positions[empty_space[Math.round(Math.random() * (empty_space.length - 1))]];
+        delete self.spawning.spawning;
+        delete self.spawning;
+        live_combatants[spawn_pos] = {
+            fitness: 0,
+            // too many of my kind here, let's diverge
+            color: nearby_friends.length < 4 ? self.color : getRandomColor(),
+            tick: 0,
+        };
+    }
 }
 
 /**
@@ -205,10 +254,11 @@ const evalHealth = (c) => {
 };
 
 const updateCombatants = ({combatants, window_width, tiles}) => {
-    Object.keys(combatants).forEach((position) => {
+    Object.keys(combatants).forEach(position => {
         const combatant = combatants[position];
         const posData = getSurroundingPos({position, window_width, tiles, combatants});
         combatant.fitness += evalPosition(posData);
+        combatant.tick +=1;
     });
 }
 
@@ -268,6 +318,7 @@ class Arena extends React.Component {
             combatants[c_pos] = {
                 fitness: 0,
                 color: getRandomColor(),
+                tick: 0,
             };
         }
 
