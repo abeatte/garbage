@@ -7,29 +7,28 @@
   StyleSheet,
   View,
  } from 'react-native';
-import { Children } from 'react/cjs/react.production.min';
 
-// const TYPES = "void" | "water" | "fire" | "rock" | "sand" | "grass";
+export const TYPE = {"void": 0, "water": 1, "fire": 2, "rock": 3, "sand": 4, "grass": 5};
 
  const Tile = ({children, type}) => {
   let style;
   switch(type) {
-    case "grass":
+    case TYPE.grass: 
       style = styles.grass;
       break;
-    case "water":
+    case TYPE.water:
       style = styles.water;
       break;
-    case "fire":
+    case TYPE.fire:
       style = styles.fire;
       break;
-    case "rock":
+    case TYPE.rock:
       style = styles.rock;
       break;
-    case "sand":
+    case TYPE.sand:
       style = styles.sand;
       break;
-    case "void":
+    case TYPE.void:
       // falthrough
     default:
       style = styles.void;

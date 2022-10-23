@@ -11,6 +11,9 @@ import Combatant, { COLORS, MIN_HEALTH } from "./combatant";
 import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./tile";
 
+const TICK_INTERVAL = 500;
+const WINDOW_WIDTH = 20;
+const WINDOW_HEIGHT = 20;
 const NUM_COMBATANTS = 12;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 
@@ -126,7 +129,6 @@ const processTick = ({combatants, window_width, tiles}) => {
     updateCombatants({combatants: new_combatants, window_width, tiles});
 
     return new_combatants;
-
 };
 
 const calcMovements = ({combatants, window_width, tiles}) => {
@@ -255,8 +257,8 @@ class Arena extends React.Component {
         super();
 
         const tick = 0;
-        const window_width = 10;
-        const window_height = 10;
+        const window_width = WINDOW_WIDTH;
+        const window_height = WINDOW_HEIGHT;
         const num_combatants = NUM_COMBATANTS;
     
         const tiles = initDefaultTiles({width: window_width, height: window_height});
@@ -289,7 +291,7 @@ class Arena extends React.Component {
       }
 
     componentDidMount() {
-        this.interval = setInterval(() => this.tick(), 250);
+        this.interval = setInterval(() => this.tick(), TICK_INTERVAL);
       }
     
     componentWillUnmount() {
