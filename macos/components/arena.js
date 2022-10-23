@@ -12,8 +12,8 @@ import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./tile";
 
 const TICK_INTERVAL = 250;
-const WINDOW_WIDTH = 10;
-const WINDOW_HEIGHT = 10;
+const WINDOW_WIDTH = 30;
+const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 12;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;

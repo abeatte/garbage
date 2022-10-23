@@ -38,7 +38,7 @@ const getColorStats = (combatants) => {
     }).sort((a, b) => a.key.localeCompare(b.key));
 
     return (
-        <View>
+        <View style={styles.stat_group}>
             <View>{counts}</View>
         </View>
     );
@@ -77,15 +77,15 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
+        marginStart: 8,
     },
     stat_group: {
         display: "flex",
-        marginVertical: 4,
+        marginTop: 8,
     },
     color_group: {
         display: "flex",
         flexDirection: "row",
-        paddingStart: 24,
     },
     color_title: {
         fontWeight: "bold",
