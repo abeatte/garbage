@@ -56,15 +56,15 @@ const getRandomColor = () => {
 const getSurroundingPos = ({position, window_width, tiles, combatants}) => {
     const ret = {positions: {}, tiles: {}, combatants: {}};
 
-    ret.positions.tr = position - window_width - 1;
+    ret.positions.tr = position - window_width + 1;
     ret.positions.t = position - window_width;
-    ret.positions.tl = position - window_width + 1
-    ret.positions.r = position - 1;
+    ret.positions.tl = position - window_width - 1
+    ret.positions.r = position + 1;
     ret.positions.c = position;
-    ret.positions.l = position + 1;
-    ret.positions.br = position + window_width - 1;
+    ret.positions.l = position - 1;
+    ret.positions.br = position + window_width + 1;
     ret.positions.b = position + window_width;
-    ret.positions.bl = position + window_width + 1;
+    ret.positions.bl = position + window_width - 1;
 
     ret.tiles.tr = tiles[ret.positions.tr];
     ret.tiles.t = tiles[ret.positions.t];
