@@ -14,7 +14,7 @@ import Tile, { TYPE } from "./tile";
 const TICK_INTERVAL = 250;
 const WINDOW_WIDTH = 30;
 const WINDOW_HEIGHT = 15;
-const NUM_COMBATANTS = 12;
+const NUM_COMBATANTS = 24;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
 
@@ -26,7 +26,11 @@ const initDefaultTiles = ({width, height}) => {
             if (h == 0 || h == height-1 || w == 0 || w == width-1) {
                 tiles[idx] = TYPE.fire;
             } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
-                tiles[idx] = Math.random() < 0.05 ? TYPE.grass : Math.random() < 0.1 ? TYPE.water : TYPE.rock;
+                tiles[idx] = Math.random() < 0.1 ?
+                    TYPE.grass : 
+                    Math.random() < 0.1 ? 
+                        TYPE.water : 
+                        TYPE.rock;
             } else {
                 tiles[idx] = TYPE.sand;
             }
@@ -93,7 +97,7 @@ const getSurroundingPos = ({position, window_width, tiles, combatants}) => {
 /**
  * @returns fitness between 0 and 100
  */
-const evalPosition = ({positions, combatants, tiles}) => {
+const evalMapPosition = ({positions, combatants, tiles}) => {
     if (tiles.c == TYPE.fire) {
         // fire hurts bad
         return -50;
@@ -257,7 +261,7 @@ const updateCombatants = ({combatants, window_width, tiles}) => {
     Object.keys(combatants).forEach(position => {
         const combatant = combatants[position];
         const posData = getSurroundingPos({position, window_width, tiles, combatants});
-        combatant.fitness += evalPosition(posData);
+        combatant.fitness += evalMapPosition(posData);
         combatant.tick +=1;
     });
 }
