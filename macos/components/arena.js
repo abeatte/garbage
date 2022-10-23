@@ -339,6 +339,10 @@ class Arena extends React.Component {
 
         const c2 = processTick({combatants, window_width, tiles});
         this.setState({combatants: c2, tick: tick+1});
+
+        if (Object.keys(c2).length < 1) {
+            clearInterval(this.interval);
+        }
       }
 
     componentDidMount() {
