@@ -11,7 +11,7 @@ import Combatant, { COLORS, MIN_HEALTH } from "./combatant";
 import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./tile";
 
-const TICK_INTERVAL = 500;
+const TICK_INTERVAL = 250;
 const WINDOW_WIDTH = 10;
 const WINDOW_HEIGHT = 10;
 const NUM_COMBATANTS = 12;
