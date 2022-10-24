@@ -136,14 +136,45 @@ const processTick = ({combatants, window_width, tiles}) => {
     return new_combatants;
 };
 
-const getCombatantNextPosition = (current_position, tiles, window_width) => {
+const getCombatantNextPosition = (current_position, tiles, window_width, combatants) => {
     let direction;
     let position;
     let attepts = 3;
 
+    const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
+    const self = posData.combatants.c;
+
+    const friendly_pos = Object.keys(posData.combatants)
+        .filter(
+            // not yourself
+            ck => ck != "c" && 
+            // not diagonal
+            ck.length == 1 && 
+            // present and with same color
+            posData.combatants[ck]?.color == self.color &&
+            // not already spawning
+            !posData.combatants[ck]?.spawning &&
+            // are they old enough
+            posData.combatants[ck]?.tick > MAX_YOUNGLING_TICK &&
+            // not on fire
+            posData.tiles[ck] != TYPE.fire &&
+            // not on water
+            posData.tiles[ck] != TYPE.water
+            // TODO: add only mate with similar fitness
+        )
+        .map(frd => posData.positions[frd]);
+
     do {
         direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
-        position = getNewPositionFromDirection(current_position, direction, window_width, tiles.length);
+        if (friendly_pos.length > 1 && Math.random() > 0.1) {
+            position = friendly_pos[Math.floor(Math.random() * friendly_pos.length)];
+        } else {
+            position = getNewPositionFromDirection(
+                current_position, 
+                direction, 
+                window_width, 
+                tiles.length);
+        }
         attepts--;
         // avoid fire if you can
     } while (tiles[position] == TYPE.fire && attepts > 0);
@@ -188,7 +219,7 @@ const calcMovements = ({combatants, window_width, tiles}) => {
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position];
         const current_position = parseInt(position);
-        const new_position = getCombatantNextPosition(current_position, tiles, window_width);
+        const new_position = getCombatantNextPosition(current_position, tiles, window_width, combatants);
 
         const occupient = new_combatants[new_position];
         if (!evalHealth(combatant)) {
