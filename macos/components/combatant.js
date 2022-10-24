@@ -7,7 +7,7 @@ import {
     Text,
 } from 'react-native';
 
-export const COLORS = ["darkorange", "cyan", "aquamarine", "brown", "darkorchid"];
+export const COLORS = ["magenta", "olive", "lime", "blueviolet", "crimson"];
 export const MIN_HEALTH = -500;
 
 class Combatant extends React.Component {
