@@ -136,40 +136,59 @@ const processTick = ({combatants, window_width, tiles}) => {
     return new_combatants;
 };
 
+const getCombatantNextPosition = (current_position, tiles, window_width) => {
+    let direction;
+    let position;
+    let attepts = 3;
+
+    do {
+        direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
+        position = getNewPositionFromDirection(current_position, direction, window_width, tiles.length);
+        attepts--;
+        // avoid fire if you can
+    } while (tiles[position] == TYPE.fire && attepts > 0);
+
+    return position;
+};
+
+const getNewPositionFromDirection = (current_position, direction, window_width, tile_count) => {
+    let new_position = current_position;
+    switch (direction) {
+        case DIRECTION.left:
+            new_position = 
+                current_position % window_width > 0 ? 
+                    current_position - 1 : current_position;
+            break;
+        case DIRECTION.up:
+            new_position = 
+                current_position - window_width > -1 ? 
+                    current_position - window_width : current_position;
+            break;
+        case DIRECTION.right:
+            new_position = 
+                current_position % window_width < window_width - 1 ? 
+                    current_position + 1 : current_position;
+            break;
+        case DIRECTION.down:
+            new_position = 
+                current_position + window_width < tile_count ? 
+                    current_position + window_width : current_position;
+            break;
+        case DIRECTION.none:
+            // fallthrough
+        default:
+            new_position = current_position;
+            break;            
+    }
+    return new_position;
+};
+
 const calcMovements = ({combatants, window_width, tiles}) => {
     const new_combatants = {};
     Object.keys(combatants).forEach((position) => {
-        const dir = Math.floor(Math.random() * Object.values(DIRECTION).length)
         const combatant = combatants[position];
         const current_position = parseInt(position);
-        let new_position = current_position;
-        switch (dir) {
-            case DIRECTION.left:
-                new_position = 
-                    current_position % window_width > 0 ? 
-                        current_position - 1 : current_position;
-                break;
-            case DIRECTION.up:
-                new_position = 
-                    current_position - window_width > -1 ? 
-                        current_position - window_width : current_position;
-                break;
-            case DIRECTION.right:
-                new_position = 
-                    current_position % window_width < window_width - 1 ? 
-                        current_position + 1 : current_position;
-                break;
-            case DIRECTION.down:
-                new_position = 
-                    current_position + window_width < tiles.length ? 
-                        current_position + window_width : current_position;
-                break;
-            case DIRECTION.none:
-                // fallthrough
-            default:
-                new_position = current_position;
-                break;            
-        }
+        const new_position = getCombatantNextPosition(current_position, tiles, window_width);
 
         const occupient = new_combatants[new_position];
         if (!evalHealth(combatant)) {
