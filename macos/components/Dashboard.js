@@ -20,7 +20,7 @@ const getColorStats = (combatants) => {
     const counts = Object.keys(colors).map(color => {
         return (
             <View key={color} style={styles.color_group}>
-                <Text style={styles.color_title}>{`${color}`}</Text><Text>{` (${colors[color].length}): `}</Text>
+                <Text style={styles.label}>{`${color}`}</Text><Text>{` (${colors[color].length}): `}</Text>
                 {colors[color].length < 1 ? 
                     (<Text>{"[ ]"}</Text>) : 
                     colors[color].map((c, idx, cs) => {
@@ -44,23 +44,25 @@ const getColorStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, tiles, tick, reset}) => {
+const Dashboard = ({combatants, tiles, tick, game_count, onReset}) => {
     const colorStats = getColorStats(combatants);
     return (
         <View style={styles.stats}>
             <View>
-                <Text style={styles.stat_group}>{`Tick: ${tick}`}</Text>
-                <Text>{`Combatants: ${Object.keys(combatants).length}`}</Text>
+                <View style={styles.row}>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>{'Game: '}</Text>
+                        <Text>{game_count}</Text>
+                    </View>
+                    <View style={[styles.row, styles.count_item]}>
+                        <Text style={styles.label}>{'Tick: '}</Text>
+                        <Text>{tick}</Text>
+                    </View>
+                </View>
+                <View style={styles.row}><Text style={styles.label}>{`Combatants: `}</Text><Text>{`${Object.keys(combatants).length}`}</Text></View>
                 {colorStats}
-                <Text style={styles.stat_group}>{}</Text>
-                <Text style={styles.stat_group}>{}</Text>
-                <Text style={styles.stat_group}>{}</Text>
-                <Text>{}</Text>
-                <Text>{}</Text>
-                <Text>{}</Text>
-                <Text>{}</Text>
-                <Text>{}</Text>
             </View>
+            <Button title={"reset"} onPress={() => onReset()}/>
         </View>
     )
 };
@@ -69,6 +71,9 @@ const styles = StyleSheet.create({
     row: {
         display: "flex",
         flexDirection: "row",
+    },
+    count_item: {
+        paddingHorizontal: 16,
     },
     fitness: {
         paddingHorizontal: 5,
@@ -87,7 +92,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
     },
-    color_title: {
+    label: {
         fontWeight: "bold",
         textTransform: "capitalize",
     },

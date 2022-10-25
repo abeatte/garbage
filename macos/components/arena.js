@@ -359,8 +359,12 @@ const printCombatants = ({tick, combatants, window_height, window_width}) => {
 class Arena extends React.Component {
     constructor() {
         super();
+        this.state = this.getInitState();
+    }
 
+    getInitState() {
         const tick = 0;
+        const game_count = 1;
         const window_width = WINDOW_WIDTH;
         const window_height = WINDOW_HEIGHT;
         const num_combatants = NUM_COMBATANTS;
@@ -376,13 +380,21 @@ class Arena extends React.Component {
             };
         }
 
-        this.state = {
+        return {
             tick,
+            game_count,
             window_width,
             window_height,
             tiles,
-            combatants
+            combatants,
         }
+    }
+
+    reset = () => {
+        const game_count = this.state.game_count;
+        const new_state = this.getInitState(this.state);
+        new_state.game_count = game_count + 1;
+        this.setState(new_state);
     }
 
     tick() {
@@ -405,7 +417,7 @@ class Arena extends React.Component {
     
     componentWillUnmount() {
     clearInterval(this.interval);
-    }
+    } 
 
     render() {
     const rows = [];
@@ -440,6 +452,8 @@ class Arena extends React.Component {
                 combatants={this.state.combatants} 
                 tiles={this.state.tiles} 
                 tick={this.state.tick}
+                game_count={this.state.game_count}
+                onReset={this.reset}
             />
         </>
     );
