@@ -62,7 +62,7 @@ const Dashboard = ({combatants, tiles, tick, game_count, onReset}) => {
                 <View style={styles.row}><Text style={styles.label}>{`Combatants: `}</Text><Text>{`${Object.keys(combatants).length}`}</Text></View>
                 {colorStats}
             </View>
-            <Button title={"reset"} onPress={() => onReset()}/>
+            <Button title={"Restart"} onPress={() => onReset()}/>
         </View>
     )
 };
