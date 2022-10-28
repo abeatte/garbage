@@ -1,0 +1,41 @@
+.Dashboard .Row {
+    display: flex;
+    flex-direction: row;
+    margin-top: 8px;
+}
+
+.Dashboard .Button_container {
+    margin-top: 8px;
+}
+
+.Dashboard .Count_item {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.Dashboard .Fitness {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.Dashboard {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 8px;
+}
+
+.Dashboard .Stat_group {
+    display: flex;
+    margin-top: 8px;
+}
+
+.Dashboard .Color_group {
+    display: flex;
+    flex-direction: row;
+}
+
+.Dashboard .Label {
+    font-weight: bold;
+    text-transform: capitalize;
+}

@@ -1,0 +1,35 @@
+.Tile.Void {
+    width: 25px;
+    height: 25px;
+    background-color: black;
+}
+
+.Tile.Grass {
+    width: 25px;
+    height: 25px;
+    background-color: green;
+}
+
+.Tile.Water {
+    width: 25px;
+    height: 25px;
+    background-color: blue;
+}
+
+.Tile.Fire {
+    width: 25px;
+    height: 25px;
+    background-color: red;
+}
+
+.Tile.Rock {
+    width: 25px;
+    height: 25px;
+    background-color: gray;
+}
+
+.Tile.Sand {
+    width: 25px;
+    height: 25px;
+    background-color: yellow;
+}
