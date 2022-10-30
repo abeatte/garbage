@@ -366,6 +366,7 @@ class Arena extends React.Component {
         const window_width = WINDOW_WIDTH;
         const window_height = WINDOW_HEIGHT;
         const num_combatants = NUM_COMBATANTS;
+        const tick_speed = TICK_INTERVAL;
     
         const tiles = initDefaultTiles({width: window_width, height: window_height});
         const combatants = {};
@@ -381,6 +382,7 @@ class Arena extends React.Component {
         return {
             tick,
             game_count,
+            tick_speed,
             window_width,
             window_height,
             tiles,
@@ -394,6 +396,35 @@ class Arena extends React.Component {
         new_state.game_count = game_count + 1;
         this.setState(new_state);
     }
+
+
+    updateTickSpeed = ({tick_speed}) => {
+        if (tick_speed < 0) {
+            return;
+        }
+
+        const new_state = {};
+        Object.assign(new_state, this.state);
+        new_state.tick_speed = tick_speed
+        this.setState(new_state);
+
+        clearInterval(this.interval);
+        if (tick_speed > 0) {
+            this.interval = setInterval(() => this.tick(), tick_speed);
+        }
+    }
+
+    pauseUnpause = () => {
+        const new_state = {};
+        Object.assign(new_state, this.state);
+        new_state.tick_speed = this.state.tick_speed !== 0 ? 0 : this.state.prev_tick_speed ?? TICK_INTERVAL;
+        new_state.prev_tick_speed = this.state.tick_speed;
+        this.setState(new_state);
+
+        clearInterval(this.interval);
+        if (new_state.tick_speed > 0) {
+            this.interval = setInterval(() => this.tick(), new_state.tick_speed);
+        }    }
 
     tick() {
         const combatants = this.state.combatants;
@@ -410,7 +441,7 @@ class Arena extends React.Component {
       }
 
     componentDidMount() {
-        this.interval = setInterval(() => this.tick(), TICK_INTERVAL);
+        this.interval = setInterval(() => this.tick(), this.state.tick_speed);
       }
     
     componentWillUnmount() {
@@ -450,8 +481,13 @@ class Arena extends React.Component {
                 combatants={this.state.combatants} 
                 tiles={this.state.tiles} 
                 tick={this.state.tick}
+                tick_speed={this.state.tick_speed}
                 game_count={this.state.game_count}
+                arena_width={this.state.window_width}
+                arena_height={this.state.window_height}
                 onReset={this.reset}
+                onUpdateTickSpeed={this.updateTickSpeed}
+                onPauseUnpause={this.pauseUnpause}
             />
         </view>
     );

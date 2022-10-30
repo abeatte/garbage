@@ -1,5 +1,9 @@
 import React from "react";
 import '../css/Dashboard.css'
+import Back from '../icons/back.png'
+import Forward from '../icons/forward.png'
+import Pause from '../icons/pause.png'
+import Play from '../icons/play.png'
 import { COLORS } from "./Combatant";
 
 const getColorStats = (combatants) => {
@@ -39,8 +43,32 @@ const getColorStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, tiles, tick, game_count, onReset}) => {
+const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width, arena_height, onReset, onUpdateTickSpeed, onPauseUnpause}) => {
+    const updated = false;
     const colorStats = getColorStats(combatants);
+   
+    const speed_section = (
+        <view className="Control_container">
+            <text>{`Speed: ||${tick_speed}`}</text>
+            <view className="Speed_buttons_container">
+                <button onClick={() => {
+                    onUpdateTickSpeed({tick_speed: tick_speed - 250});
+                }}>
+                    <img className="Speed_button" alt="Back" src={Back} />
+                </button>
+                <button onClick={() => {
+                    onPauseUnpause();
+                }}>
+                    <img className="Speed_button" alt={tick_speed === 0 ? "Play" : "Pause"} src={tick_speed === 0 ? Play : Pause} />
+                </button>
+                <button onClick={() => {
+                    onUpdateTickSpeed({tick_speed: tick_speed + 250});
+                }}>
+                    <img className="Speed_button" alt="Forward" src={Forward} />
+                </button>
+            </view> 
+        </view>
+    );
     return (
         <view className={'Dashboard'}>
             <view className="stat_container">
@@ -57,8 +85,9 @@ const Dashboard = ({combatants, tiles, tick, game_count, onReset}) => {
                 <view className={'Row'}><text className={'Label'}>{`Combatants: `}</text><text>{`${Object.keys(combatants).length}`}</text></view>
                 {colorStats}
             </view>
-            <view className="Button_container">
-                <button onClick={() => onReset()}><text>{"Restart"}</text></button>
+            <view className="Control_container">
+                <button className={`Update_button${updated ? " updated" : ""}`} onClick={() => onReset()}><text>{"Restart"}</text></button>
+                {speed_section}
             </view>
         </view>
     )
