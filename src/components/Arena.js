@@ -354,21 +354,71 @@ const printCombatants = ({tick, combatants, window_height, window_width}) => {
     console.debug(print);
 }
 
+const updateCombatantsPositionsAfterResize = ({combatants, window_width, window_height, old_window_width, old_window_height, tiles}) => {
+    const new_combatants = {};
+
+    const dif_row = window_width - old_window_width;
+    const dif_col = window_height - old_window_height;
+    Object.keys(combatants).forEach(k => {
+        let new_pos = k;
+        let coord = [Math.floor(k / old_window_width), k % old_window_width];
+
+        if (coord[1] >= window_width || coord[0] >= window_height) {
+            // they fell off the world; let's try to move them up/left
+            const posData = getSurroundingPos({position: k, window_width: old_window_width, tiles, combatants});
+            const can_move_up = !posData.combatants.t;
+            const can_move_diag = !posData.combatants.tl;
+            const can_move_left = !posData.combatants.l;
+
+            const dice_roll = Math.random();
+
+            if (dice_roll < .33 && can_move_left && dif_col > -1) {
+                new_pos = posData.positions.l;
+                coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
+            } else if (dice_roll < .66 && can_move_up && dif_row > -1) {
+                new_pos = posData.positions.t;
+                coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
+            } else if (can_move_diag) {
+                new_pos = posData.positions.tl;
+                coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
+            } else {
+                new_pos = -1;
+            }
+        }
+        
+        if (dif_row !== 0) {
+            // translate old coord to new coord
+            new_pos = coord[0] * window_width + coord[1];
+        }
+
+        if (new_pos > -1 && new_pos < window_width * window_height) {
+            const occupient = new_combatants[new_pos];
+            // tie goes to whoever got there first.
+            new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[k]) : combatants[k];
+        }
+
+    })
+    return new_combatants;
+}
+
 class Arena extends React.Component {
     constructor() {
         super();
-        this.state = this.getInitState();
+        this.state = this.getInitState({window_width: WINDOW_WIDTH, window_height: WINDOW_HEIGHT});
     }
 
-    getInitState() {
+    getInitBoard = ({window_width, window_height}) => {
+        const tiles = initDefaultTiles({width: window_width, height: window_height});
+        return tiles;
+    }
+
+    getInitState = ({window_width, window_height}) => {
         const tick = 0;
         const game_count = 1;
-        const window_width = WINDOW_WIDTH;
-        const window_height = WINDOW_HEIGHT;
         const num_combatants = NUM_COMBATANTS;
         const tick_speed = TICK_INTERVAL;
     
-        const tiles = initDefaultTiles({width: window_width, height: window_height});
+        const tiles = this.getInitBoard({window_width, window_height});
         const combatants = {};
         for (let i = 0; i < num_combatants; i++) {
             const c_pos = initCombatantStartingPos({tiles, combatants});
@@ -397,6 +447,15 @@ class Arena extends React.Component {
         this.setState(new_state);
     }
 
+    updateBoard = ({window_width, window_height}) => {
+        const new_state = {};
+        Object.assign(new_state, this.state);
+        new_state.tiles = this.getInitBoard({window_width, window_height});
+        new_state.combatants = updateCombatantsPositionsAfterResize({combatants: this.state.combatants, window_width, window_height, old_window_width: this.state.window_width, old_window_height: this.state.window_height, tiles: new_state.tiles});
+        new_state.window_width = window_width;
+        new_state.window_height = window_height;
+        this.setState(new_state);
+    }
 
     updateTickSpeed = ({tick_speed}) => {
         if (tick_speed < 0) {
@@ -488,6 +547,7 @@ class Arena extends React.Component {
                 onReset={this.reset}
                 onUpdateTickSpeed={this.updateTickSpeed}
                 onPauseUnpause={this.pauseUnpause}
+                onUpdateBoard={this.updateBoard}
             />
         </view>
     );

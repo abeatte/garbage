@@ -43,7 +43,7 @@ const getColorStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width, arena_height, onReset, onUpdateTickSpeed, onPauseUnpause}) => {
+const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width, arena_height, onReset, onUpdateTickSpeed, onPauseUnpause, onUpdateBoard}) => {
     const updated = false;
     const colorStats = getColorStats(combatants);
    
@@ -69,6 +69,37 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
             </view> 
         </view>
     );
+    const resize_section = (
+        <>
+            <view>
+                <button onClick={() => {
+                    onUpdateBoard({window_width: arena_width - 1, window_height: arena_height});
+                }}>
+                    <text>{"<"}</text>
+                </button>
+                <text>{`Width: ${arena_width}`}</text>
+                <button onClick={() => {
+                    onUpdateBoard({window_width: arena_width + 1, window_height: arena_height})
+                }}>
+                    <text>{">"}</text>
+                </button>
+            </view> 
+            <view>
+                <button onClick={() => {
+                    onUpdateBoard({window_width: arena_width, window_height: arena_height - 1})
+                }}>
+                    <text>{"<"}</text>
+                </button>
+                <text>{`Height: ${arena_height}`}</text>
+                <button onClick={() => {
+                    onUpdateBoard({window_width: arena_width, window_height: arena_height + 1})
+                }}>
+                    <text>{">"}</text>
+                </button>
+            </view> 
+        </>
+    );
+
     return (
         <view className={'Dashboard'}>
             <view className="stat_container">
@@ -88,6 +119,7 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
             <view className="Control_container">
                 <button className={`Update_button${updated ? " updated" : ""}`} onClick={() => onReset()}><text>{"Restart"}</text></button>
                 {speed_section}
+                {resize_section}
             </view>
         </view>
     )
