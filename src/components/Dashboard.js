@@ -1,28 +1,28 @@
 import React from "react";
 import '../css/Dashboard.css'
-import Back from '../icons/back.png'
-import Forward from '../icons/forward.png'
-import Pause from '../icons/pause.png'
-import Play from '../icons/play.png'
-import { COLORS } from "./Combatant";
+import Back from '../images/icons/back.png'
+import Forward from '../images/icons/forward.png'
+import Pause from '../images/icons/pause.png'
+import Play from '../images/icons/play.png'
+import { CHARACTORS } from "./Combatant";
 
-const getColorStats = (combatants) => {
-    const colors = COLORS.reduce((colors, color) => {
-        colors[color] = []
-        return colors;
+const getTeamStats = (combatants) => {
+    const teams = Object.values(CHARACTORS).reduce((teams, cha) => {
+        teams[cha.team] = []
+        return teams;
     }, {});
 
     Object.values(combatants).forEach(combatant => {
-        colors[combatant.color].push(combatant);
+        teams[combatant.team].push(combatant);
     });
 
-    const counts = Object.keys(colors).map(color => {
+    const counts = Object.keys(teams).map(team => {
         return (
-            <view key={color} className={'Color_group'}>
-                <text className={'Label'}>{`${color}`}</text><text>{` (${colors[color].length}): `}</text>
-                {colors[color].length < 1 ? 
+            <view key={team} className={'Team_group'}>
+                <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}): `}</text>
+                {teams[team].length < 1 ? 
                     (<text>{"[ ]"}</text>) : 
-                    colors[color].map((c, idx, cs) => {
+                    teams[team].map((c, idx, cs) => {
                         return ( 
                             <view key={idx} className={'Row'}>
                                 {idx === 0 && <text>{"["}</text>}
@@ -45,7 +45,7 @@ const getColorStats = (combatants) => {
 
 const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width, arena_height, onReset, onUpdateTickSpeed, onPauseUnpause, onUpdateBoard}) => {
     const updated = false;
-    const colorStats = getColorStats(combatants);
+    const teamStats = getTeamStats(combatants);
    
     const speed_section = (
         <view className="Control_container">
@@ -102,6 +102,11 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
 
     return (
         <view className={'Dashboard'}>
+            <view className="Control_container">
+                <button className={`Update_button${updated ? " updated" : ""}`} onClick={() => onReset()}><text>{"Restart"}</text></button>
+                {speed_section}
+                {resize_section}
+            </view>
             <view className="stat_container">
                 <view className={'Row'}>
                     <view className={'Row'}>
@@ -114,12 +119,7 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
                     </view>
                 </view>
                 <view className={'Row'}><text className={'Label'}>{`Combatants: `}</text><text>{`${Object.keys(combatants).length}`}</text></view>
-                {colorStats}
-            </view>
-            <view className="Control_container">
-                <button className={`Update_button${updated ? " updated" : ""}`} onClick={() => onReset()}><text>{"Restart"}</text></button>
-                {speed_section}
-                {resize_section}
+                {teamStats}
             </view>
         </view>
     )

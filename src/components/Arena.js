@@ -4,7 +4,7 @@
 
 import React from "react";
 import '../css/Arena.css';
-import Combatant, { COLORS, MIN_HEALTH } from "./Combatant";
+import Combatant, { CHARACTORS, MIN_HEALTH } from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./Tile";
 
@@ -51,8 +51,8 @@ const initCombatantStartingPos = ({tiles, combatants}) => {
     return starting_pos;
 };
 
-const getRandomColor = () => {
-    return COLORS[Math.round(Math.random() * (COLORS.length - 1))];
+const getRandomTeam = () => {
+    return Object.values(CHARACTORS)[Math.round(Math.random() * (Object.values(CHARACTORS).length - 1))].team;
 }
 
 const getSurroundingPos = ({position, window_width, tiles, combatants}) => {
@@ -147,8 +147,8 @@ const getCombatantNextPosition = (current_position, tiles, window_width, combata
             ck => ck !== "c" && 
             // not diagonal
             ck.length === 1 && 
-            // present and with same color
-            posData.combatants[ck]?.color === self.color &&
+            // present and with same team
+            posData.combatants[ck]?.team === self.team &&
             // not already spawning
             !posData.combatants[ck]?.spawning &&
             // are they old enough
@@ -224,7 +224,7 @@ const calcMovements = ({combatants, window_width, tiles}) => {
         } else if (!occupient) {
             // space is empty; OK to move there if you are healthy enough
             new_combatants[new_position] = combatant;
-        } else if(occupient.color === combatant.color) {                
+        } else if(occupient.team === combatant.team) {                
             new_combatants[current_position] = combatant;
             // space is occupied by a friendly
             if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
@@ -261,7 +261,7 @@ const spawnNextGen = ({positions, combatants, tiles}, live_combatants, arena_siz
             if (positions[ck] > -1 && positions[ck] < arena_size) {
                 empty_space.push(ck)
             }
-        } else if (c.color === self.color) {
+        } else if (c.team === self.team) {
             nearby_friends.push(c);
         } else {
             nearby_enemies.push(c);
@@ -278,7 +278,7 @@ const spawnNextGen = ({positions, combatants, tiles}, live_combatants, arena_siz
         live_combatants[spawn_pos] = {
             fitness: 0,
             // too many of my kind here, let's diverge
-            color: nearby_friends.length < 4 ? self.color : getRandomColor(),
+            team: nearby_friends.length < 4 ? self.team : getRandomTeam(),
             tick: 0,
         };
     }
@@ -424,7 +424,7 @@ class Arena extends React.Component {
             const c_pos = initCombatantStartingPos({tiles, combatants});
             combatants[c_pos] = {
                 fitness: 0,
-                color: getRandomColor(),
+                team: getRandomTeam(),
                 tick: 0,
             };
         }
@@ -513,7 +513,7 @@ class Arena extends React.Component {
     this.state.tiles.forEach((tile, idx) => {
         cells.push(
             <Tile type={tile} key={idx}>
-                {this.state.combatants[idx] ? (<Combatant color={this.state.combatants[idx].color}/>) : null}
+                {this.state.combatants[idx] ? (<Combatant team={this.state.combatants[idx].team}/>) : null}
             </Tile>
         );
         if (idx % this.state.window_width === this.state.window_width - 1) {
