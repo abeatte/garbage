@@ -533,9 +533,6 @@ class Arena extends React.Component {
 
     return (
         <view>
-            <view className={'Arena'}>
-                {rows}
-            </view>
             <Dashboard 
                 combatants={this.state.combatants} 
                 tiles={this.state.tiles} 
@@ -549,6 +546,9 @@ class Arena extends React.Component {
                 onPauseUnpause={this.pauseUnpause}
                 onUpdateBoard={this.updateBoard}
             />
+            <view className={'Arena'}>
+                {rows}
+            </view>
         </view>
     );
     }
