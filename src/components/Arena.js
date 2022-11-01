@@ -8,7 +8,7 @@ import Combatant, { CHARACTORS, MIN_HEALTH } from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./Tile";
 
-const TICK_INTERVAL = 250;
+export const TICK_INTERVAL = 250;
 const WINDOW_WIDTH = 30;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
