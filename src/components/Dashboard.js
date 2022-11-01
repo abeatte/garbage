@@ -20,19 +20,36 @@ const getTeamStats = (combatants) => {
     const counts = Object.keys(teams).map(team => {
         return (
             <view key={team} className={'Team_group'}>
-                <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}): `}</text>
-                {teams[team].length < 1 ? 
-                    (<text>{"[ ]"}</text>) : 
-                    teams[team].map((c, idx, cs) => {
-                        return ( 
-                            <view key={idx} className={'Row'}>
-                                {idx === 0 && <text>{"["}</text>}
-                                <text className={'Fitness'}>{c.fitness}</text>
-                                {idx === cs.length - 1 && <text>{"]"}</text>}
-                            </view>
-                        );
-                    })
-                }
+                <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}):`}</text>
+                <view className="Data_row">
+                    {teams[team].length < 1 ? 
+                        (<text>{"[ ]"}</text>) : 
+                        (<text>{
+                            teams[team]
+                                .sort((a, b) => b.fitness - a.fitness)
+                                .slice(0, 10)
+                                .reduce((result, c, idx, subset) => {
+                                    if (idx === 0) {
+                                        result += "[";
+                                    }
+
+                                    result += `${c.fitness}`;
+
+                                    if (idx < teams[team].length - 1) {
+                                        result += ', '
+                                    }
+
+                                    if (idx === teams[team].length - 1) {
+                                        result += "]";
+                                    } else if (idx === subset.length - 1) {
+                                        result += " ... ]"
+                                    }
+
+                                    return result;
+                                }, "")
+                                }
+                        </text>)}
+                </view>
             </view>
         );
     }).sort((a, b) => a.key.localeCompare(b.key));
@@ -50,7 +67,7 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
    
     const speed_section = (
         <view className="Control_container">
-            <text>{`Speed: ${tick_speed}`}</text>
+            <text style={{alignSelf: 'center'}}>{`Speed: ${tick_speed}`}</text>
             <view className="Speed_buttons_container">
                 <button onClick={() => {
                     let tick_interval = TICK_INTERVAL;
@@ -119,18 +136,21 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
                 {speed_section}
                 {resize_section}
             </view>
-            <view className="stat_container">
+            <view className="Stat_container">
                 <view className={'Row'}>
                     <view className={'Row'}>
-                        <text className={'Label'}>{'Game: '}</text>
-                        <text>{game_count}</text>
+                        <text className={'Label'}>{'Game:'}</text>
+                        <text className="Data_row">{game_count}</text>
                     </view>
                     <view className={'Row Count_item'}>
-                        <text className={'Label'}>{'Tick: '}</text>
-                        <text>{tick}</text>
+                        <text className={'Label'}>{'Tick:'}</text>
+                        <text className="Data_row">{tick}</text>
+                    </view>
+                    <view className={'Row'}>
+                        <text className={'Label'}>{`Combatants:`}</text>
+                        <text className="Data_row">{`${Object.keys(combatants).length}`}</text>
                     </view>
                 </view>
-                <view className={'Row'}><text className={'Label'}>{`Combatants: `}</text><text>{`${Object.keys(combatants).length}`}</text></view>
                 {teamStats}
             </view>
         </view>
