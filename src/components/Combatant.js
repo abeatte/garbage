@@ -3,10 +3,11 @@
  */
 
 import React from 'react';
-import '../css/Combatant.css'
-import Bunny from '../images/combatants/bunny.png'
-import Turtle from '../images/combatants/turtle.png'
-import Elephant from '../images/combatants/lil_eli.png'
+import '../css/Combatant.css';
+import Bunny from '../images/combatants/bunny.png';
+import Turtle from '../images/combatants/turtle.png';
+import Elephant from '../images/combatants/lil_eli.png';
+import Lizard from '../images/combatants/lizard.png';
 
 export const CHARACTORS = {
     Bunny: {
@@ -19,11 +20,8 @@ export const CHARACTORS = {
         placement: "-70px -10px",
         transformScale: 0.9
     },
-    olive: {
-        team: "olive",
-    },
     Turtle: {
-        team: "lime",
+        team: "olive",
         sheet: Turtle,
         height: "50px",
         width: "50px",
@@ -32,8 +30,15 @@ export const CHARACTORS = {
         placement: "90px 2105px",
         transformScale: 0.7
     },
-    blueviolet: {
-        team: "blueviolet",
+    Lizard: {
+        team: "lime",
+        sheet: Lizard,
+        height: "20px",
+        width: "20px",
+        marginLeft: "0px",
+        marginTop: "0px",
+        placement: "40px 0px",
+        transformScale: 1.1
     },
     Elephant: {
         team: "crimson",
