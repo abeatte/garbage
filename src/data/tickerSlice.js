@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { TICK_INTERVAL } from "../components/Arena";
+
+const TICK_INTERVAL = 250;
 
 export const tickerSlice = createSlice({
   name: 'ticker',

@@ -2,6 +2,7 @@ import React from "react";
 import '../css/Dashboard.css'
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight } from '../data/boardSlice'
 import Back from '../images/icons/back.png'
 import Forward from '../images/icons/forward.png'
 import Pause from '../images/icons/pause.png'
@@ -62,11 +63,12 @@ const getTeamStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, tiles, game_count, arena_width, arena_height, onReset, onUpdateBoard}) => {
+const Dashboard = ({combatants, tiles, game_count, onReset}) => {
     const updated = false;
     const teamStats = getTeamStats(combatants);
 
     const ticker = useSelector((state) => state.ticker);
+    const board = useSelector((state) => state.board);
     const dispatch = useDispatch()
    
     const speed_section = (
@@ -98,28 +100,20 @@ const Dashboard = ({combatants, tiles, game_count, arena_width, arena_height, on
     const resize_section = (
         <>
             <view>
-                <button onClick={() => {
-                    onUpdateBoard({window_width: arena_width - 1, window_height: arena_height});
-                }}>
+                <button onClick={() => dispatch(shrinkWidth())}>
                     <text>{"<"}</text>
                 </button>
-                <text>{`Width: ${arena_width}`}</text>
-                <button onClick={() => {
-                    onUpdateBoard({window_width: arena_width + 1, window_height: arena_height})
-                }}>
+                <text>{`Width: ${board.width}`}</text>
+                <button onClick={() => dispatch(growWidth())}>
                     <text>{">"}</text>
                 </button>
             </view> 
             <view>
-                <button onClick={() => {
-                    onUpdateBoard({window_width: arena_width, window_height: arena_height - 1})
-                }}>
+                <button onClick={() => dispatch(shrinkHeight())}>
                     <text>{"<"}</text>
                 </button>
-                <text>{`Height: ${arena_height}`}</text>
-                <button onClick={() => {
-                    onUpdateBoard({window_width: arena_width, window_height: arena_height + 1})
-                }}>
+                <text>{`Height: ${board.height}`}</text>
+                <button onClick={() => dispatch(growHeight())}>
                     <text>{">"}</text>
                 </button>
             </view> 

@@ -10,9 +10,6 @@ import Combatant, { CHARACTORS, MIN_HEALTH } from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./Tile";
 
-export const TICK_INTERVAL = 250;
-const WINDOW_WIDTH = 30;
-const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
@@ -404,8 +401,8 @@ const updateCombatantsPositionsAfterResize = ({combatants, window_width, window_
 }
 
 class Arena extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = this.getInitState({});
     }
 
@@ -414,10 +411,10 @@ class Arena extends React.Component {
         return tiles;
     }
 
-    getInitState = ({window_width, window_height, game_count, combatants}) => {
+    getInitState = ({game_count, combatants}) => {
         game_count = game_count ?? 1;
-        window_width = window_width ?? WINDOW_WIDTH;
-        window_height = window_height ?? WINDOW_HEIGHT;
+        const window_width = this.props.board.width;
+        const window_height = this.props.board.height;
         const tiles = this.getInitBoard({window_width, window_height});
         if (!combatants) {
             combatants = {};
@@ -436,8 +433,6 @@ class Arena extends React.Component {
 
         return {
             game_count,
-            window_width,
-            window_height,
             tiles,
             combatants,
         }
@@ -450,26 +445,9 @@ class Arena extends React.Component {
         this.setState(new_state);
     }
 
-    updateBoard = ({window_width, window_height}) => {
-        const new_state = {};
-        Object.assign(new_state, this.state);
-        new_state.tiles = this.getInitBoard({window_width, window_height, combatants: {}});
-        new_state.window_width = window_width;
-        new_state.window_height = window_height;
-        new_state.combatants = updateCombatantsPositionsAfterResize(
-            {combatants: this.state.combatants, 
-                 window_width, 
-                 window_height, 
-                 old_window_width: this.state.window_width, 
-                 old_window_height: this.state.window_height, 
-                 tiles: new_state.tiles
-            });
-        this.setState(new_state);
-    }
-
     processTick() {
         const combatants = this.state.combatants;
-        const window_width = this.state.window_width
+        const window_width = this.props.board.width
         const tiles = this.state.tiles;
 
         const c2 = processCombatantsTick({combatants, window_width, tiles});
@@ -486,18 +464,39 @@ class Arena extends React.Component {
         this.interval = setInterval(() => this.processTick(), tick_speed);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.ticker.tick_speed !== nextProps.ticker.tick_speed) {
-            const tick_speed = nextProps.ticker.tick_speed
+    componentDidUpdate(prevProps, prevState) {
+        // handle tick_speed updates
+        if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed) {
+            const tick_speed = this.props.ticker.tick_speed
             clearInterval(this.interval);
             if (tick_speed > 0) {
                 this.interval = setInterval(() => this.processTick(), tick_speed);
             } 
         }
+        // handle width/height updates
+        if (
+            prevProps.board.width !== this.props.board.width || 
+            prevProps.board.height !== this.props.board.height
+            ) {
+                const window_width = this.props.board.width;
+                const window_height = this.props.board.height;
+                const new_state = {};
+                Object.assign(new_state, this.state);
+                new_state.tiles = this.getInitBoard({window_width, window_height, combatants: {}});
+                new_state.combatants = updateCombatantsPositionsAfterResize(
+                    {combatants: this.state.combatants, 
+                         window_width, 
+                         window_height, 
+                         old_window_width: prevProps.board.width, 
+                         old_window_height: prevProps.board.height, 
+                         tiles: new_state.tiles
+                    });
+                this.setState(new_state);
+        }
     }
     
     componentWillUnmount() {
-    clearInterval(this.interval);
+        clearInterval(this.interval);
     } 
 
     render() {
@@ -509,8 +508,8 @@ class Arena extends React.Component {
                 {this.state.combatants[idx] ? (<Combatant team={this.state.combatants[idx].team}/>) : null}
             </Tile>
         );
-        if (idx % this.state.window_width === this.state.window_width - 1) {
-            rows.push(<view className={'Row'} key={`row-${Math.floor(idx/this.state.window_width)}`}>{cells}</view>)
+        if (idx % this.props.board.width === this.props.board.width - 1) {
+            rows.push(<view className={'Row'} key={`row-${Math.floor(idx/this.props.board.width)}`}>{cells}</view>)
             cells = [];
         }
     });
@@ -519,8 +518,8 @@ class Arena extends React.Component {
     //     {
     //         tick: this.state.tick, 
     //         combatants: this.state.combatants, 
-    //         window_height: this.state.window_height , 
-    //         window_width: this.state.window_width,
+    //         height: this.props.board.height, 
+    //         width: this.props.board.width,
     //     }
     // );
 
@@ -530,10 +529,7 @@ class Arena extends React.Component {
                 combatants={this.state.combatants} 
                 tiles={this.state.tiles} 
                 game_count={this.state.game_count}
-                arena_width={this.state.window_width}
-                arena_height={this.state.window_height}
                 onReset={this.reset}
-                onUpdateBoard={this.updateBoard}
             />
             <view className={'Arena'}>
                 {rows}
@@ -544,7 +540,10 @@ class Arena extends React.Component {
 }
 
 function mapStateToProps(state) {
-    return {ticker: state.ticker};
+    return {
+        ticker: state.ticker,
+        board: state.board,
+    };
 }
   
 export default connect(mapStateToProps)(Arena);
