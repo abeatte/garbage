@@ -63,7 +63,7 @@ const getTeamStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, tiles, game_count, onReset}) => {
+const Dashboard = ({combatants, game_count, onReset}) => {
     const updated = false;
     const teamStats = getTeamStats(combatants);
 

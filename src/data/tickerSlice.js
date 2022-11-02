@@ -51,7 +51,6 @@ export const tickerSlice = createSlice({
   },
 })
 
-// Action creators are generated for each case reducer function
 export const { slowDown, speedUp, pauseUnpause, tick, reset } = tickerSlice.actions
 
 export default tickerSlice.reducer

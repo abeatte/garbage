@@ -14,29 +14,6 @@ const NUM_COMBATANTS = 24;
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
 
-const initDefaultTiles = ({width, height}) => {
-    const tiles = [width * height];
-    let idx = 0;
-    for (let h = 0; h < height; h++) {
-        for (let w = 0; w < width; w++) {
-            if (h === 0 || h === height-1 || w === 0 || w === width-1) {
-                tiles[idx] = TYPE.fire;
-            } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
-                tiles[idx] = Math.random() < 0.1 ?
-                    TYPE.grass : 
-                    Math.random() < 0.1 ? 
-                        TYPE.water : 
-                        TYPE.rock;
-            } else {
-                tiles[idx] = TYPE.sand;
-            }
-            idx++;
-        }
-    }
-
-    return tiles;
-};
-
 const initCombatantStartingPos = ({tiles, combatants}) => {
     let starting_pos;
     for (let i = 0; i < 10 && !starting_pos; i++) {
@@ -406,21 +383,13 @@ class Arena extends React.Component {
         this.state = this.getInitState({});
     }
 
-    getInitBoard = ({window_width, window_height}) => {
-        const tiles = initDefaultTiles({width: window_width, height: window_height});
-        return tiles;
-    }
-
     getInitState = ({game_count, combatants}) => {
         game_count = game_count ?? 1;
-        const window_width = this.props.board.width;
-        const window_height = this.props.board.height;
-        const tiles = this.getInitBoard({window_width, window_height});
         if (!combatants) {
             combatants = {};
             const num_combatants = NUM_COMBATANTS;
             for (let i = 0; i < num_combatants; i++) {
-                const c_pos = initCombatantStartingPos({tiles, combatants});
+                const c_pos = initCombatantStartingPos({tiles: this.props.board.tiles, combatants});
                 combatants[c_pos] = {
                     fitness: 0,
                     team: getRandomTeam(),
@@ -433,7 +402,6 @@ class Arena extends React.Component {
 
         return {
             game_count,
-            tiles,
             combatants,
         }
     }
@@ -448,7 +416,7 @@ class Arena extends React.Component {
     processTick() {
         const combatants = this.state.combatants;
         const window_width = this.props.board.width
-        const tiles = this.state.tiles;
+        const tiles = this.props.board.tiles;
 
         const c2 = processCombatantsTick({combatants, window_width, tiles});
         this.setState({combatants: c2});
@@ -482,14 +450,13 @@ class Arena extends React.Component {
                 const window_height = this.props.board.height;
                 const new_state = {};
                 Object.assign(new_state, this.state);
-                new_state.tiles = this.getInitBoard({window_width, window_height, combatants: {}});
                 new_state.combatants = updateCombatantsPositionsAfterResize(
                     {combatants: this.state.combatants, 
                          window_width, 
                          window_height, 
                          old_window_width: prevProps.board.width, 
                          old_window_height: prevProps.board.height, 
-                         tiles: new_state.tiles
+                         tiles: this.props.board.tiles
                     });
                 this.setState(new_state);
         }
@@ -502,7 +469,7 @@ class Arena extends React.Component {
     render() {
     const rows = [];
     let cells = [];
-    this.state.tiles.forEach((tile, idx) => {
+    this.props.board.tiles.forEach((tile, idx) => {
         cells.push(
             <Tile type={tile} key={idx}>
                 {this.state.combatants[idx] ? (<Combatant team={this.state.combatants[idx].team}/>) : null}
@@ -527,7 +494,6 @@ class Arena extends React.Component {
         <view>
             <Dashboard 
                 combatants={this.state.combatants} 
-                tiles={this.state.tiles} 
                 game_count={this.state.game_count}
                 onReset={this.reset}
             />
