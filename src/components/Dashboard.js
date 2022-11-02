@@ -1,10 +1,11 @@
 import React from "react";
 import '../css/Dashboard.css'
+import { useSelector, useDispatch } from 'react-redux'
+import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
 import Back from '../images/icons/back.png'
 import Forward from '../images/icons/forward.png'
 import Pause from '../images/icons/pause.png'
 import Play from '../images/icons/play.png'
-import { TICK_INTERVAL } from "./Arena";
 import { CHARACTORS } from "./Combatant";
 
 const getTeamStats = (combatants) => {
@@ -61,43 +62,33 @@ const getTeamStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width, arena_height, onReset, onUpdateTickSpeed, onPauseUnpause, onUpdateBoard}) => {
+const Dashboard = ({combatants, tiles, game_count, arena_width, arena_height, onReset, onUpdateBoard}) => {
     const updated = false;
     const teamStats = getTeamStats(combatants);
+
+    const ticker = useSelector((state) => state.ticker);
+    const dispatch = useDispatch()
    
     const speed_section = (
         <view className="Control_container">
-            <text style={{alignSelf: 'center'}}>{`Speed: ${tick_speed}`}</text>
+            <text style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</text>
             <view className="Speed_buttons_container">
                 <button onClick={() => {
-                    if (tick_speed === 0) {
-                        return;
-                    }
-                    let tick_interval = TICK_INTERVAL;
-                    if (tick_speed < TICK_INTERVAL && tick_speed > 0) {
-                        tick_interval = Math.ceil(tick_speed / 2);
-                        if (TICK_INTERVAL -  tick_speed - tick_interval < 26) {
-                            tick_interval = TICK_INTERVAL - tick_speed;
-                        }
-                    }
-                    onUpdateTickSpeed({tick_speed: tick_speed + tick_interval});
+                    dispatch(slowDown());
                 }}>
                     <img className="Speed_button" alt="Back" src={Back} />
                 </button>
                 <button onClick={() => {
-                    onPauseUnpause();
+                    dispatch(pauseUnpause());
                 }}>
-                    <img className="Speed_button" alt={tick_speed === 0 ? "Play" : "Pause"} src={tick_speed === 0 ? Play : Pause} />
+                    <img 
+                        className="Speed_button" 
+                        alt={ticker.tick_speed === 0 ? "Play" : "Pause"} 
+                        src={ticker.tick_speed === 0 ? Play : Pause} 
+                    />
                 </button>
                 <button onClick={() => {
-                    if (tick_speed === 0) {
-                        return;
-                    }
-                    let tick_interval = TICK_INTERVAL;
-                    if (tick_speed <= TICK_INTERVAL && tick_speed > 1) {
-                        tick_interval = Math.ceil(tick_speed / 2);
-                    }
-                    onUpdateTickSpeed({tick_speed: tick_speed - tick_interval});
+                    dispatch(speedUp());
                 }}>
                     <img className="Speed_button" alt="Forward" src={Forward} />
                 </button>
@@ -150,7 +141,7 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
                     </view>
                     <view className={'Row Count_item'}>
                         <text className={'Label'}>{'Tick:'}</text>
-                        <text className="Data_row">{tick}</text>
+                        <text className="Data_row">{ticker.tick}</text>
                     </view>
                     <view className={'Row'}>
                         <text className={'Label'}>{`Combatants:`}</text>

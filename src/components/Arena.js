@@ -4,6 +4,8 @@
 
 import React from "react";
 import '../css/Arena.css';
+import { connect } from 'react-redux'
+import { tick, reset } from '../data/tickerSlice'
 import Combatant, { CHARACTORS, MIN_HEALTH } from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile, { TYPE } from "./Tile";
@@ -126,7 +128,7 @@ const evalMapPosition = ({positions, combatants, tiles}) => {
     }
 };
 
-const processTick = ({combatants, window_width, tiles}) => {
+const processCombatantsTick = ({combatants, window_width, tiles}) => {
     const new_combatants = calcMovements({combatants, window_width, tiles});
     updateCombatants({combatants: new_combatants, window_width, tiles});
 
@@ -412,8 +414,7 @@ class Arena extends React.Component {
         return tiles;
     }
 
-    getInitState = ({window_width, window_height, tick_speed, prev_tick_speed, game_count, combatants}) => {
-        const tick = 0;
+    getInitState = ({window_width, window_height, game_count, combatants}) => {
         game_count = game_count ?? 1;
         window_width = window_width ?? WINDOW_WIDTH;
         window_height = window_height ?? WINDOW_HEIGHT;
@@ -431,11 +432,10 @@ class Arena extends React.Component {
             }
         }
 
+        this.props?.dispatch(reset());
+
         return {
-            tick,
             game_count,
-            tick_speed: tick_speed ?? TICK_INTERVAL,
-            prev_tick_speed: prev_tick_speed ?? 0,
             window_width,
             window_height,
             tiles,
@@ -467,42 +467,14 @@ class Arena extends React.Component {
         this.setState(new_state);
     }
 
-    updateTickSpeed = ({tick_speed}) => {
-        if (tick_speed < 0) {
-            return;
-        }
-
-        const new_state = {};
-        Object.assign(new_state, this.state);
-        new_state.tick_speed = tick_speed
-        this.setState(new_state);
-
-        clearInterval(this.interval);
-        if (tick_speed > 0) {
-            this.interval = setInterval(() => this.tick(), tick_speed);
-        }
-    }
-
-    pauseUnpause = () => {
-        const new_state = {};
-        Object.assign(new_state, this.state);
-        new_state.tick_speed = this.state.tick_speed !== 0 ? 0 : this.state.prev_tick_speed ?? TICK_INTERVAL;
-        new_state.prev_tick_speed = this.state.tick_speed;
-        this.setState(new_state);
-
-        clearInterval(this.interval);
-        if (new_state.tick_speed > 0) {
-            this.interval = setInterval(() => this.tick(), new_state.tick_speed);
-        }    }
-
-    tick() {
+    processTick() {
         const combatants = this.state.combatants;
         const window_width = this.state.window_width
         const tiles = this.state.tiles;
-        const tick = this.state.tick;
 
-        const c2 = processTick({combatants, window_width, tiles});
-        this.setState({combatants: c2, tick: tick+1});
+        const c2 = processCombatantsTick({combatants, window_width, tiles});
+        this.setState({combatants: c2});
+        this.props.dispatch(tick());
 
         if (Object.keys(c2).length < 1) {
             clearInterval(this.interval);
@@ -510,8 +482,19 @@ class Arena extends React.Component {
       }
 
     componentDidMount() {
-        this.interval = setInterval(() => this.tick(), this.state.tick_speed);
-      }
+        const tick_speed = this.props.ticker.tick_speed;
+        this.interval = setInterval(() => this.processTick(), tick_speed);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.ticker.tick_speed !== nextProps.ticker.tick_speed) {
+            const tick_speed = nextProps.ticker.tick_speed
+            clearInterval(this.interval);
+            if (tick_speed > 0) {
+                this.interval = setInterval(() => this.processTick(), tick_speed);
+            } 
+        }
+    }
     
     componentWillUnmount() {
     clearInterval(this.interval);
@@ -546,14 +529,10 @@ class Arena extends React.Component {
             <Dashboard 
                 combatants={this.state.combatants} 
                 tiles={this.state.tiles} 
-                tick={this.state.tick}
-                tick_speed={this.state.tick_speed}
                 game_count={this.state.game_count}
                 arena_width={this.state.window_width}
                 arena_height={this.state.window_height}
                 onReset={this.reset}
-                onUpdateTickSpeed={this.updateTickSpeed}
-                onPauseUnpause={this.pauseUnpause}
                 onUpdateBoard={this.updateBoard}
             />
             <view className={'Arena'}>
@@ -564,4 +543,8 @@ class Arena extends React.Component {
     }
 }
 
-export default Arena;
+function mapStateToProps(state) {
+    return {ticker: state.ticker};
+}
+  
+export default connect(mapStateToProps)(Arena);
