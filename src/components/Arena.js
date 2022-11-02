@@ -454,6 +454,8 @@ class Arena extends React.Component {
         const new_state = {};
         Object.assign(new_state, this.state);
         new_state.tiles = this.getInitBoard({window_width, window_height, combatants: {}});
+        new_state.window_width = window_width;
+        new_state.window_height = window_height;
         new_state.combatants = updateCombatantsPositionsAfterResize(
             {combatants: this.state.combatants, 
                  window_width, 
