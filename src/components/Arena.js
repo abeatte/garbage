@@ -404,7 +404,7 @@ const updateCombatantsPositionsAfterResize = ({combatants, window_width, window_
 class Arena extends React.Component {
     constructor() {
         super();
-        this.state = this.getInitState({window_width: WINDOW_WIDTH, window_height: WINDOW_HEIGHT});
+        this.state = this.getInitState({});
     }
 
     getInitBoard = ({window_width, window_height}) => {
@@ -412,27 +412,30 @@ class Arena extends React.Component {
         return tiles;
     }
 
-    getInitState = ({window_width, window_height}) => {
+    getInitState = ({window_width, window_height, tick_speed, prev_tick_speed, game_count, combatants}) => {
         const tick = 0;
-        const game_count = 1;
-        const num_combatants = NUM_COMBATANTS;
-        const tick_speed = TICK_INTERVAL;
-    
+        game_count = game_count ?? 1;
+        window_width = window_width ?? WINDOW_WIDTH;
+        window_height = window_height ?? WINDOW_HEIGHT;
         const tiles = this.getInitBoard({window_width, window_height});
-        const combatants = {};
-        for (let i = 0; i < num_combatants; i++) {
-            const c_pos = initCombatantStartingPos({tiles, combatants});
-            combatants[c_pos] = {
-                fitness: 0,
-                team: getRandomTeam(),
-                tick: 0,
-            };
+        if (!combatants) {
+            combatants = {};
+            const num_combatants = NUM_COMBATANTS;
+            for (let i = 0; i < num_combatants; i++) {
+                const c_pos = initCombatantStartingPos({tiles, combatants});
+                combatants[c_pos] = {
+                    fitness: 0,
+                    team: getRandomTeam(),
+                    tick: 0,
+                };
+            }
         }
 
         return {
             tick,
             game_count,
-            tick_speed,
+            tick_speed: tick_speed ?? TICK_INTERVAL,
+            prev_tick_speed: prev_tick_speed ?? 0,
             window_width,
             window_height,
             tiles,
@@ -442,7 +445,7 @@ class Arena extends React.Component {
 
     reset = () => {
         const game_count = this.state.game_count;
-        const new_state = this.getInitState(this.state);
+        const new_state = this.getInitState({...this.state, combatants: undefined});
         new_state.game_count = game_count + 1;
         this.setState(new_state);
     }
@@ -450,10 +453,15 @@ class Arena extends React.Component {
     updateBoard = ({window_width, window_height}) => {
         const new_state = {};
         Object.assign(new_state, this.state);
-        new_state.tiles = this.getInitBoard({window_width, window_height});
-        new_state.combatants = updateCombatantsPositionsAfterResize({combatants: this.state.combatants, window_width, window_height, old_window_width: this.state.window_width, old_window_height: this.state.window_height, tiles: new_state.tiles});
-        new_state.window_width = window_width;
-        new_state.window_height = window_height;
+        new_state.tiles = this.getInitBoard({window_width, window_height, combatants: {}});
+        new_state.combatants = updateCombatantsPositionsAfterResize(
+            {combatants: this.state.combatants, 
+                 window_width, 
+                 window_height, 
+                 old_window_width: this.state.window_width, 
+                 old_window_height: this.state.window_height, 
+                 tiles: new_state.tiles
+            });
         this.setState(new_state);
     }
 
