@@ -70,6 +70,9 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
             <text style={{alignSelf: 'center'}}>{`Speed: ${tick_speed}`}</text>
             <view className="Speed_buttons_container">
                 <button onClick={() => {
+                    if (tick_speed === 0) {
+                        return;
+                    }
                     let tick_interval = TICK_INTERVAL;
                     if (tick_speed < TICK_INTERVAL && tick_speed > 0) {
                         tick_interval = Math.ceil(tick_speed / 2);
@@ -87,6 +90,9 @@ const Dashboard = ({combatants, tiles, tick, tick_speed, game_count, arena_width
                     <img className="Speed_button" alt={tick_speed === 0 ? "Play" : "Pause"} src={tick_speed === 0 ? Play : Pause} />
                 </button>
                 <button onClick={() => {
+                    if (tick_speed === 0) {
+                        return;
+                    }
                     let tick_interval = TICK_INTERVAL;
                     if (tick_speed <= TICK_INTERVAL && tick_speed > 1) {
                         tick_interval = Math.ceil(tick_speed / 2);
