@@ -19,22 +19,22 @@ import Tile from "./Tile";
  * -----------------
  */
 // eslint-disable-next-line no-unused-vars
-const printCombatants = ({tick, combatants, window_height, window_width}) => { 
+const printCombatants = ({tick, combatants, height, width}) => { 
     let print = `tick: ${tick} | combatants: ${Object.keys(combatants).length}\n`;
 
     let bar = '-';
-    for (let i = 0; i < window_width; i++) {
+    for (let i = 0; i < width; i++) {
         bar += '----';
     }
     bar += '\n';
 
     print += bar;
-    for (let i = 0; i < window_width * window_height; i++) {
-        if (i % window_width === 0) {
+    for (let i = 0; i < width * height; i++) {
+        if (i % width === 0) {
             print += '|';
         }
         if (combatants[i]) {
-            print += ' X |';
+            print += ` ${combatants[i].team.charAt(0) } |`;
         } else {
             if (i < 10) {
                 print += '  ';
@@ -43,13 +43,13 @@ const printCombatants = ({tick, combatants, window_height, window_width}) => {
             }
             print += `${i}|`;
         }
-        if (i % window_width === window_width - 1) {
+        if (i % width === width - 1) {
             print += '\n';
         }
     }
     print += `${bar}\n`;
 
-    console.debug(print);
+    console.log(print);
 }
 
 class Arena extends React.Component {
@@ -106,7 +106,7 @@ class Arena extends React.Component {
 
     // printCombatants(
     //     {
-    //         tick: this.state.tick, 
+    //         tick: this.props.ticker.tick, 
     //         combatants: this.props.board.combatants, 
     //         height: this.props.board.height, 
     //         width: this.props.board.width,
