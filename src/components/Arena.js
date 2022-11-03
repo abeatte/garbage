@@ -92,9 +92,10 @@ class Arena extends React.Component {
     const rows = [];
     let cells = [];
     this.props.board.tiles.forEach((tile, idx) => {
+        const maybe_combatant = this.props.board.combatants[idx];
         cells.push(
-            <Tile type={tile} key={idx}>
-                {this.props.board.combatants[idx] ? (<Combatant combatant={this.props.board.combatants[idx]}/>) : null}
+            <Tile type={tile} key={`${idx}_${maybe_combatant?.id ?? 0}`}>
+                {maybe_combatant ? (<Combatant key={maybe_combatant.id} combatant={maybe_combatant}/>) : null}
             </Tile>
         );
         if (idx % this.props.board.width === this.props.board.width - 1) {
