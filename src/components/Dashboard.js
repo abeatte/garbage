@@ -63,13 +63,11 @@ const getTeamStats = (combatants) => {
     );
 };
 
-const Dashboard = ({combatants, game_count, onReset}) => {
-    const updated = false;
-    const teamStats = getTeamStats(combatants);
-
+const Dashboard = ({onReset}) => {
     const ticker = useSelector((state) => state.ticker);
     const board = useSelector((state) => state.board);
     const dispatch = useDispatch()
+    const teamStats = getTeamStats(board.combatants);
    
     const speed_section = (
         <view className="Control_container">
@@ -123,7 +121,7 @@ const Dashboard = ({combatants, game_count, onReset}) => {
     return (
         <view className={'Dashboard'}>
             <view className="Control_container">
-                <button className={`Update_button${updated ? " updated" : ""}`} onClick={() => onReset()}><text>{"Restart"}</text></button>
+                <button className="Update_button" onClick={() => onReset()}><text>{"Restart"}</text></button>
                 {speed_section}
                 {resize_section}
             </view>
@@ -131,7 +129,7 @@ const Dashboard = ({combatants, game_count, onReset}) => {
                 <view className={'Row'}>
                     <view className={'Row'}>
                         <text className={'Label'}>{'Game:'}</text>
-                        <text className="Data_row">{game_count}</text>
+                        <text className="Data_row">{board.game_count}</text>
                     </view>
                     <view className={'Row Count_item'}>
                         <text className={'Label'}>{'Tick:'}</text>
@@ -139,7 +137,7 @@ const Dashboard = ({combatants, game_count, onReset}) => {
                     </view>
                     <view className={'Row'}>
                         <text className={'Label'}>{`Combatants:`}</text>
-                        <text className="Data_row">{`${Object.keys(combatants).length}`}</text>
+                        <text className="Data_row">{`${Object.keys(board.combatants).length}`}</text>
                     </view>
                 </view>
                 {teamStats}
