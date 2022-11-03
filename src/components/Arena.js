@@ -94,7 +94,7 @@ class Arena extends React.Component {
     this.props.board.tiles.forEach((tile, idx) => {
         cells.push(
             <Tile type={tile} key={idx}>
-                {this.props.board.combatants[idx] ? (<Combatant team={this.props.board.combatants[idx].team}/>) : null}
+                {this.props.board.combatants[idx] ? (<Combatant combatant={this.props.board.combatants[idx]}/>) : null}
             </Tile>
         );
         if (idx % this.props.board.width === this.props.board.width - 1) {

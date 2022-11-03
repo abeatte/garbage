@@ -150,6 +150,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
         delete self.spawning.spawning;
         delete self.spawning;
         live_combatants[spawn_pos] = {
+            id: new Date().getTime(),
             fitness: 0,
             // too many of my kind here, let's diverge
             team: nearby_friends.length < 4 ? self.team : getRandomTeam(),

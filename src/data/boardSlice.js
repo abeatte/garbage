@@ -41,6 +41,7 @@ function initCombatants({tiles}) {
     for (let i = 0; i < num_combatants; i++) {
         const c_pos = initCombatantStartingPos({tiles, combatants});
         combatants[c_pos] = {
+            id: new Date().getTime(),
             fitness: 0,
             team: getRandomTeam(),
             tick: 0,

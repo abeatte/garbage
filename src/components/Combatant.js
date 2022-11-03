@@ -11,7 +11,8 @@ import Lizard from '../images/combatants/lizard.png';
 
 export const CHARACTORS = {
     Bunny: {
-        team: "magenta",
+        team: "Bunny",
+        color: "magenta",
         sheet: Bunny,
         height: "25px",
         width: "25px",
@@ -21,7 +22,8 @@ export const CHARACTORS = {
         transformScale: 0.9
     },
     Turtle: {
-        team: "olive",
+        team: "Turtle",
+        color: "olive",
         sheet: Turtle,
         height: "50px",
         width: "50px",
@@ -31,7 +33,8 @@ export const CHARACTORS = {
         transformScale: 0.7
     },
     Lizard: {
-        team: "lime",
+        team: "Lizard",
+        color: "lime",
         sheet: Lizard,
         height: "20px",
         width: "20px",
@@ -41,7 +44,8 @@ export const CHARACTORS = {
         transformScale: 1.1
     },
     Elephant: {
-        team: "crimson",
+        team: "Elephant",
+        color: "crimson",
         sheet: Elephant,
         height: "45px",
         width: "45px",
@@ -54,30 +58,29 @@ export const CHARACTORS = {
 export const MIN_HEALTH = -500;
 
 const getCharacter = (team) => {
-    const character = Object.values(CHARACTORS).find((cha) => cha.team === team);
+    const character = CHARACTORS[team]; // Object.values(CHARACTORS).find((cha) => cha.team === team);
     return character;
 }
 
 class Combatant extends React.Component {
-    constructor({team}) {
+    constructor({combatant}) {
         super();
 
-        const character = getCharacter(team);
-
         this.state = {
-            character,
+            combatant,
         };
     }
 
     render() {
-        const char = this.state.character;
-        if (!this.state.character.sheet) {
-            return (<text style={{fontWeight: "bold", marginLeft: "5px", color: this.state.character.team}}>{"X"}</text>);
+        const team = this.state.combatant.team;
+        const char = getCharacter(team);
+        if (!char.sheet) {
+            return (<text style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</text>);
         } else {
             return (<div className="Sprite" style={
                 {
-                    background: `url(${this.state.character.sheet}) ${this.state.character.placement}`,
-                    transform: `scale(${this.state.character.transformScale})`,
+                    background: `url(${char.sheet}) ${char.placement}`,
+                    transform: `scale(${char.transformScale})`,
                     width: char.width,
                     height: char.height, 
                     marginLeft: char.marginLeft,
