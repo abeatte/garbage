@@ -89,40 +89,38 @@ class Arena extends React.Component {
     } 
 
     render() {
-    const rows = [];
-    let cells = [];
-    this.props.board.tiles.forEach((tile, idx) => {
-        const maybe_combatant = this.props.board.combatants[idx];
-        cells.push(
-            <Tile type={tile} key={`${idx}_${maybe_combatant?.id ?? 0}`}>
-                {maybe_combatant ? (<Combatant key={maybe_combatant.id} combatant={maybe_combatant}/>) : null}
-            </Tile>
-        );
-        if (idx % this.props.board.width === this.props.board.width - 1) {
-            rows.push(<view className={'Row'} key={`row-${Math.floor(idx/this.props.board.width)}`}>{cells}</view>)
-            cells = [];
-        }
-    });
+    const width = this.props.board.width;
+        let tiles = [];
+        this.props.board.tiles.forEach((tile, idx) => {
+            const maybe_combatant = this.props.board.combatants[idx];
+            tiles.push(
+                <Tile type={tile} key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}>
+                    {maybe_combatant ? (<Combatant key={maybe_combatant.id} combatant={maybe_combatant}/>) : null}
+                </Tile>
+            );
+        });
 
-    // printCombatants(
-    //     {
-    //         tick: this.props.ticker.tick, 
-    //         combatants: this.props.board.combatants, 
-    //         height: this.props.board.height, 
-    //         width: this.props.board.width,
-    //     }
-    // );
+        // printCombatants(
+        //     {
+        //         tick: this.props.ticker.tick, 
+        //         combatants: this.props.board.combatants, 
+        //         height: this.props.board.height, 
+        //         width,
+        //     }
+        // );
 
-    return (
-        <view>
-            <Dashboard
-                onReset={this.reset}
-            />
-            <view className={'Arena'}>
-                {rows}
+        return (
+            <view>
+                <Dashboard
+                    onReset={this.reset}
+                />
+                <view className="Arena_container">
+                    <view className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
+                        {tiles}
+                    </view>
+                </view>
             </view>
-        </view>
-    );
+        );
     }
 }
 

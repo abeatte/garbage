@@ -1,10 +1,11 @@
 
 .Arena {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    background-color: black;
+    padding: 5px;
+    align-self: center;
 }
 
-.Arena .Row {
+.Arena_container {
     display: flex;
-    flex-direction: row;
 }
