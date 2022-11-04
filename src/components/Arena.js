@@ -110,7 +110,7 @@ class Arena extends React.Component {
         // );
 
         return (
-            <view>
+            <view className="Arena_outer_container">
                 <Dashboard
                     onReset={this.reset}
                 />

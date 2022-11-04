@@ -66,6 +66,7 @@ export function updateCombatantsPositionsAfterResize({combatants, window_width, 
 
 export function calcMovements({combatants, window_width, tiles}) {
     const new_combatants = {};
+    let births = 0, deaths = 0;
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position];
         const current_position = parseInt(position);
@@ -74,6 +75,7 @@ export function calcMovements({combatants, window_width, tiles}) {
         const occupient = new_combatants[new_position];
         if (!evalHealth(combatant)) {
             // you die
+            deaths++;
         } else if (!occupient) {
             // space is empty; OK to move there if you are healthy enough
             new_combatants[new_position] = combatant;
@@ -83,7 +85,7 @@ export function calcMovements({combatants, window_width, tiles}) {
             if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
                 combatant.spawning = occupient;
                 occupient.spawning = combatant;
-                spawnNextGen(
+                const spawned = spawnNextGen(
                     getSurroundingPos({
                         position: new_position, 
                         window_width, 
@@ -91,14 +93,18 @@ export function calcMovements({combatants, window_width, tiles}) {
                         combatants: new_combatants
                     }), 
                     new_combatants, tiles.length);
+                if (spawned) {
+                    births++;
+                }
             }
         } else {
             // space is occupied by a foe
             new_combatants[new_position] = compete(combatant, occupient)
+            deaths++;
         }
     });
 
-    return new_combatants;
+    return {combatants: new_combatants, births, deaths};
 }
 
 export function getRandomTeam() {
@@ -142,6 +148,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
         }
     });
 
+    let spawned = false;
     if (nearby_enemies.length > 1) {
         // too dangerous, nothing happens
     } else {
@@ -156,7 +163,9 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
             team: nearby_friends.length < 4 ? self.team : getRandomTeam(),
             tick: 0,
         };
+        spawned = true;
     }
+    return spawned;
 }
 
 function getCombatantNextPosition(current_position, tiles, window_width, combatants) {

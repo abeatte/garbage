@@ -135,9 +135,17 @@ const Dashboard = ({onReset}) => {
                         <text className={'Label'}>{'Tick:'}</text>
                         <text className="Data_row">{ticker.tick}</text>
                     </view>
-                    <view className={'Row'}>
+                    <view className={'Row Count_item'}>
                         <text className={'Label'}>{`Combatants:`}</text>
                         <text className="Data_row">{`${Object.keys(board.combatants).length}`}</text>
+                    </view>
+                    <view className={'Row Count_item'}>
+                        <text className={'Label'}>{`Births:`}</text>
+                        <text className="Data_row">{`${board.births}`}</text>
+                    </view>
+                    <view className={'Row Count_item'}>
+                        <text className={'Label'}>{`Deaths:`}</text>
+                        <text className="Data_row">{`${board.deaths}`}</text>
                     </view>
                 </view>
                 {teamStats}

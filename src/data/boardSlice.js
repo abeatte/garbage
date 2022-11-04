@@ -54,12 +54,15 @@ function initState(width, height) {
     width = width ?? WINDOW_WIDTH;
     height = height ?? WINDOW_HEIGHT;
     const tiles = initDefaultTiles({width, height});
+    const combatants = initCombatants({tiles});
     return {
         game_count: 1,
+        births: 0,
+        deaths: 0,
         width,
         height,
         tiles,
-        combatants: initCombatants({tiles}),
+        combatants,
     };
   }
 
@@ -77,7 +80,7 @@ export const boardSlice = createSlice({
         const old_window_width = state.width;
         state.width -= 1
         state.tiles = initDefaultTiles({width: state.width, height: state.height});
-        state.combatants = updateCombatantsPositionsAfterResize(
+        const combatants = updateCombatantsPositionsAfterResize(
             {combatants: Object.assign({}, state.combatants), 
                 window_width: state.width, 
                 window_height: state.height, 
@@ -85,13 +88,16 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         });
+        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        state.combatants = combatants;
+        state.deaths += deaths;
     },
     growWidth: (state) => {
         const old_window_height = state.height;
         const old_window_width = state.width;
         state.width += 1
         state.tiles = initDefaultTiles({width: state.width, height: state.height});
-        state.combatants = updateCombatantsPositionsAfterResize(
+        const combatants = updateCombatantsPositionsAfterResize(
             {combatants: state.combatants, 
                 window_width: state.width, 
                 window_height: state.height, 
@@ -99,6 +105,9 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         });
+        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        state.combatants = combatants;
+        state.deaths += deaths;
     },
     shrinkHeight: (state) => {
         if (state.height === 0) {
@@ -108,7 +117,7 @@ export const boardSlice = createSlice({
         const old_window_width = state.width;
         state.height -= 1
         state.tiles = initDefaultTiles({width: state.width, height: state.height});
-        state.combatants = updateCombatantsPositionsAfterResize(
+        const combatants = updateCombatantsPositionsAfterResize(
             {combatants: state.combatants, 
                 window_width: state.width, 
                 window_height: state.height, 
@@ -116,13 +125,16 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         }); 
+        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        state.combatants = combatants;
+        state.deaths += deaths;
     },
     growHeight: (state) => {
         const old_window_height = state.height;
         const old_window_width = state.width;
         state.height += 1
         state.tiles = initDefaultTiles({width: state.width, height: state.height});
-        state.combatants = updateCombatantsPositionsAfterResize(
+        const combatants = updateCombatantsPositionsAfterResize(
             {combatants: state.combatants, 
                 window_width: state.width, 
                 window_height: state.height, 
@@ -130,6 +142,9 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         });
+        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        state.combatants = combatants;
+        state.deaths += deaths;
     },
     reset: (state) => {
         const new_state = initState(state.width, state.height);
@@ -137,13 +152,18 @@ export const boardSlice = createSlice({
         state.tiles = new_state.tiles;
         state.combatants = new_state.combatants;
         state.game_count += 1;
+        state.births = 0;
+        state.deaths = 0;
     },
     tick: (state) => {
-        const new_combatants = calcMovements({combatants: state.combatants, window_width: state.width, tiles: state.tiles});
+        const result = calcMovements({combatants: state.combatants, window_width: state.width, tiles: state.tiles});
+        const new_combatants = result.combatants;
         updateCombatants({combatants: new_combatants, window_width: state.width, tiles: state.tiles});
     
         state.combatants = new_combatants;
-    }
+        state.births += result.births;
+        state.deaths += result.deaths;
+    },
   },
 })
 
