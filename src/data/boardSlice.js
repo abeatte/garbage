@@ -7,6 +7,7 @@ import {
     updateCombatants,
 } from './CombatantUtils';
 import { TYPE } from "../components/Tile";
+import uuid from 'react-uuid';
 
 const WINDOW_WIDTH = 30;
 const WINDOW_HEIGHT = 15;
@@ -41,7 +42,7 @@ function initCombatants({tiles}) {
     for (let i = 0; i < num_combatants; i++) {
         const c_pos = initCombatantStartingPos({tiles, combatants});
         combatants[c_pos] = {
-            id: new Date().getTime(),
+            id: uuid(),
             fitness: 0,
             team: getRandomTeam(),
             tick: 0,

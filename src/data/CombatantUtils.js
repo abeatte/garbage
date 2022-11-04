@@ -1,5 +1,6 @@
 import { TYPE } from "../components/Tile";
 import { CHARACTORS, MIN_HEALTH } from "../components/Combatant";
+import uuid from 'react-uuid';
 
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
@@ -157,7 +158,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
         delete self.spawning.spawning;
         delete self.spawning;
         live_combatants[spawn_pos] = {
-            id: new Date().getTime(),
+            id: uuid(),
             fitness: 0,
             // too many of my kind here, let's diverge
             team: nearby_friends.length < 4 ? self.team : getRandomTeam(),
