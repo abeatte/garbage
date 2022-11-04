@@ -33,3 +33,9 @@
     height: 25px;
     background-color: yellow;
 }
+
+.Tile.Selected {
+    border: 1px solid red;
+    width: 23px;
+    height: 23px;
+}

@@ -10,6 +10,7 @@ import { tick as combatantTick, reset as resetBoard, } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
+import { select } from "../data/hudSlice";
 
 /**
  * ________________
@@ -89,12 +90,19 @@ class Arena extends React.Component {
     } 
 
     render() {
-    const width = this.props.board.width;
+        const width = this.props.board.width;
+        const selected = this.props.hud.selected;
         let tiles = [];
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = this.props.board.combatants[idx];
+            const is_selected = selected?.id && selected?.id === maybe_combatant?.id;
             tiles.push(
-                <Tile type={tile} key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}>
+                <Tile 
+                type={tile} 
+                onClick={() => {this.props.dispatch(select(maybe_combatant))}} 
+                isSelected={is_selected}
+                key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
+                >
                     {maybe_combatant ? (<Combatant team={maybe_combatant.team}/>) : null}
                 </Tile>
             );
@@ -128,6 +136,7 @@ function mapStateToProps(state) {
     return {
         ticker: state.ticker,
         board: state.board,
+        hud: state.hud,
     };
 }
   

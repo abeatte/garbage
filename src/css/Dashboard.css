@@ -67,3 +67,9 @@
     display: flex;
     width: 20px;
 }
+
+.Dashboard .Team .Selected {
+    border: 1px solid red;
+    width: 23px;
+    height: 23px;
+}

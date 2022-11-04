@@ -9,7 +9,7 @@ import Pause from '../images/icons/pause.png'
 import Play from '../images/icons/play.png'
 import { CHARACTORS } from "./Combatant";
 
-const getTeamStats = (combatants) => {
+const getTeamStats = (combatants, selected) => {
     const teams = Object.values(CHARACTORS).reduce((teams, cha) => {
         teams[cha.team] = []
         return teams;
@@ -20,37 +20,35 @@ const getTeamStats = (combatants) => {
     });
 
     const counts = Object.keys(teams).map(team => {
+        const team_array = [];
+        teams[team]
+            .sort((a, b) => b.fitness - a.fitness)
+            .slice(0, 10)
+            .forEach((c, idx, subset) => {
+                if (idx === 0) {
+                    team_array.push(<text>{"[ "}</text>);
+                }
+
+                team_array.push(<text className={selected?.id === c.id ? "Selected" : ""} >{`${c.fitness}`}</text>);
+
+                if (idx < teams[team].length - 1) {
+                    team_array.push(<text>{', '}</text>);
+                }
+
+                if (idx === teams[team].length - 1) {
+                    team_array.push(<text>{" ]"}</text>);
+                } else if (idx === subset.length - 1) {
+                    team_array.push(<text>{ " ... ]"}</text>);
+                }
+            });
         return (
             <view key={team} className={'Team_group'}>
                 <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}):`}</text>
-                <view className="Data_row">
+                <view className="Data_row Team">
                     {teams[team].length < 1 ? 
                         (<text>{"[ ]"}</text>) : 
-                        (<text>{
-                            teams[team]
-                                .sort((a, b) => b.fitness - a.fitness)
-                                .slice(0, 10)
-                                .reduce((result, c, idx, subset) => {
-                                    if (idx === 0) {
-                                        result += "[";
-                                    }
-
-                                    result += `${c.fitness}`;
-
-                                    if (idx < teams[team].length - 1) {
-                                        result += ', '
-                                    }
-
-                                    if (idx === teams[team].length - 1) {
-                                        result += "]";
-                                    } else if (idx === subset.length - 1) {
-                                        result += " ... ]"
-                                    }
-
-                                    return result;
-                                }, "")
-                                }
-                        </text>)}
+                        team_array
+                    }
                 </view>
             </view>
         );
@@ -66,8 +64,9 @@ const getTeamStats = (combatants) => {
 const Dashboard = ({onReset}) => {
     const ticker = useSelector((state) => state.ticker);
     const board = useSelector((state) => state.board);
+    const hud = useSelector((state) => state.hud);
     const dispatch = useDispatch()
-    const teamStats = getTeamStats(board.combatants);
+    const teamStats = getTeamStats(board.combatants, hud.selected);
    
     const speed_section = (
         <view className="Control_container">
