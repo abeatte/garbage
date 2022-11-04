@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const TICK_INTERVAL = 250;
+const MAX_TICK_VALUE = 2000;
 
 export const tickerSlice = createSlice({
   name: 'ticker',
@@ -12,11 +13,10 @@ export const tickerSlice = createSlice({
   reducers: {
     slowDown: (state) => {
       let tick_speed = state.tick_speed;
-      if (tick_speed === 0) {
-        return;
-      }
       let tick_interval = TICK_INTERVAL;
-      if (tick_speed < TICK_INTERVAL && tick_speed > 0) {
+      if (tick_speed === MAX_TICK_VALUE || tick_speed === 0) {
+        return;
+      } else if (tick_speed < TICK_INTERVAL && tick_speed > 0) {
           tick_interval = Math.ceil(tick_speed / 2);
           if (TICK_INTERVAL -  tick_speed - tick_interval < 26) {
               tick_interval = TICK_INTERVAL - tick_speed;
@@ -27,12 +27,13 @@ export const tickerSlice = createSlice({
     },
     speedUp: (state) => {
       let tick_speed = state.tick_speed;
-      if (tick_speed === 0) {
-        return;
-      }
       let tick_interval = TICK_INTERVAL;
-      if (tick_speed <= TICK_INTERVAL && tick_speed > 1) {
-          tick_interval = Math.ceil(tick_speed / 2);
+      if (tick_speed === 1) {
+        return;
+      } else if (tick_speed === 0) {
+        tick_interval = -MAX_TICK_VALUE;
+      } else if (tick_speed <= TICK_INTERVAL && tick_speed > 1) {
+        tick_interval = Math.ceil(tick_speed / 2);
       }
       state.prev_tick_speed = state.tick_speed;
       state.tick_speed -= tick_interval;
