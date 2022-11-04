@@ -95,7 +95,7 @@ class Arena extends React.Component {
             const maybe_combatant = this.props.board.combatants[idx];
             tiles.push(
                 <Tile type={tile} key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}>
-                    {maybe_combatant ? (<Combatant key={maybe_combatant.id} combatant={maybe_combatant}/>) : null}
+                    {maybe_combatant ? (<Combatant team={maybe_combatant.team}/>) : null}
                 </Tile>
             );
         });

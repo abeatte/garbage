@@ -58,22 +58,13 @@ export const CHARACTORS = {
 export const MIN_HEALTH = -500;
 
 const getCharacter = (team) => {
-    const character = CHARACTORS[team]; // Object.values(CHARACTORS).find((cha) => cha.team === team);
+    const character = CHARACTORS[team];
     return character;
 }
 
 class Combatant extends React.Component {
-    constructor({combatant}) {
-        super();
-
-        this.state = {
-            combatant,
-        };
-    }
-
     render() {
-        const team = this.state.combatant.team;
-        const char = getCharacter(team);
+        const char = getCharacter(this.props.team);
         if (!char.sheet) {
             return (<text style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</text>);
         } else {
