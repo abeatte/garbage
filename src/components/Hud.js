@@ -6,28 +6,42 @@
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
-import Combatant from './Combatant';
+import Combatant, { CHARACTORS } from './Combatant';
 import { updateSelected } from '../data/boardSlice'
 
-function getEditableField({editing_value, display, edit, update, done}) {
-    return editing_value !== undefined ? 
-    (<view>
-        <input 
+function getEditableField({editing_value, options, display, edit, update, done}) {
+    const edit_field = !!options ?
+        (<select value={editing_value} onChange={(e) => {
+            update(e);
+            done();
+        }}>
+            {options}
+        </select>
+        ) :
+        (<input 
             type='text' 
             onChange={update} 
-            value={editing_value}/>
-        <button 
+            value={editing_value}/>);
+
+    const edit_done = !!options ?
+        (<></>) :
+        (<button 
             className="Clickable" 
             onClick={done}
             >
             <text>{"OK"}</text>
-        </button>
-    </view>) : 
+        </button>);
+
+    return editing_value === undefined ? 
     (<view 
         className='Clickable' 
         onClick={edit}
     >
         {display}
+    </view>) :
+    (<view>
+        {edit_field}
+        {edit_done}
     </view>)
 };
 
@@ -61,7 +75,14 @@ function getEditableField({editing_value, display, edit, update, done}) {
                 }
             )}
             <view>{`Fitness:${selected?.fitness}`}</view>
-            <view>{`Team:${selected?.team}`}</view>
+            {getEditableField(
+                {
+                    editing_value: selected?.team, 
+                    options: Object.values(CHARACTORS).map(c => (<option name={c.team}>{c.team}</option>)),
+                    display: `Team:${selected?.team}`,
+                    update: input => dispatch(updateSelected({field: 'team', value: input.target.value})),
+                }
+            )}
             <view>{`Tick:${selected?.tick}`}</view>
         </view>
         </view>
