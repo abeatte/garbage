@@ -58,11 +58,13 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
 
     return (
       <view className='Hud'>
-        <Tile type={TYPE.void}>
-            {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
-        </Tile>   
+        <view style={{width: "200px"}}>
+            <Tile type={TYPE.void}>
+                {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
+            </Tile>
+            <view>{`ID:${selected?.id}`}</view> 
+        </view> 
         <view className="Details">
-            <view>{`ID:${selected?.id}`}</view>
             {getEditableField(
                 {
                     editing_value: edited_name,
