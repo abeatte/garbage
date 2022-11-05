@@ -120,14 +120,12 @@ class Arena extends React.Component {
         // );
 
         return (
-            <view className="Arena_outer_container">
+            <view className="Arena_container">
                 <Dashboard
                     onReset={this.reset}
                 />
-                <view className="Arena_container">
-                    <view className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
-                        {tiles}
-                    </view>
+                <view className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
+                    {tiles}
                 </view>
             </view>
         );

@@ -1,11 +1,10 @@
 .Dashboard .Row {
     display: flex;
     flex-direction: row;
-    margin-top: 8px;
 }
 
 .Dashboard .Control_container {
-    margin: 8px;
+    margin-right: 8px;
     display: flex;
     flex-direction: column;
 }
@@ -31,6 +30,7 @@
 .Dashboard {
     display: flex;
     flex-direction: row;
+    margin-bottom: 8px;
 }
 
 .Dashboard .Stat_group {
@@ -40,10 +40,6 @@
 
 .Dashboard .Data_row {
     margin-left: 5px;
-}
-
-.Dashboard .Stat_container {
-    margin-top: -5px;
 }
 
 .Dashboard .Team_group {

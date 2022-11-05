@@ -138,7 +138,7 @@ const Dashboard = ({onReset}) => {
                 {speed_section}
                 {resize_section}
             </view>
-            <view className="Stat_container">
+            <view>
                 <view className={'Row'}>
                     <view className={'Row'}>
                         <text className={'Label'}>{'Game:'}</text>

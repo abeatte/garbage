@@ -1,0 +1,15 @@
+.Hud {
+    display: flex;
+    margin: 8px;
+}
+
+.Hud .Tile {
+    width: 200px;
+    height: 200px;
+}
+
+.Hud .Details {
+    margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+}

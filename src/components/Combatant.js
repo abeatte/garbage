@@ -16,10 +16,13 @@ export const CHARACTORS = {
         sheet: Bunny,
         height: "25px",
         width: "25px",
-        marginLeft: "0px",
-        marginTop: "0px",
+        margin: "2px 0px 0px 1px",
         placement: "-70px -10px",
-        transformScale: 0.9
+        transformScale: 0.9,
+        detail: {
+            transformScale: 7.2,
+            margin: "10px -15px -10px 15px",
+        }
     },
     Turtle: {
         team: "Turtle",
@@ -27,10 +30,13 @@ export const CHARACTORS = {
         sheet: Turtle,
         height: "50px",
         width: "50px",
-        marginLeft: "-8px",
-        marginTop: "-12px",
+        margin: "-0px -2px 0px -6px",
         placement: "90px 2105px",
-        transformScale: 0.7
+        transformScale: 0.7,
+        detail: {
+            transformScale: 5.6,
+            margin: "0px -35px 0px 35px",
+        }
     },
     Lizard: {
         team: "Lizard",
@@ -38,10 +44,13 @@ export const CHARACTORS = {
         sheet: Lizard,
         height: "20px",
         width: "20px",
-        marginLeft: "0px",
-        marginTop: "0px",
+        margin: "0px 0px 0px 0px",
         placement: "40px 0px",
-        transformScale: 1.1
+        transformScale: 1.1,
+        detail: {
+            transformScale: 8.8,
+            margin: "-10px 5px 10px -5px",
+        }
     },
     Elephant: {
         team: "Elephant",
@@ -49,10 +58,13 @@ export const CHARACTORS = {
         sheet: Elephant,
         height: "45px",
         width: "45px",
-        marginLeft: "-10px",
-        marginTop: "-8px",
-        placement: "0px -5px",
-        transformScale: 0.5
+        margin: "0px -8px 0px -8px",
+        placement: "-5px -2px",
+        transformScale: 0.5,
+        detail: {
+            transformScale: 4,
+            margin: "-2px -15px 2px 15px",
+        }
     }
 };
 export const MIN_HEALTH = -500;
@@ -65,17 +77,17 @@ const getCharacter = (team) => {
 class Combatant extends React.Component {
     render() {
         const char = getCharacter(this.props.team);
+        const for_detail_view = this.props.detail;
         if (!char.sheet) {
             return (<text style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</text>);
         } else {
             return (<div className="Sprite" style={
                 {
                     background: `url(${char.sheet}) ${char.placement}`,
-                    transform: `scale(${char.transformScale})`,
+                    transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
                     width: char.width,
                     height: char.height, 
-                    marginLeft: char.marginLeft,
-                    marginTop: char.marginTop,
+                    margin: for_detail_view ? char.detail.margin : char.margin,
                 }
             }></div>);
         }
