@@ -7,11 +7,10 @@ import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
 import { tick, reset as resetTicker } from '../data/tickerSlice'
-import { tick as combatantTick, reset as resetBoard, } from '../data/boardSlice'
+import { tick as combatantTick, reset as resetBoard, select } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
-import { select } from "../data/hudSlice";
 
 /**
  * ________________
@@ -92,7 +91,7 @@ class Arena extends React.Component {
 
     render() {
         const width = this.props.board.width;
-        const selected = this.props.hud.selected;
+        const selected = this.props.board.selected;
         let tiles = [];
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = this.props.board.combatants[idx];

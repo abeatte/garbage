@@ -9,10 +9,10 @@ import Tile, { TYPE } from './Tile';
 import Combatant from './Combatant';
 
  const Hud = () => {
-    const hud = useSelector((state) => state.hud);
+    const board = useSelector((state) => state.board);
     const dispatch = useDispatch()
 
-    const selected = hud.selected;
+    const selected = board.selected;
 
     return (
       <view className='Hud'>
@@ -30,4 +30,3 @@ import Combatant from './Combatant';
  }; 
  
  export default Hud;
- 

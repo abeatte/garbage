@@ -64,6 +64,7 @@ function initState(width, height) {
         height,
         tiles,
         combatants,
+        selected: undefined,
     };
   }
 
@@ -161,13 +162,23 @@ export const boardSlice = createSlice({
         const new_combatants = result.combatants;
         updateCombatants({combatants: new_combatants, window_width: state.width, tiles: state.tiles});
     
+        const selected = Object.values(new_combatants).find(c => c.id === state.selected?.id);
+
         state.combatants = new_combatants;
         state.births += result.births;
         state.deaths += result.deaths;
+        state.selected = selected;
     },
-  },
+    select: (state, action) => {
+        if (state.selected?.id === action.payload?.id) {
+          state.selected = undefined;
+        } else {
+          state.selected = action.payload;
+        }
+      },
+    },
 })
 
-export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick } = boardSlice.actions
+export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick, select } = boardSlice.actions
 
 export default boardSlice.reducer

@@ -3,13 +3,12 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight } from '../data/boardSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select } from '../data/boardSlice'
 import Back from '../images/icons/back.png'
 import Forward from '../images/icons/forward.png'
 import Pause from '../images/icons/pause.png'
 import Play from '../images/icons/play.png'
 import { CHARACTORS } from "./Combatant";
-import { select } from "../data/hudSlice";
 
 const getTeamStats = (combatants, selected, dispatch) => {
     const teams = Object.values(CHARACTORS).reduce((teams, cha) => {
@@ -73,9 +72,8 @@ const getTeamStats = (combatants, selected, dispatch) => {
 const Dashboard = ({onReset}) => {
     const ticker = useSelector((state) => state.ticker);
     const board = useSelector((state) => state.board);
-    const hud = useSelector((state) => state.hud);
     const dispatch = useDispatch()
-    const teamStats = getTeamStats(board.combatants, hud.selected, dispatch);
+    const teamStats = getTeamStats(board.combatants, board.selected, dispatch);
    
     const speed_section = (
         <view className="Control_container">
