@@ -1,4 +1,9 @@
 .App {
     display: flex;
     align-items: center;
+    cursor: default;
+}
+
+.Clickable {
+    cursor: pointer;
 }

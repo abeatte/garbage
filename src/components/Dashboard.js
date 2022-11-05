@@ -8,8 +8,9 @@ import Forward from '../images/icons/forward.png'
 import Pause from '../images/icons/pause.png'
 import Play from '../images/icons/play.png'
 import { CHARACTORS } from "./Combatant";
+import { select } from "../data/hudSlice";
 
-const getTeamStats = (combatants, selected) => {
+const getTeamStats = (combatants, selected, dispatch) => {
     const teams = Object.values(CHARACTORS).reduce((teams, cha) => {
         teams[cha.team] = []
         return teams;
@@ -29,7 +30,14 @@ const getTeamStats = (combatants, selected) => {
                     team_array.push(<text>{"[ "}</text>);
                 }
 
-                team_array.push(<text className={selected?.id === c.id ? "Selected" : ""} >{`${c.fitness}`}</text>);
+                team_array.push(
+                    <text 
+                        className={selected?.id === c.id ? "Selected" : ""} 
+                        onClick={() => {dispatch(select(c))}}
+                    >
+                        {`${c.fitness}`}
+                    </text>
+                );
 
                 if (idx < teams[team].length - 1) {
                     team_array.push(<text>{', '}</text>);
@@ -44,7 +52,7 @@ const getTeamStats = (combatants, selected) => {
         return (
             <view key={team} className={'Team_group'}>
                 <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}):`}</text>
-                <view className="Data_row Team">
+                <view className="Data_row Team Clickable">
                     {teams[team].length < 1 ? 
                         (<text>{"[ ]"}</text>) : 
                         team_array
@@ -66,18 +74,18 @@ const Dashboard = ({onReset}) => {
     const board = useSelector((state) => state.board);
     const hud = useSelector((state) => state.hud);
     const dispatch = useDispatch()
-    const teamStats = getTeamStats(board.combatants, hud.selected);
+    const teamStats = getTeamStats(board.combatants, hud.selected, dispatch);
    
     const speed_section = (
         <view className="Control_container">
             <text style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</text>
             <view className="Speed_buttons_container">
-                <button onClick={() => {
+                <button className="Clickable" onClick={() => {
                     dispatch(slowDown());
                 }}>
                     <img className="Speed_button" alt="Back" src={Back} />
                 </button>
-                <button onClick={() => {
+                <button className="Clickable" onClick={() => {
                     dispatch(pauseUnpause());
                 }}>
                     <img 
@@ -86,7 +94,7 @@ const Dashboard = ({onReset}) => {
                         src={ticker.tick_speed === 0 ? Play : Pause} 
                     />
                 </button>
-                <button onClick={() => {
+                <button className="Clickable" onClick={() => {
                     dispatch(speedUp());
                 }}>
                     <img className="Speed_button" alt="Forward" src={Forward} />
@@ -97,20 +105,20 @@ const Dashboard = ({onReset}) => {
     const resize_section = (
         <>
             <view>
-                <button onClick={() => dispatch(shrinkWidth())}>
+                <button className="Clickable" onClick={() => dispatch(shrinkWidth())}>
                     <text>{"<"}</text>
                 </button>
                 <text>{`Width: ${board.width}`}</text>
-                <button onClick={() => dispatch(growWidth())}>
+                <button className="Clickable" onClick={() => dispatch(growWidth())}>
                     <text>{">"}</text>
                 </button>
             </view> 
             <view>
-                <button onClick={() => dispatch(shrinkHeight())}>
+                <button className="Clickable" onClick={() => dispatch(shrinkHeight())}>
                     <text>{"<"}</text>
                 </button>
                 <text>{`Height: ${board.height}`}</text>
-                <button onClick={() => dispatch(growHeight())}>
+                <button className="Clickable" onClick={() => dispatch(growHeight())}>
                     <text>{">"}</text>
                 </button>
             </view> 
@@ -120,7 +128,7 @@ const Dashboard = ({onReset}) => {
     return (
         <view className={'Dashboard'}>
             <view className="Control_container">
-                <button className="Update_button" onClick={() => onReset()}><text>{"Restart"}</text></button>
+                <button className="Update_button Clickable" onClick={() => onReset()}><text>{"Restart"}</text></button>
                 {speed_section}
                 {resize_section}
             </view>

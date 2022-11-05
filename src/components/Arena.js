@@ -99,6 +99,7 @@ class Arena extends React.Component {
             tiles.push(
                 <Tile 
                 type={tile} 
+                className={`${!!maybe_combatant ? "Clickable" : ""}`}
                 onClick={() => {this.props.dispatch(select(maybe_combatant))}} 
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}

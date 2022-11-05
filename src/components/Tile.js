@@ -7,7 +7,7 @@ import '../css/Tile.css';
 
 export const TYPE = {"void": 0, "water": 1, "fire": 2, "rock": 3, "sand": 4, "grass": 5};
 
- const Tile = ({children, type, isSelected, onClick}) => {
+ const Tile = ({children, className, type, isSelected, onClick}) => {
   let style;
   switch(type) {
     case TYPE.grass: 
@@ -33,7 +33,7 @@ export const TYPE = {"void": 0, "water": 1, "fire": 2, "rock": 3, "sand": 4, "gr
   }
   
     return (
-      <view className={`Tile ${style} ${isSelected ? "Selected" : ""}`} onClick={onClick} >{children}</view>
+      <view className={`Tile ${style} ${className} ${isSelected ? "Selected" : ""}`} onClick={onClick} >{children}</view>
     );
  }; 
  
