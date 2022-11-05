@@ -4,6 +4,7 @@
 
  import React from 'react';
 import '../css/Tile.css';
+import classNames from 'classnames';
 
 export const TYPE = {"void": 0, "water": 1, "fire": 2, "rock": 3, "sand": 4, "grass": 5};
 
@@ -33,7 +34,7 @@ export const TYPE = {"void": 0, "water": 1, "fire": 2, "rock": 3, "sand": 4, "gr
   }
   
     return (
-      <view className={`Tile ${style} ${className} ${isSelected ? "Selected" : ""}`} onClick={onClick} >{children}</view>
+      <view className={classNames('Tile', style, className, {"Selected" : isSelected})} onClick={onClick} >{children}</view>
     );
  }; 
  

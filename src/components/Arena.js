@@ -4,6 +4,7 @@
 
 import React from "react";
 import '../css/Arena.css';
+import classNames from 'classnames';
 import { connect } from 'react-redux'
 import { tick, reset as resetTicker } from '../data/tickerSlice'
 import { tick as combatantTick, reset as resetBoard, } from '../data/boardSlice'
@@ -99,7 +100,7 @@ class Arena extends React.Component {
             tiles.push(
                 <Tile 
                 type={tile} 
-                className={`${!!maybe_combatant ? "Clickable" : ""}`}
+                className={classNames({"Clickable" : !!maybe_combatant})}
                 onClick={() => {this.props.dispatch(select(maybe_combatant))}} 
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}

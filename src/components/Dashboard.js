@@ -1,5 +1,6 @@
 import React from "react";
 import '../css/Dashboard.css'
+import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
 import { shrinkWidth, growWidth, shrinkHeight, growHeight } from '../data/boardSlice'
@@ -52,7 +53,7 @@ const getTeamStats = (combatants, selected, dispatch) => {
         return (
             <view key={team} className={'Team_group'}>
                 <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}):`}</text>
-                <view className="Data_row Team Clickable">
+                <view className={classNames("Data_row", "Team", "Clickable")}>
                     {teams[team].length < 1 ? 
                         (<text>{"[ ]"}</text>) : 
                         team_array
@@ -128,7 +129,12 @@ const Dashboard = ({onReset}) => {
     return (
         <view className={'Dashboard'}>
             <view className="Control_container">
-                <button className="Update_button Clickable" onClick={() => onReset()}><text>{"Restart"}</text></button>
+                <button 
+                    className={classNames("Update_button", "Clickable")} 
+                    onClick={() => onReset()
+                }>
+                    <text>{"Restart"}</text>
+                </button>
                 {speed_section}
                 {resize_section}
             </view>
@@ -138,19 +144,19 @@ const Dashboard = ({onReset}) => {
                         <text className={'Label'}>{'Game:'}</text>
                         <text className="Data_row">{board.game_count}</text>
                     </view>
-                    <view className={'Row Count_item'}>
+                    <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{'Tick:'}</text>
                         <text className="Data_row">{ticker.tick}</text>
                     </view>
-                    <view className={'Row Count_item'}>
+                    <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Combatants:`}</text>
                         <text className="Data_row">{`${Object.keys(board.combatants).length}`}</text>
                     </view>
-                    <view className={'Row Count_item'}>
+                    <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Births:`}</text>
                         <text className="Data_row">{`${board.births}`}</text>
                     </view>
-                    <view className={'Row Count_item'}>
+                    <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Deaths:`}</text>
                         <text className="Data_row">{`${board.deaths}`}</text>
                     </view>
