@@ -9,7 +9,7 @@ import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
 import { updateSelected } from '../data/boardSlice'
 
-function getEditableField({editing_value, editing_type, options, display, edit, update, done}) {
+function getEditableField({editing_value, editing_type, options, label, display, edit, update, done}) {
     const edit_field = !!options ?
         (<select value={editing_value} onChange={(e) => {
             update(e);
@@ -37,9 +37,10 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
         className='Clickable' 
         onClick={edit}
     >
-        {display}
+        <view>{label}{display}</view>
     </view>) :
     (<view>
+        {label}
         {edit_field}
         {edit_done}
     </view>)
@@ -62,14 +63,15 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
             <Tile type={TYPE.void}>
                 {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
             </Tile>
-            <view>{`ID:${selected?.id}`}</view> 
+            <view><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
         </view> 
         <view className="Details">
             {getEditableField(
                 {
                     editing_value: edited_name,
                     editing_type: 'text',
-                    display: `Name:${selected?.name ?? ""}`, 
+                    label: (<text className={'Label'}>{'Name: '}</text>),
+                    display: (<text>{selected?.name ?? ""}</text>),
                     edit: () => setEditing({...editing, name: selected?.name}),
                     update: input => setEditing({...editing, name: input.target.value}),
                     done: () => {
@@ -82,7 +84,8 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
                 {
                     editing_value: edited_fitness,
                     editing_type: 'number',
-                    display: `Fitness:${selected?.fitness ?? ""}`, 
+                    label: (<text className={'Label'}>{'Fitness: '}</text>),
+                    display: (<text>{selected?.fitness ?? ""}</text>), 
                     edit: () => setEditing({...editing, fitness: selected?.fitness}),
                     update: input => setEditing({...editing, fitness: input.target.value}),
                     done: () => {
@@ -95,11 +98,12 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
                 {
                     editing_value: selected?.team, 
                     options: Object.values(CHARACTORS).map(c => (<option name={c.team}>{c.team}</option>)),
-                    display: `Team:${selected?.team ?? ""}`,
+                    label: (<text className={'Label'}>{'Team: '}</text>),
+                    display: (<text>{selected?.team ?? ""}</text>),
                     update: input => dispatch(updateSelected({field: 'team', value: input.target.value})),
                 }
             )}
-            <view>{`Tick:${selected?.tick ?? ""}`}</view>
+            <view><text className={'Label'}>{'Tick: '}</text><text>{selected?.tick ?? ""}</text></view>
         </view>
         </view>
     );
