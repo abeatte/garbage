@@ -9,7 +9,7 @@ import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
 import { updateSelected } from '../data/boardSlice'
 
-function getEditableField({editing_value, options, display, edit, update, done}) {
+function getEditableField({editing_value, editing_type, options, display, edit, update, done}) {
     const edit_field = !!options ?
         (<select value={editing_value} onChange={(e) => {
             update(e);
@@ -19,7 +19,7 @@ function getEditableField({editing_value, options, display, edit, update, done})
         </select>
         ) :
         (<input 
-            type='text' 
+            type={editing_type} 
             onChange={update} 
             value={editing_value}/>);
 
@@ -54,6 +54,7 @@ function getEditableField({editing_value, options, display, edit, update, done})
     const selected = board.selected;
 
     const edited_name = editing['name'];
+    const edited_fitness = editing['fitness'];
 
     return (
       <view className='Hud'>
@@ -64,7 +65,8 @@ function getEditableField({editing_value, options, display, edit, update, done})
             <view>{`ID:${selected?.id}`}</view>
             {getEditableField(
                 {
-                    editing_value: edited_name, 
+                    editing_value: edited_name,
+                    editing_type: 'text',
                     display: `Name:${selected?.name}`, 
                     edit: () => setEditing({...editing, name: selected?.name}),
                     update: input => setEditing({...editing, name: input.target.value}),
@@ -74,7 +76,19 @@ function getEditableField({editing_value, options, display, edit, update, done})
                     }
                 }
             )}
-            <view>{`Fitness:${selected?.fitness}`}</view>
+            {getEditableField(
+                {
+                    editing_value: edited_fitness,
+                    editing_type: 'number',
+                    display: `Fitness:${selected?.fitness}`, 
+                    edit: () => setEditing({...editing, fitness: selected?.fitness}),
+                    update: input => setEditing({...editing, fitness: input.target.value}),
+                    done: () => {
+                        dispatch(updateSelected({field: 'fitness', value: parseInt(edited_fitness)}));
+                        setEditing({...editing, fitness: undefined})
+                    }
+                }
+            )}
             {getEditableField(
                 {
                     editing_value: selected?.team, 
