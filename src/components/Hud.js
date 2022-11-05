@@ -69,7 +69,7 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
                 {
                     editing_value: edited_name,
                     editing_type: 'text',
-                    display: `Name:${selected?.name}`, 
+                    display: `Name:${selected?.name ?? ""}`, 
                     edit: () => setEditing({...editing, name: selected?.name}),
                     update: input => setEditing({...editing, name: input.target.value}),
                     done: () => {
@@ -82,7 +82,7 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
                 {
                     editing_value: edited_fitness,
                     editing_type: 'number',
-                    display: `Fitness:${selected?.fitness}`, 
+                    display: `Fitness:${selected?.fitness ?? ""}`, 
                     edit: () => setEditing({...editing, fitness: selected?.fitness}),
                     update: input => setEditing({...editing, fitness: input.target.value}),
                     done: () => {
@@ -95,11 +95,11 @@ function getEditableField({editing_value, editing_type, options, display, edit, 
                 {
                     editing_value: selected?.team, 
                     options: Object.values(CHARACTORS).map(c => (<option name={c.team}>{c.team}</option>)),
-                    display: `Team:${selected?.team}`,
+                    display: `Team:${selected?.team ?? ""}`,
                     update: input => dispatch(updateSelected({field: 'team', value: input.target.value})),
                 }
             )}
-            <view>{`Tick:${selected?.tick}`}</view>
+            <view>{`Tick:${selected?.tick ?? ""}`}</view>
         </view>
         </view>
     );
