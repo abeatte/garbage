@@ -43,6 +43,7 @@ function initCombatants({tiles}) {
         const c_pos = initCombatantStartingPos({tiles, combatants});
         combatants[c_pos] = {
             id: uuid(),
+            name: "",
             fitness: 0,
             team: getRandomTeam(),
             tick: 0,
@@ -175,10 +176,15 @@ export const boardSlice = createSlice({
         } else {
           state.selected = action.payload;
         }
-      },
     },
+    updateSelected: (state, action) => {
+        const selected = Object.values(state.combatants).find(c => c.id === state.selected?.id);
+        selected[action.payload.field] = action.payload.value;
+        state.selected = selected;
+    }
+  },
 })
 
-export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick, select } = boardSlice.actions
+export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick, select, updateSelected } = boardSlice.actions
 
 export default boardSlice.reducer
