@@ -21,7 +21,10 @@ export const CHARACTORS = {
         transformScale: 0.9,
         detail: {
             transformScale: 7.2,
-            margin: "10px -15px -10px 15px",
+            placement: "-68px -9px",
+            height: "25px",
+            width: "25px",
+            margin: "0px",
         }
     },
     Turtle: {
@@ -35,7 +38,10 @@ export const CHARACTORS = {
         transformScale: 0.7,
         detail: {
             transformScale: 5.6,
-            margin: "0px -35px 0px 35px",
+            placement: "84px 2478px",
+            height: "30px",
+            width: "24px",
+            margin: "0px",
         }
     },
     Lizard: {
@@ -49,7 +55,10 @@ export const CHARACTORS = {
         transformScale: 1.1,
         detail: {
             transformScale: 8.8,
-            margin: "-10px 5px 10px -5px",
+            placement: "40px -2px",
+            height: "20px",
+            width: "20px",
+            margin: "0px",
         }
     },
     Elephant: {
@@ -63,7 +72,10 @@ export const CHARACTORS = {
         transformScale: 0.5,
         detail: {
             transformScale: 4,
-            margin: "-2px -15px 2px 15px",
+            placement: "-1px -2px",
+            height: "45px",
+            width: "45px",
+            margin: "0px",
         }
     }
 };
@@ -83,10 +95,10 @@ class Combatant extends React.Component {
         } else {
             return (<div className="Sprite" style={
                 {
-                    background: `url(${char.sheet}) ${char.placement}`,
+                    background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
                     transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
-                    width: char.width,
-                    height: char.height, 
+                    width: for_detail_view ? char.detail.width : char.width,
+                    height: for_detail_view ? char.detail.height : char.height, 
                     margin: for_detail_view ? char.detail.margin : char.margin,
                 }
             }></div>);
