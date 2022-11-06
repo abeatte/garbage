@@ -1,6 +1,8 @@
 To run this game use `npm start` and navigate to your browser.
 To publish this to gh pages use `npm run deploy` (but you still should `git push` as well).
 
+![Alt text](repo_resources/Garbage.png?raw=true "Garbage")
+
 ![Alt text](repo_resources/ScreenShot.png?raw=true "Screen Shot")
 
 # Getting Started with Create React App
