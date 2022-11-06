@@ -5,6 +5,7 @@ import {
     calcMovements,
     getRandomTeam,
     updateCombatants,
+    MIN_HEALTH,
 } from './CombatantUtils';
 import { TYPE } from "../components/Tile";
 import uuid from 'react-uuid';
@@ -182,10 +183,15 @@ export const boardSlice = createSlice({
         const selected = Object.values(state.combatants).find(c => c.id === state.selected?.id);
         selected[action.payload.field] = action.payload.value;
         state.selected = selected;
+    },
+    killSelected: (state) => {
+        const selected = Object.values(state.combatants).find(c => c.id === state.selected?.id);
+        selected.immortal = false;
+        selected.fitness = MIN_HEALTH
     }
   },
 })
 
-export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick, select, updateSelected } = boardSlice.actions
+export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick, select, updateSelected, killSelected } = boardSlice.actions
 
 export default boardSlice.reducer

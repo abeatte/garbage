@@ -79,7 +79,6 @@ export const CHARACTORS = {
         }
     }
 };
-export const MIN_HEALTH = -500;
 
 const getCharacter = (team) => {
     const character = CHARACTORS[team];

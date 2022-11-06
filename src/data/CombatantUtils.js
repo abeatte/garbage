@@ -1,9 +1,10 @@
 import { TYPE } from "../components/Tile";
-import { CHARACTORS, MIN_HEALTH } from "../components/Combatant";
+import { CHARACTORS } from "../components/Combatant";
 import uuid from 'react-uuid';
 
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
+export const MIN_HEALTH = -500;
 
 export function initCombatantStartingPos({tiles, combatants}) {
     let starting_pos;

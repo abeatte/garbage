@@ -7,7 +7,8 @@ import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
-import { updateSelected } from '../data/boardSlice'
+import { updateSelected, killSelected } from '../data/boardSlice'
+import classNames from 'classnames';
 
 function getEditableField({editing_value, editing_type, options, label, display, edit, update, done}) {
     const edit_field = !!options ?
@@ -60,10 +61,12 @@ function getEditableField({editing_value, editing_type, options, label, display,
     return (
       <view className='Hud'>
         <view style={{width: "200px"}}>
-            <Tile type={TYPE.void}>
-                {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
-            </Tile>
-            <view><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
+            <view>
+                <Tile type={TYPE.void}>
+                    {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
+                </Tile>
+                <view><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
+            </view>
         </view> 
         <view className="Details">
             {getEditableField(
@@ -114,7 +117,18 @@ function getEditableField({editing_value, editing_type, options, label, display,
                 <text className={'Label'}>{'Immortal'}</text>
             </view>
         </view>
-        </view>
+        {
+                !!selected && 
+                <view className='Kill_button_container'>
+                    <button 
+                    className={classNames('Clickable', 'Kill_button')}
+                    onClick={() => dispatch(killSelected())}
+                    >
+                        <text>{"Kill"}</text>
+                    </button>
+                </view>
+            }
+      </view>
     );
  }; 
  
