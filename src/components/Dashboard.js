@@ -27,11 +27,12 @@ const getTeamStats = (combatants, selected, dispatch) => {
             .slice(0, 10)
             .forEach((c, idx, subset) => {
                 if (idx === 0) {
-                    team_array.push(<text>{"[ "}</text>);
+                    team_array.push(<text key={"["}>{"[ "}</text>);
                 }
 
                 team_array.push(
                     <text 
+                        key={`${selected?.id ?? idx}`}
                         className={selected?.id === c.id ? "Selected" : ""} 
                         onClick={() => {dispatch(select(c))}}
                     >
@@ -40,13 +41,13 @@ const getTeamStats = (combatants, selected, dispatch) => {
                 );
 
                 if (idx < teams[team].length - 1) {
-                    team_array.push(<text>{', '}</text>);
+                    team_array.push(<text key={`${idx}','`}>{', '}</text>);
                 }
 
                 if (idx === teams[team].length - 1) {
-                    team_array.push(<text>{" ]"}</text>);
+                    team_array.push(<text key={"]"}>{" ]"}</text>);
                 } else if (idx === subset.length - 1) {
-                    team_array.push(<text>{ " ... ]"}</text>);
+                    team_array.push(<text key={"...]"}>{ " ... ]"}</text>);
                 }
             });
         return (

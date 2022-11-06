@@ -97,7 +97,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
             {getEditableField(
                 {
                     editing_value: selected?.team, 
-                    options: Object.values(CHARACTORS).map(c => (<option name={c.team}>{c.team}</option>)),
+                    options: Object.values(CHARACTORS).map(c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
                     label: (<text className={'Label'}>{'Team: '}</text>),
                     display: (<text>{selected?.team ?? ""}</text>),
                     update: input => dispatch(updateSelected({field: 'team', value: input.target.value})),
