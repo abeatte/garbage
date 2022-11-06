@@ -35,12 +35,12 @@ function getEditableField({editing_value, editing_type, options, label, display,
 
     return editing_value === undefined ? 
     (<view 
-        className='Clickable' 
+        className={classNames('Clickable', 'Editable_row')}
         onClick={edit}
     >
         <view>{label}{display}</view>
     </view>) :
-    (<view>
+    (<view className='Editing_row'>
         {label}
         {edit_field}
         {edit_done}
@@ -61,11 +61,11 @@ function getEditableField({editing_value, editing_type, options, label, display,
     return (
       <view className='Hud'>
         <view style={{width: "200px"}}>
-            <view>
+            <view className='Badge'>
                 <Tile type={TYPE.void}>
                     {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
                 </Tile>
-                <view><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
+                <view className='Id'><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
             </view>
         </view> 
         <view className="Details">
@@ -109,12 +109,14 @@ function getEditableField({editing_value, editing_type, options, label, display,
             <view>
                 <text className={'Label'}>{'Tick: '}</text><text>{selected?.tick ?? ""}</text>
             </view>
-            <view>
-                <input type="checkbox" checked={selected?.immortal} disabled={!selected} onClick={(input) => {
-                    dispatch(updateSelected({field: 'immortal', value: input.target.checked}));
-                    setEditing({...editing, fitness: undefined});
-                }}/>
-                <text className={'Label'}>{'Immortal'}</text>
+            <view className='Toggles'>
+                <view>
+                    <input type="checkbox" checked={selected?.immortal} disabled={!selected} onClick={(input) => {
+                        dispatch(updateSelected({field: 'immortal', value: input.target.checked}));
+                        setEditing({...editing, fitness: undefined});
+                    }}/>
+                    <text className={'Label'}>{'Immortal'}</text>
+                </view>
             </view>
         </view>
         {

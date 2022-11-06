@@ -15,6 +15,14 @@
     flex-direction: column;
 }
 
+.Hud .Editable_row {
+    margin-bottom: 8px;
+}
+
+.Hud .Editing_row {
+    margin-bottom: 5px;
+}
+
 .Hud .Kill_button_container {
     display: flex;
     flex-direction: column;
@@ -25,4 +33,17 @@
     background-color: red;
     padding: 6px 12px 6px 12px;
     align-self: flex-end;
+}
+
+.Hud .Toggles {
+    margin-top: 8px;
+}
+
+.Hud .Badge {
+    display: flex;
+    flex-direction: column;
+}
+
+.Hud .Id {
+    margin-top: 8px;
 }
