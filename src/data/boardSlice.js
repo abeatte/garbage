@@ -188,6 +188,7 @@ export const boardSlice = createSlice({
         const selected = Object.values(state.combatants).find(c => c.id === state.selected?.id);
         selected.immortal = false;
         selected.fitness = MIN_HEALTH
+        state.selected = selected;
     }
   },
 })
