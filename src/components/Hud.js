@@ -118,16 +118,16 @@ function getEditableField({editing_value, editing_type, options, label, display,
             </view>
         </view>
         {
-                !!selected && 
-                <view className='Kill_button_container'>
-                    <button 
-                    className={classNames('Clickable', 'Kill_button')}
-                    onClick={() => dispatch(killSelected())}
-                    >
-                        <text>{"Kill"}</text>
-                    </button>
-                </view>
-            }
+            !!selected && 
+            <view className='Kill_button_container'>
+                <button 
+                className={classNames('Clickable', 'Kill_button')}
+                onClick={() => dispatch(killSelected())}
+                >
+                    <text>{"Kill"}</text>
+                </button>
+            </view>
+        }
       </view>
     );
  }; 
