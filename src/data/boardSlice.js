@@ -45,6 +45,7 @@ function initCombatants({tiles}) {
             id: uuid(),
             name: "",
             fitness: 0,
+            immortal: false, 
             team: getRandomTeam(),
             tick: 0,
         };

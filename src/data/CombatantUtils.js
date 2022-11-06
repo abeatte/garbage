@@ -116,7 +116,9 @@ export function updateCombatants({combatants, window_width, tiles}) {
     Object.keys(combatants).forEach(position => {
         const combatant = combatants[position];
         const posData = getSurroundingPos({position, window_width, tiles, combatants});
-        combatant.fitness += evalMapPosition(posData);
+        if (!combatant.immortal) {
+            combatant.fitness += evalMapPosition(posData);
+        }
         combatant.tick +=1;
     });
 }
@@ -161,6 +163,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
             id: uuid(),
             name: "",
             fitness: 0,
+            immortal: false, 
             // too many of my kind here, let's diverge
             team: nearby_friends.length < 4 ? self.team : getRandomTeam(),
             tick: 0,
@@ -290,8 +293,8 @@ function evalMapPosition({positions, combatants, tiles}) {
  * @returns the fitter combatant
  */
 function compete(a, b) {
-    const a_fitness = a.fitness;
-    const b_fitness = b.fitness;
+    const a_fitness = a.immortal ? Infinity : a.fitness;
+    const b_fitness = b.immortal ? Infinity : b.fitness;
     return b_fitness > a_fitness ? b: a;
 }
 

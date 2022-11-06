@@ -82,10 +82,10 @@ function getEditableField({editing_value, editing_type, options, label, display,
             )}
             {getEditableField(
                 {
-                    editing_value: edited_fitness,
+                    editing_value: selected?.immortal ? undefined : edited_fitness,
                     editing_type: 'number',
                     label: (<text className={'Label'}>{'Fitness: '}</text>),
-                    display: (<text>{selected?.fitness ?? ""}</text>), 
+                    display: (<text>{selected?.immortal ? Infinity : selected?.fitness ?? ""}</text>), 
                     edit: () => setEditing({...editing, fitness: selected?.fitness}),
                     update: input => setEditing({...editing, fitness: input.target.value}),
                     done: () => {
@@ -103,7 +103,16 @@ function getEditableField({editing_value, editing_type, options, label, display,
                     update: input => dispatch(updateSelected({field: 'team', value: input.target.value})),
                 }
             )}
-            <view><text className={'Label'}>{'Tick: '}</text><text>{selected?.tick ?? ""}</text></view>
+            <view>
+                <text className={'Label'}>{'Tick: '}</text><text>{selected?.tick ?? ""}</text>
+            </view>
+            <view>
+                <input type="checkbox" checked={selected?.immortal} disabled={!selected} onClick={(input) => {
+                    dispatch(updateSelected({field: 'immortal', value: input.target.checked}));
+                    setEditing({...editing, fitness: undefined});
+                }}/>
+                <text className={'Label'}>{'Immortal'}</text>
+            </view>
         </view>
         </view>
     );
