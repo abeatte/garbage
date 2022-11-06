@@ -1,14 +1,18 @@
+.Arena_container {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 8px;
+    border-right: 4px solid black;
+}
+
+.Arena_container .Arena_inner_container {
+    display: flex;
+    justify-content: center;
+}
 
 .Arena {
     display: grid;
     background-color: black;
     padding: 5px;
     align-self: center;
-}
-
-.Arena_container {
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-right: 8px;
-    border-right: 4px solid black;
 }

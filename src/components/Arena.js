@@ -123,8 +123,10 @@ class Arena extends React.Component {
                 <Dashboard
                     onReset={this.reset}
                 />
-                <view className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
-                    {tiles}
+                <view className="Arena_inner_container">
+                    <view className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
+                        {tiles}
+                    </view>
                 </view>
             </view>
         );
