@@ -36,7 +36,7 @@ const getTeamStats = (combatants, selected, dispatch) => {
                         className={selected?.id === c.id ? "Selected" : ""} 
                         onClick={() => {dispatch(select(c))}}
                     >
-                        {`${c.fitness}`}
+                        {`${c.immortal ? Infinity : c.fitness}`}
                     </text>
                 );
 
