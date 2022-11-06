@@ -32,7 +32,7 @@ const getTeamStats = (combatants, selected, dispatch) => {
 
                 team_array.push(
                     <text 
-                        key={`${selected?.id ?? idx}`}
+                        key={`${c.id}`}
                         className={selected?.id === c.id ? "Selected" : ""} 
                         onClick={() => {dispatch(select(c))}}
                     >
