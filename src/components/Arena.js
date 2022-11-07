@@ -6,7 +6,7 @@ import React from "react";
 import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
-import { tick, reset as resetTicker } from '../data/tickerSlice'
+import { tick, reset as resetTicker, pauseUnpause } from '../data/tickerSlice'
 import { tick as combatantTick, reset as resetBoard, select } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
@@ -64,7 +64,19 @@ class Arena extends React.Component {
         this.props.dispatch(combatantTick());
       }
 
+
+    escFunction = (event) => {
+        if (event.key === "Escape") {
+            this.props.dispatch(select());
+        } else if (event.key === " ") {
+            // stops page from scrolling
+            event.preventDefault();
+            this.props.dispatch(pauseUnpause());
+        }
+    }
+
     componentDidMount() {
+        document.addEventListener("keydown", this.escFunction, false);
         const tick_speed = this.props.ticker.tick_speed;
         this.interval = setInterval(() => this.processTick(), tick_speed);
     }
@@ -87,6 +99,7 @@ class Arena extends React.Component {
     
     componentWillUnmount() {
         clearInterval(this.interval);
+        document.removeEventListener("keydown", this.escFunction, false);
     } 
 
     render() {
