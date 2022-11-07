@@ -68,7 +68,8 @@ function initState(width, height) {
         height,
         tiles,
         combatants,
-        selected: undefined,
+        selected_position: undefined,
+        follow_selected_combatant: false,
     };
   }
 
@@ -157,44 +158,58 @@ export const boardSlice = createSlice({
 
         state.tiles = new_state.tiles;
         state.combatants = new_state.combatants;
-        state.selected = undefined
+        state.selected_position = undefined;
+        state.follow_selected_combatant = false;
         state.game_count += 1;
         state.births = 0;
         state.deaths = 0;
     },
     tick: (state) => {
+        let combatant_id_to_follow;
+        if (state.follow_selected_combatant) {
+            combatant_id_to_follow = state.combatants[state.selected_position]?.id;
+        }
         const result = calcMovements({combatants: state.combatants, window_width: state.width, tiles: state.tiles});
         const new_combatants = result.combatants;
         updateCombatants({combatants: new_combatants, window_width: state.width, tiles: state.tiles});
-    
-        const selected = Object.values(new_combatants).find(c => c.id === state.selected?.id);
 
         state.combatants = new_combatants;
         state.births += result.births;
         state.deaths += result.deaths;
-        state.selected = selected;
-    },
-    select: (state, action) => {
-        if (state.selected?.id === action.payload?.id) {
-          state.selected = undefined;
-        } else {
-          state.selected = action.payload;
+        if (!!combatant_id_to_follow) {
+            const followed = Object.values(new_combatants).find(c => c.id === combatant_id_to_follow);
+            state.selected_position = followed.position;
         }
     },
-    updateSelected: (state, action) => {
-        const selected = Object.values(state.combatants).find(c => c.id === state.selected?.id);
-        selected[action.payload.field] = action.payload.value;
-        state.selected = selected;
+    select: (state, action) => {
+        state.selected_position = action.payload.position;
+        state.follow_selected_combatant = action.payload.follow_combatant ?? false;
+    },
+    updateSelectedCombatant: (state, action) => {
+        const selected = state.combatants[state.selected_position];
+        if (!!selected) {
+            selected[action.payload.field] = action.payload.value;
+        }
+    },
     },
     killSelected: (state) => {
-        const selected = Object.values(state.combatants).find(c => c.id === state.selected?.id);
+        const selected = state.combatants[state.selected_position];
         selected.immortal = false;
         selected.fitness = MIN_HEALTH
-        state.selected = selected;
     }
   },
 })
 
-export const { shrinkWidth, growWidth, shrinkHeight, growHeight, reset, tick, select, updateSelected, killSelected } = boardSlice.actions
+export const { 
+    shrinkWidth, 
+    growWidth, 
+    shrinkHeight, 
+    growHeight, 
+    reset, 
+    tick, 
+    select, 
+    updateSelectedCombatant, 
+    killSelected 
+} = boardSlice.actions
 
 export default boardSlice.reducer

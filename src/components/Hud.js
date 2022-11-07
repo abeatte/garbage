@@ -7,7 +7,7 @@ import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
-import { updateSelected, killSelected } from '../data/boardSlice'
+import { updateSelectedCombatant, killSelected } from '../data/boardSlice'
 import classNames from 'classnames';
 
 function getEditableField({editing_value, editing_type, options, label, display, edit, update, done}) {
@@ -54,12 +54,13 @@ function getEditableField({editing_value, editing_type, options, label, display,
 
     const [editing, setEditing] = useState({});
 
+    const selected_position = board.selected_position;
+    const combatant = board.combatants[selected_position];
+    const tile = board.tiles[selected_position];
+
     useEffect(() => {
         setEditing({});
-    }, [board.selected]);
-
-    const selected = board.selected;
-    const tile = board.tiles[selected?.position];
+    }, [selected_position]);
 
     const edited_name = editing['name'];
     const edited_fitness = editing['fitness'];
@@ -69,9 +70,9 @@ function getEditableField({editing_value, editing_type, options, label, display,
         <view style={{width: "200px"}}>
             <view className='Badge'>
                 <Tile type={tile ?? TYPE.void}>
-                    {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
+                    {combatant ? (<Combatant detail={true} team={combatant.team}/>) : null}
                 </Tile>
-                <view className='Id'><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
+                <view className='Id'><text className={'Label'}>{'ID: '}</text><text>{combatant?.id ?? ""}</text></view>
             </view>
         </view> 
         <view className="Details">
@@ -80,45 +81,45 @@ function getEditableField({editing_value, editing_type, options, label, display,
                     editing_value: edited_name,
                     editing_type: 'text',
                     label: (<text className={'Label'}>{'Name: '}</text>),
-                    display: (<text>{selected?.name ?? ""}</text>),
-                    edit: () => setEditing({...editing, name: selected?.name}),
+                    display: (<text>{combatant?.name ?? ""}</text>),
+                    edit: () => setEditing({...editing, name: combatant?.name}),
                     update: input => setEditing({...editing, name: input.target.value}),
                     done: () => {
-                        dispatch(updateSelected({field: 'name', value: edited_name}));
+                        dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
                         setEditing({...editing, name: undefined})
                     }
                 }
             )}
             {getEditableField(
                 {
-                    editing_value: selected?.immortal ? undefined : edited_fitness,
+                    editing_value: combatant?.immortal ? undefined : edited_fitness,
                     editing_type: 'number',
                     label: (<text className={'Label'}>{'Fitness: '}</text>),
-                    display: (<text>{selected?.immortal ? Infinity : selected?.fitness ?? ""}</text>), 
-                    edit: () => setEditing({...editing, fitness: selected?.fitness}),
+                    display: (<text>{combatant?.immortal ? Infinity : combatant?.fitness ?? ""}</text>), 
+                    edit: () => setEditing({...editing, fitness: combatant?.fitness}),
                     update: input => setEditing({...editing, fitness: input.target.value}),
                     done: () => {
-                        dispatch(updateSelected({field: 'fitness', value: parseInt(edited_fitness)}));
+                        dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness)}));
                         setEditing({...editing, fitness: undefined})
                     }
                 }
             )}
             {getEditableField(
                 {
-                    editing_value: selected?.team, 
+                    editing_value: combatant?.team, 
                     options: Object.values(CHARACTORS).map(c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
                     label: (<text className={'Label'}>{'Team: '}</text>),
-                    display: (<text>{selected?.team ?? ""}</text>),
-                    update: input => dispatch(updateSelected({field: 'team', value: input.target.value})),
+                    display: (<text>{combatant?.team ?? ""}</text>),
+                    update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
                 }
             )}
             <view>
-                <text className={'Label'}>{'Tick: '}</text><text>{selected?.tick ?? ""}</text>
+                <text className={'Label'}>{'Tick: '}</text><text>{combatant?.tick ?? ""}</text>
             </view>
             <view className='Toggles'>
                 <view>
-                    <input type="checkbox" value={selected?.immortal} disabled={!selected} onChange={(input) => {
-                        dispatch(updateSelected({field: 'immortal', value: input.target.checked}));
+                    <input type="checkbox" value={combatant?.immortal} disabled={!combatant} onChange={(input) => {
+                        dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));
                         setEditing({...editing, fitness: undefined});
                     }}/>
                     <text className={'Label'}>{'Immortal'}</text>
@@ -126,7 +127,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
             </view>
         </view>
         {
-            !!selected && 
+            !!combatant && 
             <view className='Kill_button_container'>
                 <button 
                 className={classNames('Clickable', 'Kill_button')}
