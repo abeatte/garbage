@@ -116,7 +116,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
             </view>
             <view className='Toggles'>
                 <view>
-                    <input type="checkbox" checked={selected?.immortal} disabled={!selected} onClick={(input) => {
+                    <input type="checkbox" value={selected?.immortal} disabled={!selected} onChange={(input) => {
                         dispatch(updateSelected({field: 'immortal', value: input.target.checked}));
                         setEditing({...editing, fitness: undefined});
                     }}/>
