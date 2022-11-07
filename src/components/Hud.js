@@ -2,7 +2,7 @@
  * 
  */
 
- import React, { useState } from 'react';
+ import React, { useEffect, useState } from 'react';
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
@@ -19,10 +19,11 @@ function getEditableField({editing_value, editing_type, options, label, display,
             {options}
         </select>
         ) :
-        (<input 
+        (<input
             type={editing_type} 
             onChange={update} 
-            value={editing_value}/>);
+            value={editing_value}
+            autoFocus/>);
 
     const edit_done = !!options ?
         (<></>) :
@@ -52,6 +53,10 @@ function getEditableField({editing_value, editing_type, options, label, display,
     const dispatch = useDispatch()
 
     const [editing, setEditing] = useState({});
+
+    useEffect(() => {
+        setEditing({});
+    }, [board.selected]);
 
     const selected = board.selected;
 

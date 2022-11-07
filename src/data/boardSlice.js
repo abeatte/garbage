@@ -156,6 +156,7 @@ export const boardSlice = createSlice({
 
         state.tiles = new_state.tiles;
         state.combatants = new_state.combatants;
+        state.selected = undefined
         state.game_count += 1;
         state.births = 0;
         state.deaths = 0;
