@@ -86,7 +86,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
             !!combatant && 
             <view className="Details">
                 <view className='Meta_data_toggles'>
-                    <input className='Checkbox' type="checkbox" value={board?.follow_selected_combatant ?? false} disabled={!combatant} onChange={(input) => {
+                    <input className='Checkbox' type="checkbox" checked={board.follow_selected_combatant} value={board.follow_selected_combatant} disabled={!combatant} onChange={(input) => {
                         dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                     }}/>
                     <text className={'Label'}>{'Lock on Combatant'}</text>
@@ -135,7 +135,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
                 </view>
                 <view className='Toggles'>
                     <view>
-                        <input className='Checkbox' type="checkbox" value={combatant?.immortal ?? false} disabled={!combatant} onChange={(input) => {
+                        <input className='Checkbox' type="checkbox" checked={combatant?.immortal ?? false} value={combatant?.immortal ?? false} disabled={!combatant} onChange={(input) => {
                             dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));
                             delete editing.fitness;
                             setEditing(editing);
