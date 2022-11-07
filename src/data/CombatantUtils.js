@@ -60,6 +60,7 @@ export function updateCombatantsPositionsAfterResize({combatants, window_width, 
             const occupient = new_combatants[new_pos];
             // tie goes to whoever got there first.
             new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[k]) : combatants[k];
+            new_combatants[new_pos].position = new_pos;
         }
 
     })
@@ -81,8 +82,10 @@ export function calcMovements({combatants, window_width, tiles}) {
         } else if (!occupient) {
             // space is empty; OK to move there if you are healthy enough
             new_combatants[new_position] = combatant;
+            combatant.position = new_position;
         } else if(occupient.team === combatant.team) {                
             new_combatants[current_position] = combatant;
+            combatant.position = current_position;
             // space is occupied by a friendly
             if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
                 combatant.spawning = occupient;
@@ -102,6 +105,7 @@ export function calcMovements({combatants, window_width, tiles}) {
         } else {
             // space is occupied by a foe
             new_combatants[new_position] = compete(combatant, occupient)
+            new_combatants[new_position].position = new_position;
             deaths++;
         }
     });
@@ -168,6 +172,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
             // too many of my kind here, let's diverge
             team: nearby_friends.length < 4 ? self.team : getRandomTeam(),
             tick: 0,
+            position: spawn_pos,
         };
         spawned = true;
     }
