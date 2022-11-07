@@ -9,6 +9,7 @@ import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
 import { updateSelectedCombatant, killSelected , select } from '../data/boardSlice'
 import classNames from 'classnames';
+import { MIN_HEALTH } from '../data/CombatantUtils';
 
 function getEditableField({editing_value, editing_type, options, label, display, edit, update, done}) {
     const edit_field = !!options ?
@@ -86,7 +87,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
             !!combatant && 
             <view className="Details">
                 <view className='Meta_data_toggles'>
-                    <input className='Checkbox' type="checkbox" checked={board.follow_selected_combatant} value={board.follow_selected_combatant} disabled={!combatant} onChange={(input) => {
+                    <input className='Checkbox' type="checkbox" disabled={combatant.fitness <= MIN_HEALTH} checked={board.follow_selected_combatant} value={board.follow_selected_combatant} onChange={(input) => {
                         dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                     }}/>
                     <text className={'Label'}>{'Lock on Combatant'}</text>

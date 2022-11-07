@@ -178,7 +178,9 @@ export const boardSlice = createSlice({
         state.deaths += result.deaths;
         if (!!combatant_id_to_follow) {
             const followed = Object.values(new_combatants).find(c => c.id === combatant_id_to_follow);
-            state.selected_position = followed.position;
+            if (followed.fitness > MIN_HEALTH) {
+                state.selected_position = followed.position;
+            }
         }
     },
     select: (state, action) => {
@@ -193,6 +195,7 @@ export const boardSlice = createSlice({
     },
     },
     killSelected: (state) => {
+        state.follow_selected_combatant = false;
         const selected = state.combatants[state.selected_position];
         selected.immortal = false;
         selected.fitness = MIN_HEALTH
