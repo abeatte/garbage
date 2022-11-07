@@ -49,6 +49,7 @@ function initCombatants({tiles}) {
             immortal: false, 
             team: getRandomTeam(),
             tick: 0,
+            position: c_pos,
         };
     }
     return combatants;
