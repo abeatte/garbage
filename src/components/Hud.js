@@ -7,7 +7,7 @@ import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
-import { updateSelectedCombatant, killSelected } from '../data/boardSlice'
+import { updateSelectedCombatant, killSelected , select } from '../data/boardSlice'
 import classNames from 'classnames';
 
 function getEditableField({editing_value, editing_type, options, label, display, edit, update, done}) {
@@ -74,60 +74,77 @@ function getEditableField({editing_value, editing_type, options, label, display,
                 <Tile type={tile ?? TYPE.void}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : null}
                 </Tile>
-                <view className='Id'><text className={'Label'}>{'ID: '}</text><text>{combatant?.id ?? ""}</text></view>
+                {
+                    !!combatant && 
+                    <view className='Below_image'><text className={'Label'}>{'ID: '}</text><text>{combatant?.id ?? ""}</text></view>
+                }
+                <view className='Below_image'><text className={'Label'}>{'Tile: '}</text><text>{Object.keys(TYPE)[tile] ?? ""}</text></view>
+
             </view>
         </view> 
-        <view className="Details">
-            {getEditableField(
-                {
-                    editing_value: edited_name,
-                    editing_type: 'text',
-                    label: (<text className={'Label'}>{'Name: '}</text>),
-                    display: (<text>{combatant?.name ?? ""}</text>),
-                    edit: () => setEditing({...editing, name: combatant?.name}),
-                    update: input => setEditing({...editing, name: input.target.value}),
-                    done: () => {
-                        dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
-                        setEditing({...editing, name: undefined})
-                    }
-                }
-            )}
-            {getEditableField(
-                {
-                    editing_value: combatant?.immortal ? undefined : edited_fitness,
-                    editing_type: 'number',
-                    label: (<text className={'Label'}>{'Fitness: '}</text>),
-                    display: (<text>{combatant?.immortal ? Infinity : combatant?.fitness ?? ""}</text>), 
-                    edit: () => setEditing({...editing, fitness: combatant?.fitness}),
-                    update: input => setEditing({...editing, fitness: input.target.value}),
-                    done: () => {
-                        dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness)}));
-                        setEditing({...editing, fitness: undefined})
-                    }
-                }
-            )}
-            {getEditableField(
-                {
-                    editing_value: combatant?.team, 
-                    options: Object.values(CHARACTORS).map(c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
-                    label: (<text className={'Label'}>{'Team: '}</text>),
-                    display: (<text>{combatant?.team ?? ""}</text>),
-                    update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
-                }
-            )}
-            <view>
-                <text className={'Label'}>{'Tick: '}</text><text>{combatant?.tick ?? ""}</text>
-            </view>
-            <view className='Toggles'>
-                <view>
-                    <input type="checkbox" value={combatant?.immortal} disabled={!combatant} onChange={(input) => {
-                        dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));
-                        setEditing({...editing, fitness: undefined});
+        {
+            !!combatant && 
+            <view className="Details">
+                <view className='Meta_data_toggles'>
+                    <input className='Checkbox' type="checkbox" value={board?.follow_selected_combatant ?? false} disabled={!combatant} onChange={(input) => {
+                        dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                     }}/>
-                    <text className={'Label'}>{'Immortal'}</text>
+                    <text className={'Label'}>{'Lock on Combatant'}</text>
+                </view>
+                {getEditableField(
+                    {
+                        editing_value: edited_name,
+                        editing_type: 'text',
+                        label: (<text className={'Label'}>{'Name: '}</text>),
+                        display: (<text>{combatant?.name ?? ""}</text>),
+                        edit: () => setEditing({...editing, name: combatant?.name}),
+                        update: input => setEditing({...editing, name: input.target.value}),
+                        done: () => {
+                            dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
+                            delete editing.name;
+                            setEditing(editing)
+                        }
+                    }
+                )}
+                {getEditableField(
+                    {
+                        editing_value: combatant?.immortal ? undefined : edited_fitness,
+                        editing_type: 'number',
+                        label: (<text className={'Label'}>{'Fitness: '}</text>),
+                        display: (<text>{combatant?.immortal ? Infinity : combatant?.fitness ?? ""}</text>), 
+                        edit: () => setEditing({...editing, fitness: combatant?.fitness}),
+                        update: input => setEditing({...editing, fitness: input.target.value}),
+                        done: () => {
+                            dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness)}));
+                            delete editing.fitness;
+                            setEditing(editing)
+                        }
+                    }
+                )}
+                {getEditableField(
+                    {
+                        editing_value: combatant?.team, 
+                        options: Object.values(CHARACTORS).map(c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
+                        label: (<text className={'Label'}>{'Team: '}</text>),
+                        display: (<text>{combatant?.team ?? ""}</text>),
+                        update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
+                    }
+                )}
+                <view>
+                    <text className={'Label'}>{'Tick: '}</text><text>{combatant?.tick ?? ""}</text>
+                </view>
+                <view className='Toggles'>
+                    <view>
+                        <input className='Checkbox' type="checkbox" value={combatant?.immortal ?? false} disabled={!combatant} onChange={(input) => {
+                            dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));
+                            delete editing.fitness;
+                            setEditing(editing);
+                        }}/>
+                        <text className={'Label'}>{'Immortal'}</text>
+                    </view>
                 </view>
             </view>
-        </view>
+        }
         {
             !!combatant && 
             <view className='Kill_button_container'>

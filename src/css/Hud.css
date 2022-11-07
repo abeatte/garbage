@@ -15,6 +15,14 @@
     flex-direction: column;
 }
 
+.Hud .Checkbox {
+    margin-left: 0px;
+}
+
+.Hud .Meta_data_toggles {
+    margin-bottom: 8px;
+}
+
 .Hud .Editable_row {
     margin-bottom: 8px;
 }
@@ -44,6 +52,6 @@
     flex-direction: column;
 }
 
-.Hud .Id {
+.Hud .Below_image {
     margin-top: 8px;
 }

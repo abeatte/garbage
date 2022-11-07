@@ -198,7 +198,7 @@ export const boardSlice = createSlice({
         selected.fitness = MIN_HEALTH
     }
   },
-})
+)
 
 export const { 
     shrinkWidth, 
