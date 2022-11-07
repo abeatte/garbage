@@ -14,7 +14,9 @@ function getEditableField({editing_value, editing_type, options, label, display,
     const edit_field = !!options ?
         (<select value={editing_value} onChange={(e) => {
             update(e);
-            done();
+            if (!!done) {
+                done();
+            }
         }}>
             {options}
         </select>
