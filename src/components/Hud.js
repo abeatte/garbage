@@ -59,6 +59,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
     }, [board.selected]);
 
     const selected = board.selected;
+    const tile = board.tiles[selected?.position];
 
     const edited_name = editing['name'];
     const edited_fitness = editing['fitness'];
@@ -67,7 +68,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
       <view className='Hud'>
         <view style={{width: "200px"}}>
             <view className='Badge'>
-                <Tile type={TYPE.void}>
+                <Tile type={tile ?? TYPE.void}>
                     {selected ? (<Combatant detail={true} team={selected.team}/>) : null}
                 </Tile>
                 <view className='Id'><text className={'Label'}>{'ID: '}</text><text>{selected?.id ?? ""}</text></view>
