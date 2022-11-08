@@ -44,7 +44,11 @@ export const tickerSlice = createSlice({
         state.prev_tick_speed = tick_speed;
     },
     pause: (state) => {
+      const tick_speed = state.tick_speed;
       state.tick_speed = 0;
+      if (tick_speed > 0) {
+        state.prev_tick_speed = tick_speed;
+      }
     },
     tick: (state) => {
       state.tick += 1;
