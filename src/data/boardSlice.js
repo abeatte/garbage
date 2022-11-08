@@ -174,8 +174,8 @@ export const boardSlice = createSlice({
         }
     },
     select: (state, action) => {
-        state.selected_position = action.payload.position;
-        state.follow_selected_combatant = action.payload.follow_combatant ?? false;
+        state.selected_position = action?.payload?.position;
+        state.follow_selected_combatant = action?.payload?.follow_combatant ?? false;
     },
     updateSelectedCombatant: (state, action) => {
         const selected = state.combatants[state.selected_position];
