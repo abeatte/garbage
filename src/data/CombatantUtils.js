@@ -167,19 +167,25 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
         const spawn_pos = positions[empty_space[Math.round(Math.random() * (empty_space.length - 1))]];
         delete self.spawning.spawning;
         delete self.spawning;
-        live_combatants[spawn_pos] = {
-            id: uuid(),
-            name: "",
-            fitness: 0,
-            immortal: false, 
-            // too many of my kind here, let's diverge
-            team: nearby_friends.length < 4 ? self.team : getRandomTeam(),
-            tick: 0,
-            position: spawn_pos,
-        };
+        live_combatants[spawn_pos] = getSpawnAtPosition(spawn_pos);
+        // too many of my kind here, let's diverge
+        live_combatants[spawn_pos].team = nearby_friends.length < 4 ? self.team : getRandomTeam();
+
         spawned = true;
     }
     return spawned;
+}
+
+export function getSpawnAtPosition(spawn_pos) {
+    return {
+        id: uuid(),
+        name: "",
+        fitness: 0,
+        immortal: false, 
+        team: getRandomTeam(),
+        tick: 0,
+        position: spawn_pos,
+    };
 }
 
 function getCombatantNextPosition(current_position, tiles, window_width, combatants) {

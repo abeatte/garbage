@@ -3,12 +3,10 @@ import {
     initCombatantStartingPos, 
     updateCombatantsPositionsAfterResize, 
     calcMovements,
-    getRandomTeam,
     updateCombatants,
     MIN_HEALTH,
 } from './CombatantUtils';
 import { TYPE } from "../components/Tile";
-import uuid from 'react-uuid';
 
 const WINDOW_WIDTH = 30;
 const WINDOW_HEIGHT = 15;
@@ -42,15 +40,7 @@ function initCombatants({tiles}) {
     const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
         const c_pos = initCombatantStartingPos({tiles, combatants});
-        combatants[c_pos] = {
-            id: uuid(),
-            name: "",
-            fitness: 0,
-            immortal: false, 
-            team: getRandomTeam(),
-            tick: 0,
-            position: c_pos,
-        };
+        combatants[c_pos] = getSpawnAtPosition(c_pos);
     }
     return combatants;
 }
