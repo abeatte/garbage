@@ -109,11 +109,12 @@ class Arena extends React.Component {
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = this.props.board.combatants[idx];
             const is_selected = selected_position === idx;
+            const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
             tiles.push(
                 <Tile 
                 type={tile} 
                 className={classNames({"Clickable" : !!maybe_combatant})}
-                onClick={() => {this.props.dispatch(select({position: idx, follow_combatant: !!maybe_combatant}))}} 
+                onClick={() => {this.props.dispatch(select(select_args))}} 
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
                 >
