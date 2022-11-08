@@ -193,15 +193,18 @@ export const boardSlice = createSlice({
             selected[action.payload.field] = action.payload.value;
         }
     },
+    updateSelectedTile: (state, action) => {
+        console.log(state.tiles[state.selected_position], action.payload.value)
+        state.tiles[state.selected_position] = action.payload.value
     },
     killSelected: (state) => {
         state.follow_selected_combatant = false;
         const selected = state.combatants[state.selected_position];
         selected.immortal = false;
         selected.fitness = MIN_HEALTH
-    }
-  },
-)
+    },
+  }
+})
 
 export const { 
     shrinkWidth, 
@@ -212,6 +215,7 @@ export const {
     tick, 
     select, 
     updateSelectedCombatant, 
+    updateSelectedTile, 
     killSelected 
 } = boardSlice.actions
 
