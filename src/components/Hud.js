@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
 import { updateSelectedCombatant, killSelected , select } from '../data/boardSlice'
+import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
 
@@ -65,6 +66,12 @@ function getEditableField({editing_value, editing_type, options, label, display,
         setEditing({});
     }, [selected_position]);
 
+    useEffect(() => {
+        if (Object.values(editing).length > 0) {
+            dispatch(pause());
+        }
+    }, [editing, dispatch])
+
     const edited_name = editing['name'];
     const edited_fitness = editing['fitness'];
 
@@ -102,8 +109,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
                         update: input => setEditing({...editing, name: input.target.value}),
                         done: () => {
                             dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
-                            delete editing.name;
-                            setEditing(editing)
+                            setEditing({...editing, name: undefined})
                         }
                     }
                 )}
@@ -117,8 +123,7 @@ function getEditableField({editing_value, editing_type, options, label, display,
                         update: input => setEditing({...editing, fitness: input.target.value}),
                         done: () => {
                             dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness)}));
-                            delete editing.fitness;
-                            setEditing(editing)
+                            setEditing({...editing, fitness: undefined})
                         }
                     }
                 )}
@@ -136,10 +141,9 @@ function getEditableField({editing_value, editing_type, options, label, display,
                 </view>
                 <view className='Toggles'>
                     <view>
-                        <input className='Checkbox' type="checkbox" checked={combatant?.immortal ?? false} value={combatant?.immortal ?? false} disabled={!combatant} onChange={(input) => {
+                        <input className='Checkbox' type="checkbox" checked={combatant?.immortal ?? false} value={combatant?.immortal ?? false} disabled={combatant?.fitness <= MIN_HEALTH} onChange={(input) => {
                             dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));
-                            delete editing.fitness;
-                            setEditing(editing);
+                            setEditing({...editing, fitness: undefined});
                         }}/>
                         <text className={'Label'}>{'Immortal'}</text>
                     </view>

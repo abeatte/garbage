@@ -43,6 +43,9 @@ export const tickerSlice = createSlice({
         state.tick_speed = tick_speed === 0 ? state.prev_tick_speed : 0;
         state.prev_tick_speed = tick_speed;
     },
+    pause: (state) => {
+      state.tick_speed = 0;
+    },
     tick: (state) => {
       state.tick += 1;
     },
@@ -52,6 +55,13 @@ export const tickerSlice = createSlice({
   },
 })
 
-export const { slowDown, speedUp, pauseUnpause, tick, reset } = tickerSlice.actions
+export const { 
+  slowDown, 
+  speedUp, 
+  pauseUnpause, 
+  pause,
+  tick,
+  reset,
+} = tickerSlice.actions
 
 export default tickerSlice.reducer
