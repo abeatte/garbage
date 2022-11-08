@@ -89,9 +89,9 @@ function getEditableField({editing_value, enabled, editing_type, options, label,
                 <view className='Below_image'>
                     {getEditableField(
                         {
-                            editing_value: tile ?? TYPE.void, 
+                            editing_value: tile, 
                             enabled: !tile,
-                            options: Object.keys(TYPE).map(t => (<option key={`${t}`} name={t} value={TYPE[t]}>{t}</option>)),
+                            options: Object.keys(TYPE).map(t => TYPE[t] !== 0 && (<option key={`${t}`} name={t} value={TYPE[t]}>{t}</option>)),
                             label: (<text className={'Label'}>{'Tile: '}</text>),
                             display: (<text>{Object.keys(TYPE)[tile] ?? ""}</text>),
                             update: input => {
