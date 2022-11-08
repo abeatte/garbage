@@ -19,7 +19,9 @@ export function initCombatantStartingPos({tiles, combatants}) {
     return starting_pos;
 };
 
-export function updateCombatantsPositionsAfterResize({combatants, window_width, window_height, old_window_width, old_window_height, tiles}) {
+export function updateCombatantsPositionsAfterResize(
+    {combatants, window_width, window_height, old_window_width, old_window_height, tiles}
+) {
     const new_combatants = {};
 
     const dif_row = window_width - old_window_width;
@@ -30,7 +32,8 @@ export function updateCombatantsPositionsAfterResize({combatants, window_width, 
 
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
-            const posData = getSurroundingPos({position: k, window_width: old_window_width, tiles, combatants});
+            const posData = 
+                getSurroundingPos({position: k, window_width: old_window_width, tiles, combatants});
             const can_move_up = !posData.combatants.t;
             const can_move_diag = !posData.combatants.tl;
             const can_move_left = !posData.combatants.l;

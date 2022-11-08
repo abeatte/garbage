@@ -7,12 +7,19 @@ import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { TYPE } from './Tile';
 import Combatant, { CHARACTORS } from './Combatant';
-import { updateSelectedCombatant, updateSelectedTile, killSelected , select } from '../data/boardSlice'
+import { 
+    updateSelectedCombatant, 
+    updateSelectedTile, 
+    killSelected,
+    select 
+} from '../data/boardSlice'
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
 
-function getEditableField({editing_value, enabled, editing_type, options, label, display, edit, update, done}) {
+function getEditableField(
+    {editing_value, enabled, editing_type, options, label, display, edit, update, done}
+) {
     const edit_field = !!options ?
         (<select 
             value={editing_value} 
@@ -91,7 +98,8 @@ function getEditableField({editing_value, enabled, editing_type, options, label,
                         {
                             editing_value: tile, 
                             enabled: !tile,
-                            options: Object.keys(TYPE).map(t => TYPE[t] !== 0 && (<option key={`${t}`} name={t} value={TYPE[t]}>{t}</option>)),
+                            options: Object.keys(TYPE).map(
+                                t => TYPE[t] !== 0 && (<option key={`${t}`} name={t} value={TYPE[t]}>{t}</option>)),
                             label: (<text className={'Label'}>{'Tile: '}</text>),
                             display: (<text>{Object.keys(TYPE)[tile] ?? ""}</text>),
                             update: input => {
@@ -156,7 +164,8 @@ function getEditableField({editing_value, enabled, editing_type, options, label,
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 
-                            options: Object.values(CHARACTORS).map(c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
+                            options: Object.values(CHARACTORS).map(
+                                c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
                             label: (<text className={'Label'}>{'Team: '}</text>),
                             display: (<text>{combatant?.team ?? ""}</text>),
                             update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
