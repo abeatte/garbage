@@ -11,6 +11,7 @@ import {
     updateSelectedCombatant, 
     updateSelectedTile, 
     killSelected,
+    spawnAtSelected,
     select 
 } from '../data/boardSlice'
 import { pause } from '../data/tickerSlice'
@@ -117,8 +118,8 @@ function getEditableField(
             </view>
         </view> 
         <view className='Info_container'>
-            { !!combatant && (
             <view className='Details_container'>
+            { !!combatant && (
                 <view className="Details">
                     <view className='Meta_data_toggles'>
                         <input 
@@ -191,7 +192,10 @@ function getEditableField(
                         </view>
                     </view>
                 </view>
-                <view className='Kill_button_container'>
+                )
+            }
+            {!!combatant && (
+                <view className='Life_buttons_container'>
                     <button 
                     className={classNames('Clickable', 'Kill_button')}
                     onClick={() => dispatch(killSelected())}
@@ -199,8 +203,20 @@ function getEditableField(
                         <text>{"Kill"}</text>
                     </button>
                 </view>
-            </view>)
+                )
             }
+            {!combatant && selected_position !== undefined && (
+                <view className='Life_buttons_container'>
+                    <button 
+                    className={classNames('Clickable', 'Spawn_button')}
+                    onClick={() => dispatch(spawnAtSelected())}
+                    >
+                        <text>{"Spawn"}</text>
+                    </button>
+                </view>
+                )
+            }
+            </view>
         </view>
       </view>
     );

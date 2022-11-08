@@ -5,6 +5,7 @@ import {
     calcMovements,
     updateCombatants,
     MIN_HEALTH,
+    getSpawnAtPosition,
 } from './CombatantUtils';
 import { TYPE } from "../components/Tile";
 
@@ -193,6 +194,10 @@ export const boardSlice = createSlice({
         selected.immortal = false;
         selected.fitness = MIN_HEALTH
     },
+    spawnAtSelected: (state) => {
+        state.follow_selected_combatant = true;
+        state.combatants[state.selected_position] = getSpawnAtPosition(state.selected_position);
+    },
   }
 })
 
@@ -206,7 +211,8 @@ export const {
     select, 
     updateSelectedCombatant, 
     updateSelectedTile, 
-    killSelected 
+    killSelected,
+    spawnAtSelected,
 } = boardSlice.actions
 
 export default boardSlice.reducer
