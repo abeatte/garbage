@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const TICK_INTERVAL = 500;
+const TICK_INTERVAL = 1000;
 const MAX_TICK_VALUE = 2000;
 
 export const tickerSlice = createSlice({
