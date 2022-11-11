@@ -185,7 +185,6 @@ export const boardSlice = createSlice({
         }
     },
     updateSelectedTile: (state, action) => {
-        console.log(state.tiles[state.selected_position], action.payload.value)
         state.tiles[state.selected_position] = action.payload.value
     },
     killSelected: (state) => {
