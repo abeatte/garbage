@@ -95,7 +95,6 @@ function getEditableField(
                 className={classNames("Clickable", "Exit")} 
                 onClick={() => {
                     dispatch(setIsHudActionable(false));
-                    dispatch(unpause());
                 }}
             >
             <text>{"X"}</text>
