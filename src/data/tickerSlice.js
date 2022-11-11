@@ -50,6 +50,12 @@ export const tickerSlice = createSlice({
         state.prev_tick_speed = tick_speed;
       }
     },
+    unpause: (state) => {
+      const tick_speed = state.tick_speed;
+      state.tick_speed = 
+        state.prev_tick_speed > 0 ? state.prev_tick_speed : TICK_INTERVAL;
+      state.prev_tick_speed = tick_speed;
+    },
     tick: (state) => {
       state.tick += 1;
     },
@@ -64,6 +70,7 @@ export const {
   speedUp, 
   pauseUnpause, 
   pause,
+  unpause,
   tick,
   reset,
 } = tickerSlice.actions

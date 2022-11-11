@@ -11,6 +11,7 @@ import { tick as combatantTick, reset as resetBoard, select } from '../data/boar
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
+import { HUD_DISPLAY_MODE, setIsHudActionable } from "../data/hudSlice";
 
 /**
  * ________________
@@ -57,6 +58,7 @@ class Arena extends React.Component {
     reset = () => {
         this.props.dispatch(resetBoard());
         this.props.dispatch(resetTicker());
+        this.props.dispatch(setIsHudActionable(false))
     }
 
     processTick() {
@@ -65,10 +67,8 @@ class Arena extends React.Component {
       }
 
 
-    escFunction = (event) => {
-        if (event.key === "Escape") {
-            this.props.dispatch(select());
-        } else if (event.key === " ") {
+    spaceFunction = (event) => {
+        if (event.key === " ") {
             // stops page from scrolling
             event.preventDefault();
             this.props.dispatch(pauseUnpause());
@@ -76,9 +76,11 @@ class Arena extends React.Component {
     }
 
     componentDidMount() {
-        document.addEventListener("keydown", this.escFunction, false);
+        document.addEventListener("keydown", this.spaceFunction, false);
         const tick_speed = this.props.ticker.tick_speed;
-        this.interval = setInterval(() => this.processTick(), tick_speed);
+        if (tick_speed > 0) {
+            this.interval = setInterval(() => this.processTick(), tick_speed);
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -99,7 +101,7 @@ class Arena extends React.Component {
     
     componentWillUnmount() {
         clearInterval(this.interval);
-        document.removeEventListener("keydown", this.escFunction, false);
+        document.removeEventListener("keydown", this.spaceFunction, false);
     } 
 
     render() {
@@ -114,7 +116,10 @@ class Arena extends React.Component {
                 <Tile 
                 type={tile} 
                 className={classNames({"Clickable" : !!maybe_combatant})}
-                onClick={() => {this.props.dispatch(select(select_args))}} 
+                onClick={() => {
+                    this.props.dispatch(select(select_args));
+                    this.props.dispatch(setIsHudActionable(true));
+                }} 
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
                 >
@@ -132,8 +137,10 @@ class Arena extends React.Component {
         //     }
         // );
 
+        const isShownWithHud = this.props.hud.hudDisplayMode === HUD_DISPLAY_MODE.SIDE_PANEL;
+
         return (
-            <view className="Arena_container">
+            <view className={classNames({"Arena_container": true, "With_hud" : isShownWithHud})}>
                 <Dashboard
                     onReset={this.reset}
                 />

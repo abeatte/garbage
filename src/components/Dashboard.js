@@ -9,6 +9,7 @@ import Forward from '../images/icons/forward.png'
 import Pause from '../images/icons/pause.png'
 import Play from '../images/icons/play.png'
 import { CHARACTORS } from "./Combatant";
+import { setIsHudActionable } from "../data/hudSlice";
 
 const getTeamStats = (combatants, selected_position, dispatch) => {
     const teams = Object.values(CHARACTORS).reduce((teams, cha) => {
@@ -34,7 +35,10 @@ const getTeamStats = (combatants, selected_position, dispatch) => {
                     <text 
                         key={`${c.id}`}
                         className={selected_position === c.position ? "Selected" : ""} 
-                        onClick={() => {dispatch(select({position: c.position, follow_combatant: true}))}}
+                        onClick={() => {
+                            dispatch(select({position: c.position, follow_combatant: true}));
+                            dispatch(setIsHudActionable(true));
+                        }}
                     >
                         {`${c.immortal ? Infinity : c.fitness}`}
                     </text>

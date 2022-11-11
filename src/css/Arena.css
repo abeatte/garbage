@@ -2,6 +2,10 @@
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
+    flex-grow: 1;
+}
+
+.Arena_container.With_hud {
     border-right: 4px solid black;
 }
 

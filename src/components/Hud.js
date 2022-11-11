@@ -14,9 +14,10 @@ import {
     spawnAtSelected,
     select 
 } from '../data/boardSlice'
-import { pause } from '../data/tickerSlice'
+import { pause, unpause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
+import { HUD_DISPLAY_MODE, setIsHudActionable } from '../data/hudSlice';
 
 function getEditableField(
     {editing_value, enabled, editing_type, options, label, display, edit, update, done}
@@ -66,6 +67,7 @@ function getEditableField(
 
  const Hud = () => {
     const board = useSelector((state) => state.board);
+    const hud = useSelector((state) => state.hud);
     const dispatch = useDispatch()
 
     const [editing, setEditing] = useState({});
@@ -87,8 +89,23 @@ function getEditableField(
     const edited_name = editing['name'];
     const edited_fitness = editing['fitness'];
 
+    const escape_button = hud.hudDisplayMode === HUD_DISPLAY_MODE.FULL_SCREEN && (
+        <view className='Escape_container'>
+            <button 
+                className={classNames("Clickable", "Exit")} 
+                onClick={() => {
+                    dispatch(setIsHudActionable(false));
+                    dispatch(unpause());
+                }}
+            >
+            <text>{"X"}</text>
+            </button>
+        </view>
+    );
+
     return (
       <view className='Hud'>
+        {escape_button}
         <view style={{width: "200px"}}>
             <view className='Badge'>
                 <Tile type={tile ?? TYPE.void}>

@@ -1,15 +1,13 @@
 import './css/App.css'
 import { Provider } from 'react-redux'
 import store from './data/store'
-import Arena from './components/Arena';
-import Hud from './components/Hud';
+import Game from './components/Game';
 
-function App() {
+function App() { 
   return (
-    <view className={'App'}>
+    <view className={'App'}> 
       <Provider store={store}>
-        <Arena/>
-        <Hud/>
+        <Game/>
       </Provider>
     </view>
   );
