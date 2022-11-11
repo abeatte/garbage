@@ -14,7 +14,7 @@ import {
     spawnAtSelected,
     select 
 } from '../data/boardSlice'
-import { pause, unpause } from '../data/tickerSlice'
+import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
 import { HUD_DISPLAY_MODE, setIsHudActionable } from '../data/hudSlice';
@@ -75,21 +75,22 @@ function getEditableField(
     const selected_position = board.selected_position;
     const combatant = board.combatants[selected_position];
     const tile = board.tiles[selected_position];
+    const isFullScreen = hud.hudDisplayMode === HUD_DISPLAY_MODE.FULL_SCREEN;
 
     useEffect(() => {
         setEditing({});
     }, [selected_position]);
 
     useEffect(() => {
-        if (Object.values(editing).length > 0) {
+        if (Object.values(editing).length > 0 && !isFullScreen) {
             dispatch(pause());
         }
-    }, [editing, dispatch])
+    }, [editing, dispatch, isFullScreen])
 
     const edited_name = editing['name'];
     const edited_fitness = editing['fitness'];
 
-    const escape_button = hud.hudDisplayMode === HUD_DISPLAY_MODE.FULL_SCREEN && (
+    const escape_button = isFullScreen && (
         <view className='Escape_container'>
             <button 
                 className={classNames("Clickable", "Exit")} 
