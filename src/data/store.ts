@@ -3,7 +3,6 @@ import { configureStore } from '@reduxjs/toolkit'
 import tickerReducer from './tickerSlice'
 // @ts-ignore
 import boardReducer from './boardSlice'
-// @ts-ignore
 import hudReducer from './hudSlice'
 
 const store = configureStore({
