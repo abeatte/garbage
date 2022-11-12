@@ -1,5 +1,4 @@
 import { configureStore } from '@reduxjs/toolkit'
-// @ts-ignore
 import tickerReducer from './tickerSlice'
 import boardReducer from './boardSlice'
 import hudReducer from './hudSlice'
