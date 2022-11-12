@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux'
-// @ts-ignore
 import { select } from '../data/boardSlice';
 import { HUD_DISPLAY_MODE, setIsHudActionable, setScreenSize } from '../data/hudSlice';
 import { AppDispatch, AppState } from '../data/store';
@@ -9,31 +8,28 @@ import Arena from './Arena';
 // @ts-ignore
 import Hud from './Hud';
 
-class Game extends React.Component<AppState> {
-    props!: {
-        ticker: unknown; 
-        board: unknown; 
-        hud: any;
-        dispatch: AppDispatch; 
-    };
+class Game extends React.Component<AppState & DispatchProps> {
     
-    handleWindowWidthResize = (dispatch: AppDispatch, dimens: {innerWidth: number, innerHeight: number}) => {
-        dispatch(setScreenSize({width: dimens.innerWidth, height: dimens.innerHeight}));
+    handleWindowWidthResize = (
+        setScreenSize: (dimens: {width: number, height: number}) => void, 
+        dimens: {innerWidth: number, innerHeight: number}
+    ) => {
+        setScreenSize({width: dimens.innerWidth, height: dimens.innerHeight});
     }
 
     escFunction =  (event: { key: string; }) => {
         if (event.key === "Escape") {
-            this.props.dispatch(select());
-            this.props.dispatch(setIsHudActionable(false));
+            this.props.select();
+            this.props.setHudIsNotActionable();
         }
     }
 
     componentDidMount() {
         document.addEventListener("keydown", this.escFunction, false);
-        this.handleWindowWidthResize(this.props.dispatch, window);
+        this.handleWindowWidthResize(this.props.setScreenSize, window);
         window.addEventListener(
             'resize', 
-            () => this.handleWindowWidthResize(this.props.dispatch, window)
+            () => this.handleWindowWidthResize(this.props.setScreenSize, window)
         );
     }
 
@@ -75,5 +71,20 @@ function mapStateToProps(state: AppState): AppState {
         hud: state.hud, 
     };
 }
+
+interface DispatchProps {
+    select: () => void,
+    setHudIsNotActionable: () => void,
+    setScreenSize: (dimens: {width: number, height: number}) => void,
+}
+
+function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
+    return {
+        select: () => dispatch(select()),
+        setHudIsNotActionable: () => dispatch(setIsHudActionable(false)),
+        setScreenSize: (dimens: {width: number, height: number}) => 
+            dispatch(setScreenSize({width: dimens.width, height: dimens.height}))
+    }
+  }
   
-export default connect(mapStateToProps)(Game);
+export default connect(mapStateToProps, mapDispatchToProps)(Game);
