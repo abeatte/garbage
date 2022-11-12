@@ -1,17 +1,28 @@
 import React from 'react';
 import { connect } from 'react-redux'
+// @ts-ignore
 import { select } from '../data/boardSlice';
+// @ts-ignore
 import { HUD_DISPLAY_MODE, setIsHudActionable, setScreenSize } from '../data/hudSlice';
+import { AppDispatch, AppState } from '../data/store';
+// @ts-ignore
 import Arena from './Arena';
+// @ts-ignore
 import Hud from './Hud';
 
-class Game extends React.Component {
+class Game extends React.Component<AppState> {
+    props!: {
+        ticker: unknown; 
+        board: unknown; 
+        hud: any;
+        dispatch: AppDispatch; 
+    };
     
-    handleWindowWidthResize = (dispatch, {innerWidth, innerHeight}) => {
-        dispatch(setScreenSize({width: innerWidth, height: innerHeight}));
+    handleWindowWidthResize = (dispatch: AppDispatch, dimens: {innerWidth: number, innerHeight: number}) => {
+        dispatch(setScreenSize({width: dimens.innerWidth, height: dimens.innerHeight}));
     }
 
-    escFunction = (event) => {
+    escFunction =  (event: { key: string; }) => {
         if (event.key === "Escape") {
             this.props.dispatch(select());
             this.props.dispatch(setIsHudActionable(false));
@@ -29,7 +40,7 @@ class Game extends React.Component {
 
     componentWillUnmount() {
         document.removeEventListener("keydown", this.escFunction, false);
-        window.removeEventListener('resize', this.handleWindowWidthResize);
+        window.removeEventListener('resize', () => this.handleWindowWidthResize);
     } 
 
     render() {
@@ -58,11 +69,11 @@ class Game extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: AppState): AppState {
     return {
         ticker: state.ticker,
         board: state.board,
-        hud: state.hud,
+        hud: state.hud, 
     };
 }
   
