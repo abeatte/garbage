@@ -1,6 +1,8 @@
 .Dashboard .Row {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    max-width: fit-content;
 }
 
 .Dashboard .Control_container {

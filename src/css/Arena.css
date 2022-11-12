@@ -3,6 +3,7 @@
     padding-bottom: 8px;
     padding-right: 8px;
     flex-grow: 1;
+    overflow: hidden;
 }
 
 .Arena_container.With_hud {
@@ -11,7 +12,7 @@
 
 .Arena_container .Arena_inner_container {
     display: flex;
-    justify-content: center;
+    overflow-x: scroll;
 }
 
 .Arena {

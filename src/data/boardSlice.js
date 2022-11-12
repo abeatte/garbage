@@ -9,7 +9,7 @@ import {
 } from './CombatantUtils';
 import { TYPE } from "../components/Tile";
 
-const WINDOW_WIDTH = 30;
+const WINDOW_WIDTH = 14;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 
