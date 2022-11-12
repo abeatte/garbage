@@ -1,15 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import { select } from '../data/boardSlice';
-import { HUD_DISPLAY_MODE, setIsHudActionable } from '../data/hudSlice';
-import { setScreenWidth } from '../data/hudSlice'
+import { HUD_DISPLAY_MODE, setIsHudActionable, setScreenSize } from '../data/hudSlice';
 import Arena from './Arena';
 import Hud from './Hud';
 
 class Game extends React.Component {
-
-    handleWindowWidthResize = (dispatch, new_width) => {
-        dispatch(setScreenWidth(new_width));
+    
+    handleWindowWidthResize = (dispatch, {innerWidth, innerHeight}) => {
+        dispatch(setScreenSize({width: innerWidth, height: innerHeight}));
     }
 
     escFunction = (event) => {
@@ -21,10 +20,10 @@ class Game extends React.Component {
 
     componentDidMount() {
         document.addEventListener("keydown", this.escFunction, false);
-        this.handleWindowWidthResize(this.props.dispatch, window.innerWidth);
+        this.handleWindowWidthResize(this.props.dispatch, window);
         window.addEventListener(
             'resize', 
-            () => this.handleWindowWidthResize(this.props.dispatch, window.innerWidth)
+            () => this.handleWindowWidthResize(this.props.dispatch, window)
         );
     }
 

@@ -17,12 +17,17 @@ export const hudSlice = createSlice({
   name: 'hud',
   initialState: {
     screenWidth: undefined,
+    screenHeight: undefined,
+    isPortraitMode: undefined,
     isHudActionable: false,
     hudDisplayMode: HUD_DISPLAY_MODE.SIDE_PANEL,
   },
   reducers: {
-    setScreenWidth: (state, action) => {
-      state.screenWidth = action.payload;
+    setScreenSize: (state, action) => {
+      state.screenWidth = action.payload.width;
+      state.screenHeight = action.payload.height;
+      state.isPortraitMode = state.screenWidth < state.screenHeight;
+      
       state.hudDisplayMode = 
         getHudDisplayMode(state.screenWidth, state.isHudActionable);
     },
@@ -35,7 +40,7 @@ export const hudSlice = createSlice({
 })
 
 export const { 
-  setScreenWidth,
+  setScreenSize,
   setIsHudActionable,
 } = hudSlice.actions
 
