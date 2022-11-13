@@ -107,6 +107,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
             tiles.push(
                 <Tile 
+                id={idx}
                 type={tile} 
                 className={classNames({"Clickable" : !!maybe_combatant})}
                 onClick={() => {

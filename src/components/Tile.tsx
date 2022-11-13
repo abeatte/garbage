@@ -10,6 +10,7 @@ export enum Type {Void = "Void", Water = "Water", Fire = "Fire", Rock = "Rock", 
 
  const Tile = (
   args: {
+    id?: number,
     children?: JSX.Element, 
     className?: string, 
     type: Type, 
@@ -17,10 +18,11 @@ export enum Type {Void = "Void", Water = "Water", Fire = "Fire", Rock = "Rock", 
     onClick?: () => void
   }
 ) => {
-  const {children, className, type, isSelected, onClick} = args;
+  const {id, children, className, type, isSelected, onClick} = args;
     return (
-      <view className={classNames('Tile', type, className, {"Selected" : isSelected})} onClick={onClick} >{children}</view>
+      <view id={id?.toString()} className={classNames('Tile', type, className, {"Selected" : isSelected})} onClick={onClick} >{children}</view>
     );
  }; 
  
  export default Tile;
+ 
