@@ -13,9 +13,27 @@ import Elephant from '../images/combatants/lil_eli.png';
 // @ts-ignore
 import Lizard from '../images/combatants/lizard.png';
 
-export const CHARACTORS = {
+export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
+interface CharacterType {
+    team: keyof typeof Character,
+    color: string,
+    sheet?: any, 
+    height: string, 
+    width: string, 
+    margin: string,
+    placement: string,
+    transformScale: number,
+    detail: {
+        transformScale: number,
+        placement: string,
+        height: string,
+        width: string,
+        margin: string,
+    }
+}
+const Characters: {[key in Character]: CharacterType} = {
     Bunny: {
-        team: "Bunny",
+        team: Character.Bunny,
         color: "magenta",
         sheet: Bunny,
         height: "25px",
@@ -32,7 +50,7 @@ export const CHARACTORS = {
         }
     },
     Turtle: {
-        team: "Turtle",
+        team: Character.Turtle,
         color: "olive",
         sheet: Turtle,
         height: "50px",
@@ -49,7 +67,7 @@ export const CHARACTORS = {
         }
     },
     Lizard: {
-        team: "Lizard",
+        team: Character.Lizard,
         color: "lime",
         sheet: Lizard,
         height: "20px",
@@ -66,7 +84,7 @@ export const CHARACTORS = {
         }
     },
     Elephant: {
-        team: "Elephant",
+        team: Character.Elephant,
         color: "crimson",
         sheet: Elephant,
         height: "45px",
@@ -84,12 +102,12 @@ export const CHARACTORS = {
     }
 };
 
-const getCharacter = (team: keyof typeof CHARACTORS) => {
-    const character = CHARACTORS[team];
+const getCharacter = (team: keyof typeof Character) => {
+    const character = Characters[team];
     return character;
 }
 
-const Combatant = (props: {team: keyof typeof CHARACTORS, detail?: boolean}) => {
+const Combatant = (props: {team: keyof typeof Character, detail?: boolean}) => {
     const char = getCharacter(props.team);
     const for_detail_view = props.detail;
     if (!char.sheet) {

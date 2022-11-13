@@ -6,7 +6,7 @@
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import Tile, { Type as TileType } from './Tile';
-import Combatant, { CHARACTORS } from './Combatant';
+import Combatant, { Character } from './Combatant';
 import { 
     updateSelectedCombatant, 
     updateSelectedTile, 
@@ -196,8 +196,8 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 
-                            options: Object.values(CHARACTORS).map(
-                                c => (<option key={`${c.team}`}>{c.team}</option>)),
+                            options: Object.values(Character).map(
+                                c => (<option key={`${c}`}>{c}</option>)),
                             label: (<text className={'Label'}>{'Team: '}</text>),
                             display: (<text>{combatant?.team ?? ""}</text>),
                             update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),

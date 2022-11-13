@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { select } from '../data/boardSlice';
 import { HUD_DISPLAY_MODE, setIsHudActionable, setScreenSize } from '../data/hudSlice';
 import { AppDispatch, AppState } from '../data/store';
-// @ts-ignore
 import Arena from './Arena';
 import Hud from './Hud';
 

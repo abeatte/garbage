@@ -1,7 +1,7 @@
 import { Type as TileType } from "../components/Tile";
-import { CHARACTORS } from "../components/Combatant";
 import uuid from 'react-uuid';
 import { CombatantModel, Combatants } from "./boardSlice";
+import { Character } from "../components/Combatant";
 
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
@@ -138,10 +138,9 @@ export function calcMovements(args: {combatants: Combatants, window_width: numbe
     return {combatants: new_combatants, births, deaths};
 }
 
-export function getRandomTeam(): keyof typeof CHARACTORS  {
-    // TODO: fix
-    // @ts-ignore
-    return Object.values(CHARACTORS)[Math.round(Math.random() * (Object.values(CHARACTORS).length - 1))].team;
+export function getRandomTeam(): keyof typeof Character  {
+    const set = Object.keys(Character);
+    return set[Math.round(Math.random() * (set.length - 1))] as keyof typeof Character;
 }
 
 export function updateCombatants(args: {combatants: Combatants, window_width: number, tiles: TileType[]}) {

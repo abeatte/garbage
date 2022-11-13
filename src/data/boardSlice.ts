@@ -8,7 +8,7 @@ import {
     getSpawnAtPosition,
 } from './CombatantUtils';
 import { Type as TileType } from "../components/Tile";
-import { CHARACTORS } from '../components/Combatant';
+import { Character } from '../components/Combatant';
 
 const WINDOW_WIDTH = 14;
 const WINDOW_HEIGHT = 15;
@@ -21,7 +21,7 @@ export interface CombatantModel {
     position: number,
     fitness: number,
     immortal: boolean,
-    team: keyof typeof CHARACTORS,
+    team: keyof typeof Character,
     spawning: CombatantModel | undefined,
 };
 
