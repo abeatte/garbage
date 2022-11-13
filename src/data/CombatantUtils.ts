@@ -1,17 +1,29 @@
-import { TYPE } from "../components/Tile";
-import { CHARACTORS } from "../components/Combatant";
+import { Type as TileType } from "../components/Tile";
 import uuid from 'react-uuid';
+import { CombatantModel, Combatants } from "./boardSlice";
+import { Character } from "../components/Combatant";
 
 const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
-export function initCombatantStartingPos({tiles, combatants}) {
-    let starting_pos;
-    for (let i = 0; i < 10 && !starting_pos; i++) {
-        const potential_pos = Math.round(Math.random() * (tiles.length - 1));
-        const potential_tile = tiles[potential_pos];
-        if (!combatants[potential_pos] && potential_tile !== TYPE.fire && potential_tile !== TYPE.water) {
+enum PosDataKey {
+    tr = 'tr', t = 't', tl = 'tl', 
+    r = 'r', c = 'c', l = 'l', 
+    br = 'br', b = 'b', bl = 'bl'
+};
+export interface PosData {
+    positions: {[key in PosDataKey]: number},
+    tiles: {[key in PosDataKey]: TileType},
+    combatants: {[key in PosDataKey]: CombatantModel | undefined},
+}
+
+export function initCombatantStartingPos(args: {tiles: TileType[], combatants: Combatants}): number {
+    let starting_pos = -1;
+    for (let i = 0; i < 10 && starting_pos === -1; i++) {
+        const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
+        const potential_tile = args.tiles[potential_pos];
+        if (!args.combatants[potential_pos] && potential_tile !== TileType.Fire && potential_tile !== TileType.Water) {
             starting_pos = potential_pos;
         }
     }
@@ -20,20 +32,29 @@ export function initCombatantStartingPos({tiles, combatants}) {
 };
 
 export function updateCombatantsPositionsAfterResize(
-    {combatants, window_width, window_height, old_window_width, old_window_height, tiles}
+    args: {
+        combatants: Combatants, 
+        window_width: number, 
+        window_height: number, 
+        old_window_width: number, 
+        old_window_height: number, 
+        tiles: TileType[]
+    }
 ) {
-    const new_combatants = {};
+    const {combatants, window_width, window_height, old_window_width, old_window_height, tiles} = args;
+    const new_combatants = {} as Combatants;
 
     const dif_row = window_width - old_window_width;
     const dif_col = window_height - old_window_height;
     Object.keys(combatants).forEach(k => {
-        let new_pos = k;
-        let coord = [Math.floor(k / old_window_width), k % old_window_width];
+        const old_pos = k as unknown as number;
+        let new_pos = k as unknown as number;
+        let coord = [Math.floor(old_pos / old_window_width), old_pos % old_window_width];
 
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const posData = 
-                getSurroundingPos({position: k, window_width: old_window_width, tiles, combatants});
+                getSurroundingPos({position: old_pos, window_width: old_window_width, tiles, combatants});
             const can_move_up = !posData.combatants.t;
             const can_move_diag = !posData.combatants.tl;
             const can_move_left = !posData.combatants.l;
@@ -62,7 +83,7 @@ export function updateCombatantsPositionsAfterResize(
         if (new_pos > -1 && new_pos < window_width * window_height) {
             const occupient = new_combatants[new_pos];
             // tie goes to whoever got there first.
-            new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[k]) : combatants[k];
+            new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[old_pos]) : combatants[old_pos];
             new_combatants[new_pos].position = new_pos;
         }
 
@@ -70,11 +91,12 @@ export function updateCombatantsPositionsAfterResize(
     return new_combatants;
 }
 
-export function calcMovements({combatants, window_width, tiles}) {
-    const new_combatants = {};
+export function calcMovements(args: {combatants: Combatants, window_width: number, tiles: TileType[]}) {
+    const {combatants, window_width, tiles} = args;
+    const new_combatants = {} as Combatants;
     let births = 0, deaths = 0;
     Object.keys(combatants).forEach((position) => {
-        const combatant = combatants[position];
+        const combatant = combatants[position as unknown as number];
         const current_position = parseInt(position);
         const new_position = getCombatantNextPosition(current_position, tiles, window_width, combatants);
 
@@ -116,12 +138,15 @@ export function calcMovements({combatants, window_width, tiles}) {
     return {combatants: new_combatants, births, deaths};
 }
 
-export function getRandomTeam() {
-    return Object.values(CHARACTORS)[Math.round(Math.random() * (Object.values(CHARACTORS).length - 1))].team;
+export function getRandomTeam(): keyof typeof Character  {
+    const set = Object.keys(Character);
+    return set[Math.round(Math.random() * (set.length - 1))] as keyof typeof Character;
 }
 
-export function updateCombatants({combatants, window_width, tiles}) {
-    Object.keys(combatants).forEach(position => {
+export function updateCombatants(args: {combatants: Combatants, window_width: number, tiles: TileType[]}) {
+    const {combatants, window_width, tiles} = args;
+    Object.keys(combatants).forEach(key => {
+        const position = key as unknown as number;
         const combatant = combatants[position];
         const posData = getSurroundingPos({position, window_width, tiles, combatants});
         if (!combatant.immortal) {
@@ -135,17 +160,19 @@ export function updateCombatants({combatants, window_width, tiles}) {
  * @param {*} c combatant
  * @returns true if combatant should live
  */
- function evalHealth(c) {
+ function evalHealth(c: CombatantModel) {
     return c.fitness > MIN_HEALTH;
 };
 
-function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_size) {
-    const self = combatants.c;
+function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size: number): boolean {
+    const {positions, combatants} = posData;
+    const self = combatants[PosDataKey.c] as CombatantModel;
     const nearby_friends = [];
     const nearby_enemies = [];
-    const empty_space = [];
+    const empty_space = [] as PosDataKey[];
 
-    Object.keys(combatants).forEach(ck => {
+    Object.keys(combatants).forEach(key => {
+        const ck = key as PosDataKey;
         const c = combatants[ck];
 
         if (!c) {
@@ -165,7 +192,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
     } else {
         // safe, let's do it!
         const spawn_pos = positions[empty_space[Math.round(Math.random() * (empty_space.length - 1))]];
-        delete self.spawning.spawning;
+        delete self.spawning?.spawning;
         delete self.spawning;
         live_combatants[spawn_pos] = getSpawnAtPosition(spawn_pos);
         // too many of my kind here, let's diverge
@@ -176,7 +203,7 @@ function spawnNextGen({positions, combatants, tiles}, live_combatants, arena_siz
     return spawned;
 }
 
-export function getSpawnAtPosition(spawn_pos) {
+export function getSpawnAtPosition(spawn_pos: number): CombatantModel {
     return {
         id: uuid(),
         name: "",
@@ -185,36 +212,45 @@ export function getSpawnAtPosition(spawn_pos) {
         team: getRandomTeam(),
         tick: 0,
         position: spawn_pos,
+        spawning: undefined,
     };
 }
 
-function getCombatantNextPosition(current_position, tiles, window_width, combatants) {
+function getCombatantNextPosition(current_position: number, tiles: TileType[], window_width: number, combatants: Combatants): number {
     let direction;
     let position;
     let attepts = 3;
 
     const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
-    const self = posData.combatants.c;
+    const self = posData.combatants.c as CombatantModel;
 
     const friendly_pos = Object.keys(posData.combatants)
         .filter(
             // not yourself
-            ck => ck !== "c" && 
-            // not diagonal
-            ck.length === 1 && 
-            // present and with same team
-            posData.combatants[ck]?.team === self.team &&
-            // not already spawning
-            !posData.combatants[ck]?.spawning &&
-            // are they old enough
-            posData.combatants[ck]?.tick > MAX_YOUNGLING_TICK &&
-            // not on fire
-            posData.tiles[ck] !== TYPE.fire &&
-            // not on water
-            posData.tiles[ck] !== TYPE.water
-            // TODO: add only mate with similar fitness
+            key => {
+                const ck = key as PosDataKey;
+                
+                return ck !== PosDataKey.c && 
+                // not diagonal
+                ck.length === 1 && 
+                // present and with same team
+                posData.combatants[ck]?.team === self.team &&
+                // not already spawning
+                !posData.combatants[ck]?.spawning &&
+                // are they old enough
+                (posData.combatants[ck]?.tick ?? 0) > MAX_YOUNGLING_TICK &&
+                // not on fire
+                posData.tiles[ck] !== TileType.Fire &&
+                // not on water
+                posData.tiles[ck] !== TileType.Water
+                // TODO: add only mate with similar fitness
+            }
         )
-        .map(frd => posData.positions[frd]);
+        .map(key => {
+            const frd = key as PosDataKey
+
+            return posData.positions[frd];
+        });
 
     do {
         direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
@@ -229,12 +265,12 @@ function getCombatantNextPosition(current_position, tiles, window_width, combata
         }
         attepts--;
         // avoid fire if you can
-    } while (tiles[position] === TYPE.fire && attepts > 0);
+    } while (tiles[position] === TileType.Fire && attepts > 0);
 
     return position;
 };
 
-function getNewPositionFromDirection(current_position, direction, window_width, tile_count) {
+function getNewPositionFromDirection(current_position: number, direction: number, window_width: number, tile_count: number) {
     let new_position = current_position;
     switch (direction) {
         case DIRECTION.left:
@@ -269,29 +305,30 @@ function getNewPositionFromDirection(current_position, direction, window_width, 
 /**
  * @returns fitness between 0 and 100
  */
-function evalMapPosition({positions, combatants, tiles}) {
-    if (tiles.c === TYPE.fire) {
+function evalMapPosition(posData: PosData) {
+    const {tiles} = posData;
+    if (tiles.c === TileType.Fire) {
         // fire hurts bad
         return -50;
-    } else if (tiles.c === TYPE.water) {
+    } else if (tiles.c === TileType.Water) {
         // water hurts a bit
         return -5;
-    } else if (tiles.c === TYPE.grass) {
+    } else if (tiles.c === TileType.Grass) {
         // grass is very good
         return 50;       
     } else if (
-        (tiles.t === TYPE.grass) ||
-        (tiles.l === TYPE.grass) ||
-        (tiles.r === TYPE.grass) ||
-        (tiles.b === TYPE.grass)
+        (tiles.t === TileType.Grass) ||
+        (tiles.l === TileType.Grass) ||
+        (tiles.r === TileType.Grass) ||
+        (tiles.b === TileType.Grass)
     ) {
         // non-diagonal next to grass is pretty good
         return 10;
     } else if (
-        (tiles.tr === TYPE.grass) ||
-        (tiles.tl === TYPE.grass) ||
-        (tiles.br === TYPE.grass) ||
-        (tiles.bl === TYPE.grass)
+        (tiles.tr === TileType.Grass) ||
+        (tiles.tl === TileType.Grass) ||
+        (tiles.br === TileType.Grass) ||
+        (tiles.bl === TileType.Grass)
     ) {
         // diagonal next to grass is ok
         return 5;
@@ -307,14 +344,15 @@ function evalMapPosition({positions, combatants, tiles}) {
  * @param {*} b the defending combatant
  * @returns the fitter combatant
  */
-function compete(a, b) {
+function compete(a: CombatantModel, b: CombatantModel) {
     const a_fitness = a.immortal ? Infinity : a.fitness;
     const b_fitness = b.immortal ? Infinity : b.fitness;
     return b_fitness > a_fitness ? b: a;
 }
 
-function getSurroundingPos({position, window_width, tiles, combatants}) {
-    const ret = {positions: {}, tiles: {}, combatants: {}};
+function getSurroundingPos(args: {position: number, window_width: number, tiles: TileType[], combatants: Combatants}): PosData {
+    const {position, window_width, tiles, combatants} = args;
+    const ret = {positions: {}, tiles: {}, combatants: {}} as PosData;
 
     ret.positions.tr = position - window_width + 1;
     ret.positions.t = position - window_width;

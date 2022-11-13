@@ -2,11 +2,11 @@
  * 
  */
 
- import React, { useEffect, useState } from 'react';
+ import React, { ReactElement, useEffect, useState } from 'react';
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
-import Tile, { TYPE } from './Tile';
-import Combatant, { CHARACTORS } from './Combatant';
+import Tile, { Type as TileType } from './Tile';
+import Combatant, { Character } from './Combatant';
 import { 
     updateSelectedCombatant, 
     updateSelectedTile, 
@@ -17,11 +17,24 @@ import {
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
-import { HUD_DISPLAY_MODE, setIsHudActionable } from '../data/hudSlice';
+import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
+import { AppState } from '../data/store';
 
 function getEditableField(
-    {editing_value, enabled, editing_type, options, label, display, edit, update, done}
+    args: {
+        editing_value: string | undefined, 
+        enabled?: boolean, 
+        editing_type?: string, 
+        options?: ReactElement[] | undefined 
+        label: ReactElement, 
+        display: ReactElement, 
+        edit?: () => void, 
+        update: (input: {target: {value: string}}) => void, 
+        done?: () => void | undefined,
+    }
 ) {
+    const {editing_value, enabled, editing_type, options, label, display, edit, update, done} = args;
+
     const edit_field = !!options ?
         (<select 
             value={editing_value} 
@@ -65,20 +78,22 @@ function getEditableField(
     </view>)
 };
 
+interface EditingObject {name: string | undefined, fitness: string | undefined};
+
  const Hud = () => {
-    const board = useSelector((state) => state.board);
-    const hud = useSelector((state) => state.hud);
+    const board = useSelector((state: AppState) => state.board);
+    const hud = useSelector((state: AppState) => state.hud);
     const dispatch = useDispatch()
 
-    const [editing, setEditing] = useState({});
+    const [editing, setEditing] = useState({} as EditingObject);
 
     const selected_position = board.selected_position;
-    const combatant = board.combatants[selected_position];
-    const tile = board.tiles[selected_position];
-    const isFullScreen = hud.hudDisplayMode === HUD_DISPLAY_MODE.FULL_SCREEN;
+    const combatant = !!selected_position ? board.combatants[selected_position] : undefined;
+    const tile = !!selected_position ? board.tiles[selected_position]: undefined;
+    const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
     useEffect(() => {
-        setEditing({});
+        setEditing({} as EditingObject);
     }, [selected_position]);
 
     useEffect(() => {
@@ -108,20 +123,20 @@ function getEditableField(
         {escape_button}
         <view style={{width: "200px"}}>
             <view className='Badge'>
-                <Tile type={tile ?? TYPE.void}>
-                    {combatant ? (<Combatant detail={true} team={combatant.team}/>) : null}
+                <Tile type={tile ?? TileType.Void}>
+                    {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
                 </Tile>
                 <view className='Below_image'>
                     {getEditableField(
                         {
-                            editing_value: tile, 
+                            editing_value: tile as string, 
                             enabled: !tile,
-                            options: Object.keys(TYPE).map(
-                                t => TYPE[t] !== 0 && (<option key={`${t}`} name={t} value={TYPE[t]}>{t}</option>)),
+                            options: Object.keys(TileType).map(
+                                t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : (<></>)),
                             label: (<text className={'Label'}>{'Tile: '}</text>),
-                            display: (<text>{Object.keys(TYPE)[tile] ?? ""}</text>),
+                            display: (<text>{tile ?? ""}</text>),
                             update: input => {
-                                dispatch(updateSelectedTile({field: 'type', value: parseInt(input.target.value)}));
+                                dispatch(updateSelectedTile({field: 'type', value: input.target.value as TileType}));
                             },
                         }
                     )}
@@ -143,8 +158,7 @@ function getEditableField(
                             className='Checkbox' 
                             type="checkbox" 
                             disabled={combatant.fitness <= MIN_HEALTH} 
-                            checked={board.follow_selected_combatant} 
-                            value={board.follow_selected_combatant} 
+                            checked={board.follow_selected_combatant}
                             onChange={(input) => {
                                 dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                             }}
@@ -171,10 +185,10 @@ function getEditableField(
                             editing_type: 'number',
                             label: (<text className={'Label'}>{'Fitness: '}</text>),
                             display: (<text>{combatant?.immortal ? Infinity : combatant?.fitness ?? ""}</text>), 
-                            edit: () => setEditing({...editing, fitness: combatant?.fitness}),
+                            edit: () => setEditing({...editing, fitness: combatant?.fitness?.toString()}),
                             update: input => setEditing({...editing, fitness: input.target.value}),
                             done: () => {
-                                dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness)}));
+                                dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness as string)}));
                                 setEditing({...editing, fitness: undefined})
                             }
                         }
@@ -182,8 +196,8 @@ function getEditableField(
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 
-                            options: Object.values(CHARACTORS).map(
-                                c => (<option key={`${c.team}`} name={c.team}>{c.team}</option>)),
+                            options: Object.values(Character).map(
+                                c => (<option key={`${c}`}>{c}</option>)),
                             label: (<text className={'Label'}>{'Team: '}</text>),
                             display: (<text>{combatant?.team ?? ""}</text>),
                             update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
@@ -198,7 +212,6 @@ function getEditableField(
                                 className='Checkbox' 
                                 type="checkbox" 
                                 checked={combatant?.immortal ?? false} 
-                                value={combatant?.immortal ?? false} 
                                 disabled={combatant?.fitness <= MIN_HEALTH} 
                                 onChange={(input) => {
                                     dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));

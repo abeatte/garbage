@@ -3,30 +3,36 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select } from '../data/boardSlice'
-import Back from '../images/icons/back.png'
-import Forward from '../images/icons/forward.png'
-import Pause from '../images/icons/pause.png'
-import Play from '../images/icons/play.png'
-import { CHARACTORS } from "./Combatant";
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, CombatantModel } from '../data/boardSlice'
+import { Character } from "./Combatant";
 import { setIsHudActionable } from "../data/hudSlice";
+// @ts-ignore
+import Back from '../images/icons/back.png'
+// @ts-ignore
+import Forward from '../images/icons/forward.png'
+// @ts-ignore
+import Pause from '../images/icons/pause.png'
+// @ts-ignore
+import Play from '../images/icons/play.png'
+import { AppDispatch, AppState } from "../data/store";
 
-const getTeamStats = (combatants, selected_position, dispatch) => {
-    const teams = Object.values(CHARACTORS).reduce((teams, cha) => {
-        teams[cha.team] = []
+const getTeamStats = (combatants: Combatants, selected_position: number | undefined, dispatch: AppDispatch) => {
+    const teams = Object.values(Character).reduce((teams, cha) => {
+        teams[cha] = []
         return teams;
-    }, {});
+    }, {} as {[key in Character]: CombatantModel[]});
 
     Object.values(combatants).forEach(combatant => {
         teams[combatant.team].push(combatant);
     });
 
-    const counts = Object.keys(teams).map(team => {
-        const team_array = [];
+    const counts = Object.keys(teams).map(t => {
+        const team = t as keyof typeof Character
+        const team_array = [] as JSX.Element[];
         teams[team]
             .sort((a, b) => b.fitness - a.fitness)
             .slice(0, 10)
-            .forEach((c, idx, subset) => {
+            .forEach((c: CombatantModel, idx: number, subset: CombatantModel[]) => {
                 if (idx === 0) {
                     team_array.push(<text key={"["}>{"[ "}</text>);
                 }
@@ -65,7 +71,7 @@ const getTeamStats = (combatants, selected_position, dispatch) => {
                 </view>
             </view>
         );
-    }).sort((a, b) => a.key.localeCompare(b.key));
+    }).sort((a, b) => (a.key as string).localeCompare(b.key as string));
 
     return (
         <view className={'Stat_group'}>
@@ -74,9 +80,10 @@ const getTeamStats = (combatants, selected_position, dispatch) => {
     );
 };
 
-const Dashboard = ({onReset}) => {
-    const ticker = useSelector((state) => state.ticker);
-    const board = useSelector((state) => state.board);
+const Dashboard = (args: {onReset: () => void}) => {
+    const {onReset} = args
+    const ticker = useSelector((state: AppState) => state.ticker);
+    const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch()
     const teamStats = getTeamStats(board.combatants, board.selected_position, dispatch);
    

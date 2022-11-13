@@ -7,27 +7,42 @@ import {
     MIN_HEALTH,
     getSpawnAtPosition,
 } from './CombatantUtils';
-import { TYPE } from "../components/Tile";
+import { Type as TileType } from "../components/Tile";
+import { Character } from '../components/Combatant';
 
 const WINDOW_WIDTH = 14;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 
-function initDefaultTiles({width, height}) {
-    const tiles = [width * height];
+export interface CombatantModel {
+    id: string,
+    name: string | undefined,
+    tick: number,
+    position: number,
+    fitness: number,
+    immortal: boolean,
+    team: keyof typeof Character,
+    spawning: CombatantModel | undefined,
+};
+
+export type Combatants = {[position: number]: CombatantModel};
+
+function initDefaultTiles(dimens: {width: number, height: number}) {
+    const {width, height} = dimens;
+    const tiles = Array(width * height);
     let idx = 0;
     for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
             if (h === 0 || h === height-1 || w === 0 || w === width-1) {
-                tiles[idx] = TYPE.fire;
+                tiles[idx] = TileType.Fire;
             } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
                 tiles[idx] = Math.random() < 0.1 ?
-                    TYPE.grass : 
+                    TileType.Grass : 
                     Math.random() < 0.1 ? 
-                        TYPE.water : 
-                        TYPE.rock;
+                    TileType.Water : 
+                    TileType.Rock;
             } else {
-                tiles[idx] = TYPE.sand;
+                tiles[idx] = TileType.Sand;
             }
             idx++;
         }
@@ -36,17 +51,28 @@ function initDefaultTiles({width, height}) {
     return tiles;
 };
 
-function initCombatants({tiles}) {
-    const combatants = {};
+function initCombatants(args: {tiles: TileType[]}) {
+    const {tiles} = args;
+    const combatants = {} as Combatants;
     const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
-        const c_pos = initCombatantStartingPos({tiles, combatants});
+        const c_pos: number = initCombatantStartingPos({tiles, combatants});
         combatants[c_pos] = getSpawnAtPosition(c_pos);
     }
     return combatants;
 }
 
-function initState(width, height) {
+function initState(width?: number, height?: number): {
+    game_count: number,
+    births: number,
+    deaths: number,
+    width: number,
+    height: number,
+    tiles: TileType[],
+    combatants: Combatants,
+    selected_position: number| undefined,
+    follow_selected_combatant: boolean,
+} {
     width = width ?? WINDOW_WIDTH;
     height = height ?? WINDOW_HEIGHT;
     const tiles = initDefaultTiles({width, height});
@@ -156,9 +182,9 @@ export const boardSlice = createSlice({
         state.deaths = 0;
     },
     tick: (state) => {
-        let combatant_id_to_follow;
+        let combatant_id_to_follow : string | undefined;
         if (state.follow_selected_combatant) {
-            combatant_id_to_follow = state.combatants[state.selected_position]?.id;
+            combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
         const result = calcMovements({combatants: state.combatants, window_width: state.width, tiles: state.tiles});
         const new_combatants = result.combatants;
@@ -169,7 +195,7 @@ export const boardSlice = createSlice({
         state.deaths += result.deaths;
         if (!!combatant_id_to_follow) {
             const followed = Object.values(new_combatants).find(c => c.id === combatant_id_to_follow);
-            if (followed.fitness > MIN_HEALTH) {
+            if (!!followed && followed.fitness > MIN_HEALTH) {
                 state.selected_position = followed.position;
             }
         }
@@ -178,24 +204,34 @@ export const boardSlice = createSlice({
         state.selected_position = action?.payload?.position;
         state.follow_selected_combatant = action?.payload?.follow_combatant ?? false;
     },
-    updateSelectedCombatant: (state, action) => {
-        const selected = state.combatants[state.selected_position];
+    updateSelectedCombatant: (
+        state, 
+        action: {payload: {field: any, value: string | boolean | number | undefined}}
+    ) => {
+        const selected = state.combatants[state.selected_position ?? -1];
         if (!!selected) {
+            // @ts-ignore
             selected[action.payload.field] = action.payload.value;
         }
     },
-    updateSelectedTile: (state, action) => {
-        state.tiles[state.selected_position] = action.payload.value
+    updateSelectedTile: (state, action: {payload: {field: 'type', value: TileType}}) => {
+        if (state.selected_position) {
+            state.tiles[state.selected_position] = action.payload.value
+        }
     },
     killSelected: (state) => {
-        state.follow_selected_combatant = false;
-        const selected = state.combatants[state.selected_position];
-        selected.immortal = false;
-        selected.fitness = MIN_HEALTH
+        if (state.selected_position) {
+            state.follow_selected_combatant = false;
+            const selected = state.combatants[state.selected_position];
+            selected.immortal = false;
+            selected.fitness = MIN_HEALTH
+        }
     },
     spawnAtSelected: (state) => {
-        state.follow_selected_combatant = true;
-        state.combatants[state.selected_position] = getSpawnAtPosition(state.selected_position);
+        if (state.selected_position) {
+            state.follow_selected_combatant = true;
+            state.combatants[state.selected_position] = getSpawnAtPosition(state.selected_position);
+        }
     },
   }
 })
