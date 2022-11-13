@@ -6,7 +6,6 @@ import {
     updateCombatants,
     MIN_HEALTH,
     getSpawnAtPosition,
-// @ts-ignore
 } from './CombatantUtils';
 // @ts-ignore
 import { TYPE } from "../components/Tile";
@@ -15,12 +14,18 @@ const WINDOW_WIDTH = 14;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 
-interface CombatantModel {
-    id: number,
+export interface CombatantModel {
+    id: string,
+    name: string | undefined,
+    tick: number,
     position: number,
     fitness: number,
     immortal: boolean,
+    team: string,
+    spawning: CombatantModel | undefined,
 };
+
+export type Combatants = {[position: number]: CombatantModel};
 
 function initDefaultTiles(dimens: {width: number, height: number}) {
     const {width, height} = dimens;
@@ -48,7 +53,7 @@ function initDefaultTiles(dimens: {width: number, height: number}) {
 
 function initCombatants(args: {tiles: number[]}) {
     const {tiles} = args;
-    const combatants: {[position: number]: CombatantModel} = {};
+    const combatants = {} as Combatants;
     const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
         const c_pos: number = initCombatantStartingPos({tiles, combatants});
@@ -64,7 +69,7 @@ function initState(width?: number, height?: number): {
     width: number,
     height: number,
     tiles: number[],
-    combatants: {[position: number]: CombatantModel},
+    combatants: Combatants,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
 } {
@@ -177,12 +182,12 @@ export const boardSlice = createSlice({
         state.deaths = 0;
     },
     tick: (state) => {
-        let combatant_id_to_follow : number | undefined;
+        let combatant_id_to_follow : string | undefined;
         if (state.follow_selected_combatant) {
             combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
         const result = calcMovements({combatants: state.combatants, window_width: state.width, tiles: state.tiles});
-        const new_combatants: {[position: number]: CombatantModel} = result.combatants;
+        const new_combatants = result.combatants;
         updateCombatants({combatants: new_combatants, window_width: state.width, tiles: state.tiles});
 
         state.combatants = new_combatants;
