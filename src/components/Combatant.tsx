@@ -4,9 +4,13 @@
 
 import React from 'react';
 import '../css/Combatant.css';
+// @ts-ignore
 import Bunny from '../images/combatants/bunny.png';
+// @ts-ignore
 import Turtle from '../images/combatants/turtle.png';
+// @ts-ignore
 import Elephant from '../images/combatants/lil_eli.png';
+// @ts-ignore
 import Lizard from '../images/combatants/lizard.png';
 
 export const CHARACTORS = {
@@ -80,28 +84,26 @@ export const CHARACTORS = {
     }
 };
 
-const getCharacter = (team) => {
+const getCharacter = (team: keyof typeof CHARACTORS) => {
     const character = CHARACTORS[team];
     return character;
 }
 
-class Combatant extends React.Component {
-    render() {
-        const char = getCharacter(this.props.team);
-        const for_detail_view = this.props.detail;
-        if (!char.sheet) {
-            return (<text style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</text>);
-        } else {
-            return (<div className="Sprite" style={
-                {
-                    background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
-                    transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
-                    width: for_detail_view ? char.detail.width : char.width,
-                    height: for_detail_view ? char.detail.height : char.height, 
-                    margin: for_detail_view ? char.detail.margin : char.margin,
-                }
-            }></div>);
-        }
+const Combatant = (props: {team: keyof typeof CHARACTORS, detail?: boolean}) => {
+    const char = getCharacter(props.team);
+    const for_detail_view = props.detail;
+    if (!char.sheet) {
+        return (<text style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</text>);
+    } else {
+        return (<div className="Sprite" style={
+            {
+                background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
+                transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
+                width: for_detail_view ? char.detail.width : char.width,
+                height: for_detail_view ? char.detail.height : char.height, 
+                margin: for_detail_view ? char.detail.margin : char.margin,
+            }
+        }></div>);
     }
 }
 

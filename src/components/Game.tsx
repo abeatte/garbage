@@ -5,7 +5,6 @@ import { HUD_DISPLAY_MODE, setIsHudActionable, setScreenSize } from '../data/hud
 import { AppDispatch, AppState } from '../data/store';
 // @ts-ignore
 import Arena from './Arena';
-// @ts-ignore
 import Hud from './Hud';
 
 class Game extends React.Component<AppState & DispatchProps> {
@@ -80,7 +79,7 @@ interface DispatchProps {
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
-        select: () => dispatch(select()),
+        select: () => dispatch(select({})),
         setHudIsNotActionable: () => dispatch(setIsHudActionable(false)),
         setScreenSize: (dimens: {width: number, height: number}) => 
             dispatch(setScreenSize({width: dimens.width, height: dimens.height}))
