@@ -11,7 +11,7 @@ import { tick as combatantTick, reset as resetBoard, select, Combatants } from '
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
-import { HUD_DISPLAY_MODE, setIsHudActionable } from "../data/hudSlice";
+import { HudDisplayMode, setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
 
 /**
@@ -129,7 +129,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
         //     }
         // );
 
-        const isShownWithHud = this.props.hud.hudDisplayMode === HUD_DISPLAY_MODE.SIDE_PANEL;
+        const isShownWithHud = this.props.hud.hudDisplayMode === HudDisplayMode.SIDE_PANEL;
 
         return (
             <view className={classNames({"Arena_container": true, "With_hud" : isShownWithHud})}>

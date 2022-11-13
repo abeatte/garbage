@@ -3,13 +3,13 @@ import { createSlice } from '@reduxjs/toolkit'
 const EXPANDED_MODE_ARENA_WIDTH = 785;
 const EXPANDED_MODE_HUD_WIDTH = 445;
 
-export const HUD_DISPLAY_MODE = {GONE: 0, SIDE_PANEL: 1, FULL_SCREEN: 2};
+export enum HudDisplayMode {GONE, SIDE_PANEL, FULL_SCREEN}
 
 function getHudDisplayMode(screenWidth: number | undefined, isHudActionable: boolean) {
   if (screenWidth !== undefined && screenWidth <= EXPANDED_MODE_ARENA_WIDTH + EXPANDED_MODE_HUD_WIDTH) {
-    return isHudActionable ? HUD_DISPLAY_MODE.FULL_SCREEN : HUD_DISPLAY_MODE.GONE;
+    return isHudActionable ? HudDisplayMode.FULL_SCREEN : HudDisplayMode.GONE;
   } else {
-    return HUD_DISPLAY_MODE.SIDE_PANEL;
+    return HudDisplayMode.SIDE_PANEL;
   }
 }
 
@@ -20,14 +20,13 @@ export const hudSlice = createSlice({
     screenHeight: undefined,
     isPortraitMode: undefined,
     isHudActionable: false,
-    hudDisplayMode: HUD_DISPLAY_MODE.SIDE_PANEL,
+    hudDisplayMode: HudDisplayMode.SIDE_PANEL,
   } as {
     screenWidth: number | undefined,
     screenHeight: number | undefined,
     isPortraitMode: boolean | undefined,
     isHudActionable: boolean,
-    // TODO: correct this type
-    hudDisplayMode: number,
+    hudDisplayMode: HudDisplayMode,
   },
   reducers: {
     setScreenSize: (state, action: {payload: {width: number, height: number}}) => {

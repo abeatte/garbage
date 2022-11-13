@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import { select } from '../data/boardSlice';
-import { HUD_DISPLAY_MODE, setIsHudActionable, setScreenSize } from '../data/hudSlice';
+import { HudDisplayMode, setIsHudActionable, setScreenSize } from '../data/hudSlice';
 import { AppDispatch, AppState } from '../data/store';
 import Arena from './Arena';
 import Hud from './Hud';
@@ -38,19 +38,19 @@ class Game extends React.Component<AppState & DispatchProps> {
 
     render() {
         switch(this.props.hud.hudDisplayMode) {
-            case HUD_DISPLAY_MODE.FULL_SCREEN:
+            case HudDisplayMode.FULL_SCREEN:
                 return (
                     <>
                         <Hud/>
                     </>
                 );
-            case HUD_DISPLAY_MODE.GONE:
+            case HudDisplayMode.GONE:
                 return (
                     <>
                         <Arena/>
                     </>
                 );
-            case HUD_DISPLAY_MODE.SIDE_PANEL:
+            case HudDisplayMode.SIDE_PANEL:
             default:
                 return (
                     <>

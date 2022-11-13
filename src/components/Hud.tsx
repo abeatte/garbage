@@ -17,7 +17,7 @@ import {
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
-import { HUD_DISPLAY_MODE, setIsHudActionable } from '../data/hudSlice';
+import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
 import { AppState } from '../data/store';
 
 function getEditableField(
@@ -90,7 +90,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     const selected_position = board.selected_position;
     const combatant = !!selected_position ? board.combatants[selected_position] : undefined;
     const tile = !!selected_position ? board.tiles[selected_position]: undefined;
-    const isFullScreen = hud.hudDisplayMode === HUD_DISPLAY_MODE.FULL_SCREEN;
+    const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
     useEffect(() => {
         setEditing({} as EditingObject);
