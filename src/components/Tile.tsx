@@ -5,15 +5,14 @@
 import React from 'react';
 import '../css/Tile.css';
 import classNames from 'classnames';
-
-export enum Type {Void = "Void", Water = "Water", Fire = "Fire", Rock = "Rock", Sand = "Sand", Grass ="Grass"};
+import { Type as TileType } from '../models/TileModel';
 
  const Tile = (
   args: {
     id?: number,
     children?: JSX.Element, 
     className?: string, 
-    type: Type, 
+    type: TileType, 
     isSelected?: boolean, 
     onClick?: () => void
   }

@@ -7,7 +7,7 @@ import {
     getSurroundingPos, 
     PosDataKey 
 } from "../data/CombatantUtils";
-import { Type as TileType } from "../components/Tile";
+import { Type as TileType } from "./TileModel";
 import { Combatants } from "../data/boardSlice";
 
 export interface CombatantModel {

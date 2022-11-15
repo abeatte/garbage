@@ -1,4 +1,4 @@
-import { Type as TileType } from "../components/Tile";
+import { Type as TileType } from "../models/TileModel";
 import { Combatants } from "./boardSlice";
 import { Character } from "../components/Combatant";
 import CombatantModel, { createCombatant, requestMove } from "../models/CombatantModel";

@@ -5,7 +5,7 @@
  import React, { ReactElement, useEffect, useState } from 'react';
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
-import Tile, { Type as TileType } from './Tile';
+import { Type as TileType } from '../models/TileModel';
 import Combatant, { Character } from './Combatant';
 import { 
     updateSelectedCombatant, 
@@ -19,6 +19,7 @@ import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
 import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
 import { AppState } from '../data/store';
+import Tile from './Tile';
 
 function getEditableField(
     args: {

@@ -6,7 +6,7 @@ import {
     updateCombatants,
     MIN_HEALTH,
 } from './CombatantUtils';
-import { Type as TileType } from "../components/Tile";
+import { Type as TileType } from "../models/TileModel";
 import CombatantModel, { createCombatant } from '../models/CombatantModel';
 
 const WINDOW_WIDTH = 14;
