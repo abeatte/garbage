@@ -9,6 +9,9 @@ import {
 } from "../data/CombatantUtils";
 import { Type as TileType } from "./TileModel";
 import { Combatants } from "../data/boardSlice";
+import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
+
+export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" }
 
 export interface CombatantModel {
     id: string;
@@ -16,17 +19,18 @@ export interface CombatantModel {
     tick: number;
     position: number;
     fitness: number;
+    strength: keyof typeof Strength;
     immortal: boolean;
     team: keyof typeof Character;
     spawning: CombatantModel | undefined;
 }
 
-export function createCombatant(args: {spawn_position: number}) {
+export function createCombatant(args: {spawn_position: number, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
     return {   
         id: uuid(),
         name: "",
         fitness: 0,
-        strength: undefined, // TODO: calculate at inception to be 'weak', 'strong', 'average'
+        strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
         immortal: false,
         team: getRandomTeam(),
         tick: 0,

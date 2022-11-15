@@ -165,11 +165,11 @@ const Dashboard = (args: {onReset: () => void}) => {
                     </view>
                     <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Births:`}</text>
-                        <text className="Data_row">{`${board.births}`}</text>
+                        <text className="Data_row">{`${board.global_combatant_stats.births}`}</text>
                     </view>
                     <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Deaths:`}</text>
-                        <text className="Data_row">{`${board.deaths}`}</text>
+                        <text className="Data_row">{`${board.global_combatant_stats.deaths}`}</text>
                     </view>
                 </view>
                 {teamStats}

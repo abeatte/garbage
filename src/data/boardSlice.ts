@@ -8,6 +8,7 @@ import {
 } from './CombatantUtils';
 import { Type as TileType } from "../models/TileModel";
 import CombatantModel, { createCombatant } from '../models/CombatantModel';
+import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
 const WINDOW_WIDTH = 14;
 const WINDOW_HEIGHT = 15;
@@ -39,21 +40,38 @@ function initDefaultTiles(dimens: {width: number, height: number}) {
     return tiles;
 };
 
-function initCombatants(args: {tiles: TileType[]}) {
+function initCombatants(args: {tiles: TileType[]}): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
     const {tiles} = args;
     const combatants = {} as Combatants;
+    const global_combatant_stats = getInitGlobalCombatantStatsModel();
     const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
         const c_pos: number = initCombatantStartingPos({tiles, combatants});
-        combatants[c_pos] = createCombatant({spawn_position: c_pos});
+        combatants[c_pos] = createCombatant({spawn_position: c_pos, global_combatant_stats});
+
+        const c_fit = combatants[c_pos].fitness;
+        global_combatant_stats.average_position += c_pos;
+        if (global_combatant_stats.min_fitness > c_fit) {
+            global_combatant_stats.min_fitness = c_fit;
+        }
+        global_combatant_stats.average_fitness += c_fit;
+        if (global_combatant_stats.max_fitness < c_fit) {
+            global_combatant_stats.max_fitness = c_fit;
+        }
     }
-    return combatants;
+
+    const number_of_combatants = Object.keys(combatants).length;
+    global_combatant_stats.average_position = global_combatant_stats.average_position / number_of_combatants;
+    global_combatant_stats.average_fitness = global_combatant_stats.average_fitness / number_of_combatants;
+    global_combatant_stats.weak_bar = (global_combatant_stats.average_fitness + global_combatant_stats.min_fitness)/2;;
+    global_combatant_stats.average_bar = (global_combatant_stats.average_fitness + global_combatant_stats.max_fitness)/2;
+
+    return {combatants, global_combatant_stats};
 }
 
 function initState(width?: number, height?: number): {
     game_count: number,
-    births: number,
-    deaths: number,
+    global_combatant_stats: GlobalCombatantStatsModel,
     width: number,
     height: number,
     tiles: TileType[],
@@ -64,11 +82,10 @@ function initState(width?: number, height?: number): {
     width = width ?? WINDOW_WIDTH;
     height = height ?? WINDOW_HEIGHT;
     const tiles = initDefaultTiles({width, height});
-    const combatants = initCombatants({tiles});
+    const {combatants, global_combatant_stats} = initCombatants({tiles});
     return {
         game_count: 1,
-        births: 0,
-        deaths: 0,
+        global_combatant_stats, 
         width,
         height,
         tiles,
@@ -102,7 +119,7 @@ export const boardSlice = createSlice({
         });
         const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
         state.combatants = combatants;
-        state.deaths += deaths;
+        state.global_combatant_stats.deaths += deaths;
     },
     growWidth: (state) => {
         const old_window_height = state.height;
@@ -119,7 +136,7 @@ export const boardSlice = createSlice({
         });
         const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
         state.combatants = combatants;
-        state.deaths += deaths;
+        state.global_combatant_stats.deaths += deaths;
     },
     shrinkHeight: (state) => {
         if (state.height === 0) {
@@ -139,7 +156,7 @@ export const boardSlice = createSlice({
         }); 
         const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
         state.combatants = combatants;
-        state.deaths += deaths;
+        state.global_combatant_stats.deaths += deaths;
     },
     growHeight: (state) => {
         const old_window_height = state.height;
@@ -156,7 +173,7 @@ export const boardSlice = createSlice({
         });
         const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
         state.combatants = combatants;
-        state.deaths += deaths;
+        state.global_combatant_stats.deaths += deaths;
     },
     reset: (state) => {
         const new_state = initState(state.width, state.height);
@@ -166,21 +183,37 @@ export const boardSlice = createSlice({
         state.selected_position = undefined;
         state.follow_selected_combatant = false;
         state.game_count += 1;
-        state.births = 0;
-        state.deaths = 0;
+        state.global_combatant_stats = new_state.global_combatant_stats;
     },
     tick: (state) => {
         let combatant_id_to_follow : string | undefined;
         if (state.follow_selected_combatant) {
             combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
-        const result = calcMovements({combatants: state.combatants, window_width: state.width, tiles: state.tiles});
+        const result = calcMovements({
+            combatants: state.combatants, 
+            global_combatant_stats: state.global_combatant_stats,
+            window_width: state.width, 
+            tiles: state.tiles
+        });
         const new_combatants = result.combatants;
-        updateCombatants({combatants: new_combatants, window_width: state.width, tiles: state.tiles});
+        const old_global_combatant_stats = state.global_combatant_stats;
+        old_global_combatant_stats.births += result.births;
+        old_global_combatant_stats.deaths += result.deaths;
+        
+        const new_global_combatant_stats = updateCombatants({
+            combatants: new_combatants, 
+            global_combatant_stats: old_global_combatant_stats, 
+            window_width: state.width, 
+            tiles: state.tiles
+        });
 
         state.combatants = new_combatants;
-        state.births += result.births;
-        state.deaths += result.deaths;
+        
+        new_global_combatant_stats.births += result.births;
+        new_global_combatant_stats.deaths += result.deaths;
+        state.global_combatant_stats = new_global_combatant_stats;
+
         if (!!combatant_id_to_follow) {
             const followed = Object.values(new_combatants).find(c => c.id === combatant_id_to_follow);
             if (!!followed && followed.fitness > MIN_HEALTH) {
@@ -200,6 +233,13 @@ export const boardSlice = createSlice({
         if (!!selected) {
             // @ts-ignore
             selected[action.payload.field] = action.payload.value;
+            if (action.payload.field === "immortal") {
+                selected.strength = getStrengthRating({
+                    global_combatant_stats: state.global_combatant_stats, 
+                    fitness: selected.fitness, 
+                    immortal: selected.immortal
+                })
+            }
         }
     },
     updateSelectedTile: (state, action: {payload: {field: 'type', value: TileType}}) => {
@@ -212,13 +252,20 @@ export const boardSlice = createSlice({
             state.follow_selected_combatant = false;
             const selected = state.combatants[state.selected_position];
             selected.immortal = false;
+            selected.strength = getStrengthRating({
+                global_combatant_stats: state.global_combatant_stats, 
+                fitness: selected.fitness, 
+                immortal: selected.immortal
+            })
             selected.fitness = MIN_HEALTH
         }
     },
     spawnAtSelected: (state) => {
         if (state.selected_position) {
             state.follow_selected_combatant = true;
-            state.combatants[state.selected_position] = createCombatant({spawn_position: state.selected_position});
+            state.combatants[state.selected_position] = createCombatant(
+                {spawn_position: state.selected_position, global_combatant_stats: state.global_combatant_stats}
+            );
         }
     },
   }

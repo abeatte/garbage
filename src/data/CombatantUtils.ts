@@ -2,6 +2,7 @@ import { Type as TileType } from "../models/TileModel";
 import { Combatants } from "./boardSlice";
 import { Character } from "../components/Combatant";
 import CombatantModel, { createCombatant, requestMove } from "../models/CombatantModel";
+import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 
 export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 export const MAX_YOUNGLING_TICK = 5;
@@ -93,11 +94,11 @@ export function updateCombatantsPositionsAfterResize(
     return new_combatants;
 }
 
-export function calcMovements(args: {combatants: Combatants, window_width: number, tiles: TileType[]}) {
-    const {combatants, window_width, tiles} = args;
+export function calcMovements(args: {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileType[]}): 
+{combatants: Combatants, births: number, deaths: number} {
+    const {combatants, global_combatant_stats, window_width, tiles} = args;
     const new_combatants = {} as Combatants;
     let births = 0, deaths = 0;
-    const average_combatant = createCombatant({spawn_position: 0});
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position as unknown as number];
         const current_position = parseInt(position);
@@ -111,34 +112,27 @@ export function calcMovements(args: {combatants: Combatants, window_width: numbe
             // space is empty; OK to move there if you are healthy enough
             new_combatants[new_position] = combatant;
             combatant.position = new_position;
-            
-            average_combatant.position += new_position;
-            average_combatant.fitness += combatant.fitness;
         } else if(occupient.team === combatant.team) {                
             new_combatants[current_position] = combatant;
             combatant.position = current_position;
-            
-            average_combatant.position += current_position;
-            average_combatant.fitness += combatant.fitness;
             
             // space is occupied by a friendly
             if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
                 combatant.spawning = occupient;
                 occupient.spawning = combatant;
-                const spawn = spawnNextGen(
-                    getSurroundingPos({
-                        position: new_position, 
-                        window_width, 
-                        tiles, 
-                        combatants: new_combatants
-                    }), 
-                    new_combatants, tiles.length);
+                const spawn = spawnNextGen({
+                    posData:
+                        getSurroundingPos({
+                            position: new_position, 
+                            window_width, 
+                            tiles, 
+                            combatants: new_combatants
+                        }), 
+                    global_combatant_stats: global_combatant_stats,
+                    live_combatants: new_combatants, 
+                    arena_size: tiles.length});
                 if (!!spawn) {
-                    births++;
-                    
-                    average_combatant.position += new_position;
-                    average_combatant.fitness += spawn.fitness;
-                    // TODO: track average team?!
+                    births++
                 }
             }
         } else {
@@ -148,15 +142,8 @@ export function calcMovements(args: {combatants: Combatants, window_width: numbe
             deaths++;
         }
     });
-    
-    // TODO: now iterate over all combatants and update their repsective strengths. Also update global average object);
-    const number_of_new_combatants = Object.keys(new_combatants).length;
-    average_combatant.position = average_combatant.position/number_of_new_combatants;
-    average_combatant.fitness = average_combatant.fitness/number_of_new_combatants;
-    // TODO: average team?!
-    // TODO: chance of being immortal?!
 
-    return {combatants: new_combatants, births, deaths, average_combatant};
+    return {combatants: new_combatants, births, deaths};
 }
 
 export function getRandomTeam(): keyof typeof Character  {
@@ -164,17 +151,39 @@ export function getRandomTeam(): keyof typeof Character  {
     return set[Math.round(Math.random() * (set.length - 1))] as keyof typeof Character;
 }
 
-export function updateCombatants(args: {combatants: Combatants, window_width: number, tiles: TileType[]}) {
-    const {combatants, tiles} = args;
-    // TODO: WAAAY better place to do this average_combatant stuff than in the above location. Make sure its called correctly and move it;
-    Object.keys(combatants).forEach(key => {
+export function updateCombatants(args: {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileType[]}):
+GlobalCombatantStatsModel {
+    const {combatants, global_combatant_stats, tiles} = args;
+    const new_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
+
+    const combatant_keys = Object.keys(combatants);
+    combatant_keys.forEach(key => {
         const position = key as unknown as number;
         const combatant = combatants[position];
         if (!combatant.immortal) {
             combatant.fitness += evalMapPosition({position, tiles});
         }
+        combatant.strength = getStrengthRating({global_combatant_stats, fitness: combatant.fitness, immortal: combatant.immortal});
+
+        new_global_combatant_stats.average_position += position;
+            if (new_global_combatant_stats.min_fitness > combatant.fitness) {
+                new_global_combatant_stats.min_fitness = combatant.fitness;
+            }
+            new_global_combatant_stats.average_fitness += combatant.fitness;
+            if (new_global_combatant_stats.max_fitness < combatant.fitness) {
+                new_global_combatant_stats.max_fitness = combatant.fitness;
+            }
+
         combatant.tick +=1;
     });
+
+    const number_of_new_combatants = combatant_keys.length;
+    new_global_combatant_stats.average_position = new_global_combatant_stats.average_position/number_of_new_combatants;
+    new_global_combatant_stats.average_fitness = new_global_combatant_stats.average_fitness/number_of_new_combatants;
+    new_global_combatant_stats.weak_bar = (new_global_combatant_stats.average_fitness + new_global_combatant_stats.min_fitness)/2;;
+    new_global_combatant_stats.average_bar = (new_global_combatant_stats.average_fitness + new_global_combatant_stats.max_fitness)/2;
+
+    return new_global_combatant_stats;
 }
 
 /**
@@ -185,7 +194,8 @@ export function updateCombatants(args: {combatants: Combatants, window_width: nu
     return c.fitness > MIN_HEALTH;
 };
 
-function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size: number): CombatantModel | undefined {
+function spawnNextGen(args: {posData: PosData, live_combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, arena_size: number}): CombatantModel | undefined {
+    const {posData, live_combatants, global_combatant_stats, arena_size} = args;
     const {positions, combatants} = posData;
     const self = combatants[PosDataKey.c] as CombatantModel;
     const nearby_friends = [];
@@ -215,7 +225,7 @@ function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size:
         const spawn_pos = positions[empty_space[Math.round(Math.random() * (empty_space.length - 1))]];
         delete self.spawning?.spawning;
         delete self.spawning;
-        live_combatants[spawn_pos] = createCombatant({spawn_position: spawn_pos});
+        live_combatants[spawn_pos] = createCombatant({spawn_position: spawn_pos, global_combatant_stats});
         // too many of my kind here, let's diverge
         live_combatants[spawn_pos].team = nearby_friends.length < 4 ? self.team : getRandomTeam();
 
@@ -229,7 +239,6 @@ function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size:
  */
 function evalMapPosition(args: {position: number, tiles: TileType[]}) {
     const {position, tiles} = args;
-    // TODO: need to update this to reference using positional math. 
     if (tiles[position] === TileType.Fire) {
         // fire hurts bad
         return -50;

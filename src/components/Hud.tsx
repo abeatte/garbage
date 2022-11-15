@@ -194,6 +194,9 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             }
                         }
                     )}
+                    <view className='Non_editable_row'>
+                        <text className={'Label'}>{'Strength: '}</text><text>{combatant?.strength}</text>
+                    </view>
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 
