@@ -86,7 +86,6 @@ export function updateCombatantsPositionsAfterResize(
             const occupient = new_combatants[new_pos];
             // tie goes to whoever got there first.
             new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[old_pos]) : combatants[old_pos];
-            // TODO: update cumulative stats IE deaths) here
             new_combatants[new_pos].position = new_pos;
         }
 
@@ -248,22 +247,6 @@ function evalMapPosition(args: {position: number, tiles: TileType[]}) {
     } else if (tiles[position] === TileType.Grass) {
         // grass is very good
         return 50;       
-//     } else if (
-//         (tiles.t === TileType.Grass) ||
-//         (tiles.l === TileType.Grass) ||
-//         (tiles.r === TileType.Grass) ||
-//         (tiles.b === TileType.Grass)
-//     ) {
-//         // non-diagonal next to grass is pretty good
-//         return 10;
-//     } else if (
-//         (tiles.tr === TileType.Grass) ||
-//         (tiles.tl === TileType.Grass) ||
-//         (tiles.br === TileType.Grass) ||
-//         (tiles.bl === TileType.Grass)
-//     ) {
-//         // diagonal next to grass is ok
-//         return 5;
     } else {
         // lame, you get nothing
         return 0;
@@ -309,7 +292,6 @@ function evalMapePositionPotential(args: {position: number, tiles: TileType[], w
     // TODO: in the future, take into account any occupant in the space and their reletive (weak, average, strong) fitness;
     
     return evalMapPosition({position, tiles}) + ((position_potential / possible_directions)
-        // TODO: eventually may want to weigh a cost of being on the edge; currently it is ignored. 
         / possible_directions
     );
 }
