@@ -5,25 +5,13 @@ import {
     calcMovements,
     updateCombatants,
     MIN_HEALTH,
-    getSpawnAtPosition,
 } from './CombatantUtils';
 import { Type as TileType } from "../components/Tile";
-import { Character } from '../components/Combatant';
+import CombatantModel, { createCombatant } from '../models/CombatantModel';
 
 const WINDOW_WIDTH = 14;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
-
-export interface CombatantModel {
-    id: string,
-    name: string | undefined,
-    tick: number,
-    position: number,
-    fitness: number,
-    immortal: boolean,
-    team: keyof typeof Character,
-    spawning: CombatantModel | undefined,
-};
 
 export type Combatants = {[position: number]: CombatantModel};
 
@@ -57,7 +45,7 @@ function initCombatants(args: {tiles: TileType[]}) {
     const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
         const c_pos: number = initCombatantStartingPos({tiles, combatants});
-        combatants[c_pos] = getSpawnAtPosition(c_pos);
+        combatants[c_pos] = createCombatant({spawn_position: c_pos});
     }
     return combatants;
 }
@@ -230,7 +218,7 @@ export const boardSlice = createSlice({
     spawnAtSelected: (state) => {
         if (state.selected_position) {
             state.follow_selected_combatant = true;
-            state.combatants[state.selected_position] = getSpawnAtPosition(state.selected_position);
+            state.combatants[state.selected_position] = createCombatant({spawn_position: state.selected_position});
         }
     },
   }

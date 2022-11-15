@@ -1,13 +1,13 @@
 import { Type as TileType } from "../components/Tile";
-import uuid from 'react-uuid';
-import { CombatantModel, Combatants } from "./boardSlice";
+import { Combatants } from "./boardSlice";
 import { Character } from "../components/Combatant";
+import CombatantModel, { createCombatant, requestMove } from "../models/CombatantModel";
 
-const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
-const MAX_YOUNGLING_TICK = 5;
+export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
+export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
-enum PosDataKey {
+export enum PosDataKey {
     tr = 'tr', t = 't', tl = 'tl', 
     r = 'r', c = 'c', l = 'l', 
     br = 'br', b = 'b', bl = 'bl'
@@ -16,6 +16,7 @@ export interface PosData {
     positions: {[key in PosDataKey]: number},
     tiles: {[key in PosDataKey]: TileType},
     combatants: {[key in PosDataKey]: CombatantModel | undefined},
+    position_scores: {[key in PosDataKey]: number}
 }
 
 export function initCombatantStartingPos(args: {tiles: TileType[], combatants: Combatants}): number {
@@ -96,11 +97,11 @@ export function calcMovements(args: {combatants: Combatants, window_width: numbe
     const {combatants, window_width, tiles} = args;
     const new_combatants = {} as Combatants;
     let births = 0, deaths = 0;
-    const average_combatant = new Combatant({position: 0});
+    const average_combatant = createCombatant({spawn_position: 0});
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position as unknown as number];
         const current_position = parseInt(position);
-        const new_position = getCombatantNextPosition(current_position, tiles, window_width, combatants);
+        const new_position = requestMove({combatant, tiles, window_width, combatants});
 
         const occupient = new_combatants[new_position];
         if (!evalHealth(combatant)) {
@@ -150,8 +151,8 @@ export function calcMovements(args: {combatants: Combatants, window_width: numbe
     
     // TODO: now iterate over all combatants and update their repsective strengths. Also update global average object);
     const number_of_new_combatants = Object.keys(new_combatants).length;
-    average_combatant.position \= number_of_new_combatants;
-    average_combatant.fitness \= number_of_new_combatants;
+    average_combatant.position = average_combatant.position/number_of_new_combatants;
+    average_combatant.fitness = average_combatant.fitness/number_of_new_combatants;
     // TODO: average team?!
     // TODO: chance of being immortal?!
 
@@ -164,14 +165,13 @@ export function getRandomTeam(): keyof typeof Character  {
 }
 
 export function updateCombatants(args: {combatants: Combatants, window_width: number, tiles: TileType[]}) {
-    const {combatants, window_width, tiles} = args;
+    const {combatants, tiles} = args;
     // TODO: WAAAY better place to do this average_combatant stuff than in the above location. Make sure its called correctly and move it;
     Object.keys(combatants).forEach(key => {
         const position = key as unknown as number;
         const combatant = combatants[position];
-        const posData = getSurroundingPos({position, window_width, tiles, combatants});
         if (!combatant.immortal) {
-            combatant.fitness += evalMapPosition(posData);
+            combatant.fitness += evalMapPosition({position, tiles});
         }
         combatant.tick +=1;
     });
@@ -185,7 +185,7 @@ export function updateCombatants(args: {combatants: Combatants, window_width: nu
     return c.fitness > MIN_HEALTH;
 };
 
-function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size: number): Combatant {
+function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size: number): CombatantModel | undefined {
     const {positions, combatants} = posData;
     const self = combatants[PosDataKey.c] as CombatantModel;
     const nearby_friends = [];
@@ -215,7 +215,7 @@ function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size:
         const spawn_pos = positions[empty_space[Math.round(Math.random() * (empty_space.length - 1))]];
         delete self.spawning?.spawning;
         delete self.spawning;
-        live_combatants[spawn_pos] = getSpawnAtPosition(spawn_pos);
+        live_combatants[spawn_pos] = createCombatant({spawn_position: spawn_pos});
         // too many of my kind here, let's diverge
         live_combatants[spawn_pos].team = nearby_friends.length < 4 ? self.team : getRandomTeam();
 
@@ -224,119 +224,19 @@ function spawnNextGen(posData: PosData, live_combatants: Combatants, arena_size:
     return spawn;
 }
 
-export function getSpawnAtPosition(spawn_pos: number): CombatantModel {
-    return {
-        id: uuid(),
-        name: "",
-        fitness: 0,
-        strength: undefined, // TODO: calculate at inception to be 'weak', 'strong', 'average'
-        immortal: false, 
-        team: getRandomTeam(),
-        tick: 0,
-        position: spawn_pos,
-        spawning: undefined,
-    };
-}
-
-function getCombatantNextPosition(current_position: number, tiles: TileType[], window_width: number, combatants: Combatants): number {
-    let direction;
-    let position;
-    let attepts = 3;
-
-    const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
-    const self = posData.combatants.c as CombatantModel;
-
-    const friendly_pos = Object.keys(posData.combatants)
-        .filter(
-            // not yourself
-            key => {
-                const ck = key as PosDataKey;
-                
-                return ck !== PosDataKey.c && 
-                // not diagonal
-                ck.length === 1 && 
-                // present and with same team
-                posData.combatants[ck]?.team === self.team &&
-                // not already spawning
-                !posData.combatants[ck]?.spawning &&
-                // are they old enough
-                (posData.combatants[ck]?.tick ?? 0) > MAX_YOUNGLING_TICK &&
-                // not on fire
-                posData.tiles[ck] !== TileType.Fire &&
-                // not on water
-                posData.tiles[ck] !== TileType.Water
-                // TODO: add only mate with similar fitness
-            }
-        )
-        .map(key => {
-            const frd = key as PosDataKey
-
-            return posData.positions[frd];
-        });
-
-    do {
-        direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
-        if (friendly_pos.length > 1 && Math.random() > 0.1) {
-            position = friendly_pos[Math.floor(Math.random() * friendly_pos.length)];
-        } else {
-            position = getNewPositionFromDirection(
-                current_position, 
-                direction, 
-                window_width, 
-                tiles.length);
-        }
-        attepts--;
-        // avoid fire if you can
-    } while (tiles[position] === TileType.Fire && attepts > 0);
-
-    return position;
-};
-
-function getNewPositionFromDirection(current_position: number, direction: number, window_width: number, tile_count: number) {
-    let new_position = current_position;
-    switch (direction) {
-        case DIRECTION.left:
-            new_position = 
-                current_position % window_width > 0 ? 
-                    current_position - 1 : current_position;
-            break;
-        case DIRECTION.up:
-            new_position = 
-                current_position - window_width > -1 ? 
-                    current_position - window_width : current_position;
-            break;
-        case DIRECTION.right:
-            new_position = 
-                current_position % window_width < window_width - 1 ? 
-                    current_position + 1 : current_position;
-            break;
-        case DIRECTION.down:
-            new_position = 
-                current_position + window_width < tile_count ? 
-                    current_position + window_width : current_position;
-            break;
-        case DIRECTION.none:
-            // fallthrough
-        default:
-            new_position = current_position;
-            break;            
-    }
-    return new_position;
-};
-
 /**
  * @returns fitness between 0 and 100
  */
 function evalMapPosition(args: {position: number, tiles: TileType[]}) {
     const {position, tiles} = args;
     // TODO: need to update this to reference using positional math. 
-    if (tiles.c === TileType.Fire) {
+    if (tiles[position] === TileType.Fire) {
         // fire hurts bad
         return -50;
-    } else if (tiles.c === TileType.Water) {
+    } else if (tiles[position] === TileType.Water) {
         // water hurts a bit
         return -5;
-    } else if (tiles.c === TileType.Grass) {
+    } else if (tiles[position] === TileType.Grass) {
         // grass is very good
         return 50;       
 //     } else if (
@@ -366,7 +266,9 @@ function evalMapPosition(args: {position: number, tiles: TileType[]}) {
  * TODO: getNewPositionFromDirection has fencepost/out-of-bounds correction. Should probably move that or use it here as well
  */
 function evalMapePositionPotential(args: {position: number, tiles: TileType[], window_width: number}) {
-    let possible_directions = Object.values(DIRECTION.length;
+    const {position, tiles, window_width} = args;
+
+    let possible_directions = Object.values(DIRECTION).length;
     let position_potential = 0;
                                             
     // TODO: logic taken from getNewPositionFromDirection
@@ -388,7 +290,7 @@ function evalMapePositionPotential(args: {position: number, tiles: TileType[], w
     } else {
         position_potential += evalMapPosition({position: position + 1, tiles});
     }
-    const can_go_down = position + window_width < tile_count;  
+    const can_go_down = position + window_width < tiles.length;  
      if (!can_go_down) {
         possible_directions--;
     } else {
@@ -397,9 +299,9 @@ function evalMapePositionPotential(args: {position: number, tiles: TileType[], w
     
     // TODO: in the future, take into account any occupant in the space and their reletive (weak, average, strong) fitness;
     
-    return evalMapPosition({position, tiles}) + (position_potential / possible_directions)
+    return evalMapPosition({position, tiles}) + ((position_potential / possible_directions)
         // TODO: eventually may want to weigh a cost of being on the edge; currently it is ignored. 
-        / possible_directions;
+        / possible_directions
     );
 }
 
@@ -415,7 +317,7 @@ function compete(a: CombatantModel, b: CombatantModel) {
     return b_fitness > a_fitness ? b: a;
 }
 
-function getSurroundingPos(args: {position: number, window_width: number, tiles: TileType[], combatants: Combatants}): PosData {
+export function getSurroundingPos(args: {position: number, window_width: number, tiles: TileType[], combatants: Combatants}): PosData {
     const {position, window_width, tiles, combatants} = args;
     const ret = {positions: {}, tiles: {}, combatants: {}, position_scores: {}} as PosData;
 
@@ -450,15 +352,15 @@ function getSurroundingPos(args: {position: number, window_width: number, tiles:
     ret.combatants.bl = combatants[ret.positions.bl];
     
     // TODO: move this into the tile calculation at creation as to only bare this cost once. Then delete this. 
-    ret.position_scores.tr = evalMapePositionPotential({position: ret.position.tr, tiles, window_width});
-    ret.position_scores.t = evalMapePositionPotential({position: ret.position.t, tiles, window_width});
-    ret.position_scores.tl = evalMapePositionPotential({position: ret.position.tl, tiles, window_width});
-    ret.position_scores.l = evalMapePositionPotential({position: ret.position.l, tiles, window_width});
-    ret.position_scores.c = evalMapePositionPotential({position: ret.position.c, tiles, window_width});
-    ret.position_scores.r = evalMapePositionPotential({position: ret.position.r, tiles, window_width});
-    ret.position_scores.br = evalMapePositionPotential({position: ret.position.br, tiles, window_width});
-    ret.position_scores.b = evalMapePositionPotential({position: ret.position.b, tiles, window_width});
-    ret.position_scores.bl = evalMapePositionPotential({position: ret.position.bl, tiles, window_width});
+    ret.position_scores.tr = evalMapePositionPotential({position: ret.positions.tr, tiles, window_width});
+    ret.position_scores.t = evalMapePositionPotential({position: ret.positions.t, tiles, window_width});
+    ret.position_scores.tl = evalMapePositionPotential({position: ret.positions.tl, tiles, window_width});
+    ret.position_scores.l = evalMapePositionPotential({position: ret.positions.l, tiles, window_width});
+    ret.position_scores.c = evalMapePositionPotential({position: ret.positions.c, tiles, window_width});
+    ret.position_scores.r = evalMapePositionPotential({position: ret.positions.r, tiles, window_width});
+    ret.position_scores.br = evalMapePositionPotential({position: ret.positions.br, tiles, window_width});
+    ret.position_scores.b = evalMapePositionPotential({position: ret.positions.b, tiles, window_width});
+    ret.position_scores.bl = evalMapePositionPotential({position: ret.positions.bl, tiles, window_width});
 
     return ret;
 };
