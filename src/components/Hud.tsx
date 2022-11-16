@@ -5,7 +5,7 @@
  import React, { ReactElement, useEffect, useState } from 'react';
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
-import Tile, { Type as TileType } from './Tile';
+import { Type as TileType } from '../models/TileModel';
 import Combatant, { Character } from './Combatant';
 import { 
     updateSelectedCombatant, 
@@ -19,6 +19,7 @@ import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
 import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
 import { AppState } from '../data/store';
+import Tile from './Tile';
 
 function getEditableField(
     args: {
@@ -123,23 +124,24 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
         {escape_button}
         <view style={{width: "200px"}}>
             <view className='Badge'>
-                <Tile type={tile ?? TileType.Void}>
+                <Tile type={tile?.type ?? TileType.Void}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
                 </Tile>
                 <view className='Below_image'>
                     {getEditableField(
                         {
-                            editing_value: tile as string, 
+                            editing_value: tile?.type as string, 
                             enabled: !tile,
                             options: Object.keys(TileType).map(
                                 t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : (<></>)),
                             label: (<text className={'Label'}>{'Tile: '}</text>),
-                            display: (<text>{tile ?? ""}</text>),
+                            display: (<text>{tile?.type ?? ""}</text>),
                             update: input => {
                                 dispatch(updateSelectedTile({field: 'type', value: input.target.value as TileType}));
                             },
                         }
                     )}
+                    <view style={{paddingLeft: "8px"}} ><text>{`( ${tile?.score_potential ?? ""} )`}</text></view>
                 </view>
                 {
                     !!combatant && 
@@ -193,6 +195,9 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             }
                         }
                     )}
+                    <view className='Non_editable_row'>
+                        <text className={'Label'}>{'Strength: '}</text><text>{combatant?.strength}</text>
+                    </view>
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 

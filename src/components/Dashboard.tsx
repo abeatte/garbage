@@ -3,7 +3,7 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, CombatantModel } from '../data/boardSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants } from '../data/boardSlice'
 import { Character } from "./Combatant";
 import { setIsHudActionable } from "../data/hudSlice";
 // @ts-ignore
@@ -15,6 +15,7 @@ import Pause from '../images/icons/pause.png'
 // @ts-ignore
 import Play from '../images/icons/play.png'
 import { AppDispatch, AppState } from "../data/store";
+import CombatantModel from "../models/CombatantModel";
 
 const getTeamStats = (combatants: Combatants, selected_position: number | undefined, dispatch: AppDispatch) => {
     const teams = Object.values(Character).reduce((teams, cha) => {
@@ -164,11 +165,11 @@ const Dashboard = (args: {onReset: () => void}) => {
                     </view>
                     <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Births:`}</text>
-                        <text className="Data_row">{`${board.births}`}</text>
+                        <text className="Data_row">{`${board.global_combatant_stats.births}`}</text>
                     </view>
                     <view className={classNames('Row', 'Count_item')}>
                         <text className={'Label'}>{`Deaths:`}</text>
-                        <text className="Data_row">{`${board.deaths}`}</text>
+                        <text className="Data_row">{`${board.global_combatant_stats.deaths}`}</text>
                     </view>
                 </view>
                 {teamStats}
