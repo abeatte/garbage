@@ -127,24 +127,27 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                 <Tile type={tile?.type ?? TileType.Void}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
                 </Tile>
-                <view className='Below_image'>
-                    {getEditableField(
-                        {
-                            editing_value: tile?.type as string, 
-                            enabled: !tile,
-                            options: Object.keys(TileType).map(
-                                t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : (<></>)),
-                            label: (<text className={'Label'}>{'Tile: '}</text>),
-                            display: (<text>{tile?.type ?? ""}</text>),
-                            update: input => {
-                                dispatch(updateSelectedTile({field: 'type', value: input.target.value as TileType}));
-                            },
-                        }
-                    )}
-                    <view style={{paddingLeft: "8px"}} >
-                        <text>{`( ${tile?.score_potential ? Math.round(tile?.score_potential) : ""} )`}</text>
+                {
+                    !!tile &&
+                    <view className='Below_image'>
+                        {getEditableField(
+                            {
+                                editing_value: tile?.type as string, 
+                                enabled: !tile,
+                                options: Object.keys(TileType).map(
+                                    t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : (<></>)),
+                                label: (<text className={'Label'}>{'Tile: '}</text>),
+                                display: (<text>{tile?.type ?? ""}</text>),
+                                update: input => {
+                                    dispatch(updateSelectedTile({field: 'type', value: input.target.value as TileType}));
+                                },
+                            }
+                        )}
+                        <view style={{paddingLeft: "8px"}} >
+                            <text>{`( ${Math.round(tile.score_potential)} )`}</text>
+                        </view>
                     </view>
-                </view>
+                }
                 {
                     !!combatant && 
                     <view className='Below_image'>
