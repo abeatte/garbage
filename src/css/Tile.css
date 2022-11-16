@@ -6,6 +6,10 @@
     align-items: center;
 }
 
+.Tile .Tile_potential {
+    font-size: 10px;
+}
+
 .Tile.Void {
     background-color: black;
 }

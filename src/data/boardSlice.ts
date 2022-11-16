@@ -80,6 +80,7 @@ function initState(width?: number, height?: number): {
     width: number,
     height: number,
     tiles: TileModel[],
+    show_tile_potentials: boolean,
     combatants: Combatants,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
@@ -94,6 +95,7 @@ function initState(width?: number, height?: number): {
         width,
         height,
         tiles,
+        show_tile_potentials: false,
         combatants,
         selected_position: undefined,
         follow_selected_combatant: false,
@@ -274,6 +276,9 @@ export const boardSlice = createSlice({
             );
         }
     },
+    toggleShowTilePotentials: (state) => {
+        state.show_tile_potentials = !state.show_tile_potentials;
+    },
   }
 })
 
@@ -289,6 +294,7 @@ export const {
     updateSelectedTile, 
     killSelected,
     spawnAtSelected,
+    toggleShowTilePotentials,
 } = boardSlice.actions
 
 export default boardSlice.reducer

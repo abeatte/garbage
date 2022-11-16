@@ -13,3 +13,7 @@
 .Clickable {
     cursor: pointer;
 }
+
+.Checkbox {
+    margin-left: 0px;
+}

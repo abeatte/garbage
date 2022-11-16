@@ -124,7 +124,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
         {escape_button}
         <view style={{width: "200px"}}>
             <view className='Badge'>
-                <Tile type={tile?.type ?? TileType.Void}>
+                <Tile tile={tile}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
                 </Tile>
                 {

@@ -3,7 +3,7 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants } from '../data/boardSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials } from '../data/boardSlice'
 import { Character } from "./Combatant";
 import { setIsHudActionable } from "../data/hudSlice";
 // @ts-ignore
@@ -90,7 +90,7 @@ const Dashboard = (args: {onReset: () => void}) => {
    
     const speed_section = (
         <view className="Control_container">
-            <text style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</text>
+            <text  className="Label" style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</text>
             <view className="Speed_buttons_container">
                 <button className="Clickable" onClick={() => {
                     dispatch(slowDown());
@@ -120,7 +120,7 @@ const Dashboard = (args: {onReset: () => void}) => {
                 <button className="Clickable" onClick={() => dispatch(shrinkWidth())}>
                     <text>{"<"}</text>
                 </button>
-                <text>{`Width: ${board.width}`}</text>
+                <text className="Label">{`Width: ${board.width}`}</text>
                 <button className="Clickable" onClick={() => dispatch(growWidth())}>
                     <text>{">"}</text>
                 </button>
@@ -129,11 +129,22 @@ const Dashboard = (args: {onReset: () => void}) => {
                 <button className="Clickable" onClick={() => dispatch(shrinkHeight())}>
                     <text>{"<"}</text>
                 </button>
-                <text>{`Height: ${board.height}`}</text>
+                <text className="Label">{`Height: ${board.height}`}</text>
                 <button className="Clickable" onClick={() => dispatch(growHeight())}>
                     <text>{">"}</text>
                 </button>
             </view> 
+            <view style={{marginTop: "4px"}}>
+                <input 
+                    className={classNames('Clickable', 'Checkbox')} 
+                    type="checkbox" 
+                    checked={board.show_tile_potentials}
+                    onChange={(input) => {
+                        dispatch(toggleShowTilePotentials());
+                    }}
+                />
+                <text className={'Label'}>{'Show Tile Potential'}</text>
+            </view>
         </>
     );
 

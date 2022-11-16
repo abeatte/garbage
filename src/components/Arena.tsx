@@ -108,7 +108,8 @@ class Arena extends React.Component<AppState & DispatchProps> {
             tiles.push(
                 <Tile 
                 id={idx}
-                type={tile.type} 
+                tile={tile} 
+                showPotential={this.props.board.show_tile_potentials}
                 className={classNames({"Clickable" : !!maybe_combatant})}
                 onClick={() => {
                     this.props.clickOnTile(select_args);
@@ -116,7 +117,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
                 >
-                    {maybe_combatant ? (<Combatant team={maybe_combatant.team}/>) : (<></>)}
+                    {maybe_combatant && (<Combatant team={maybe_combatant.team}/>)}
                 </Tile>
             );
         });

@@ -27,10 +27,6 @@
     flex-direction: column;
 }
 
-.Hud .Checkbox {
-    margin-left: 0px;
-}
-
 .Hud .Meta_data_toggles {
     margin-bottom: 8px;
 }
