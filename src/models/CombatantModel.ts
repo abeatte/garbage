@@ -6,7 +6,7 @@ import {
     getSurroundingPos, 
     PosDataKey 
 } from "../data/CombatantUtils";
-import { Type as TileType } from "./TileModel";
+import { TileModel } from "./TileModel";
 import { Combatants } from "../data/boardSlice";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 
@@ -38,12 +38,12 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
     }
 }
 
-export function requestMove(args: {combatant: CombatantModel, tiles: TileType[], window_width: number, combatants: Combatants}) {
+export function requestMove(args: {combatant: CombatantModel, tiles: TileModel[], window_width: number, combatants: Combatants}) {
     const {combatant, tiles, window_width, combatants} = args;
     return getCombatantNextPosition(combatant.position, tiles, window_width, combatants);
 }
 
-function getCombatantNextPosition(current_position: number, tiles: TileType[], window_width: number, combatants: Combatants): number {
+function getCombatantNextPosition(current_position: number, tiles: TileModel[], window_width: number, combatants: Combatants): number {
     let direction;
     let position;
     let attepts = 3;
@@ -53,10 +53,10 @@ function getCombatantNextPosition(current_position: number, tiles: TileType[], w
 
     const friendly_pos = Object.keys(posData.combatants)
         .filter(
-            // not yourself
             key => {
                 const ck = key as PosDataKey;
                 
+                // not yourself
                 return ck !== PosDataKey.c && 
                 // not diagonal
                 ck.length === 1 && 
@@ -66,10 +66,8 @@ function getCombatantNextPosition(current_position: number, tiles: TileType[], w
                 !posData.combatants[ck]?.spawning &&
                 // are they old enough
                 (posData.combatants[ck]?.tick ?? 0) > MAX_YOUNGLING_TICK &&
-                // not on fire
-                posData.tiles[ck] !== TileType.Fire &&
-                // not on water
-                posData.tiles[ck] !== TileType.Water
+                // not on hurtful tiles (fire or water)
+                posData.tiles[ck].tile_effect > -1
                 // TODO: add only mate with similar fitness
             }
         )
@@ -92,7 +90,7 @@ function getCombatantNextPosition(current_position: number, tiles: TileType[], w
         }
         attepts--;
         // avoid fire if you can
-    } while (tiles[position] === TileType.Fire && attepts > 0);
+    } while (tiles[position].tile_effect > -1 && attepts > 0);
 
     return position;
 };

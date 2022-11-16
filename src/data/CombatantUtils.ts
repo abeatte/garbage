@@ -1,7 +1,7 @@
-import { Type as TileType } from "../models/TileModel";
 import { Combatants } from "./boardSlice";
 import CombatantModel, { createCombatant, getRandomTeam, requestMove } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
+import { TileModel } from "../models/TileModel";
 
 export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 export const MAX_YOUNGLING_TICK = 5;
@@ -19,17 +19,17 @@ export interface PosData {
     can_go_right: boolean,
     can_go_down: boolean,
     positions: {[key in PosDataKey]: number},
-    tiles: {[key in PosDataKey]: TileType},
+    tiles: {[key in PosDataKey]: TileModel},
     combatants: {[key in PosDataKey]: CombatantModel | undefined},
     position_scores: {[key in PosDataKey]: number}
 }
 
-export function initCombatantStartingPos(args: {tiles: TileType[], combatants: Combatants}): number {
+export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: Combatants}): number {
     let starting_pos = -1;
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
         const potential_tile = args.tiles[potential_pos];
-        if (!args.combatants[potential_pos] && potential_tile !== TileType.Fire && potential_tile !== TileType.Water) {
+        if (!args.combatants[potential_pos] && potential_tile.tile_effect > -1) {
             starting_pos = potential_pos;
         }
     }
@@ -44,7 +44,7 @@ export function updateCombatantsPositionsAfterResize(
         window_height: number, 
         old_window_width: number, 
         old_window_height: number, 
-        tiles: TileType[]
+        tiles: TileModel[]
     }
 ) {
     const {combatants, window_width, window_height, old_window_width, old_window_height, tiles} = args;
@@ -98,7 +98,7 @@ export function updateCombatantsPositionsAfterResize(
 }
 
 export function calcMovements(args: 
-    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileType[]}): 
+    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}): 
 {combatants: Combatants, births: number, deaths: number} {
     const {combatants, global_combatant_stats, window_width, tiles} = args;
     const new_combatants = {} as Combatants;
@@ -151,7 +151,7 @@ export function calcMovements(args:
 }
 
 export function updateCombatants(args: 
-    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileType[]}):
+    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}):
 GlobalCombatantStatsModel {
     const {combatants, global_combatant_stats, tiles} = args;
     const new_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
@@ -161,7 +161,7 @@ GlobalCombatantStatsModel {
         const position = key as unknown as number;
         const combatant = combatants[position];
         if (!combatant.immortal) {
-            combatant.fitness += evalMapPosition({position, tiles});
+            combatant.fitness += tiles[position].tile_effect;
         }
         combatant.strength = getStrengthRating({
             global_combatant_stats, 
@@ -245,68 +245,6 @@ CombatantModel | undefined {
 }
 
 /**
- * @returns the given tile's effect on fitness
- */
-function evalMapPosition(args: {position: number, tiles: TileType[]}) {
-    const {position, tiles} = args;
-    if (tiles[position] === TileType.Fire) {
-        // fire hurts bad
-        return -50;
-    } else if (tiles[position] === TileType.Water) {
-        // water hurts a bit
-        return -5;
-    } else if (tiles[position] === TileType.Grass) {
-        // grass is very good
-        return 50;       
-    } else {
-        // lame, you get nothing
-        return 0;
-    }
-};
-
-/**
- * @returns the given tile's potential as a tile to move to
- * (Tiles that are near high-value tiles have more potential than those near low-value/hurtful tiles)
- */
-function evalMapePositionPotential(args: {position: number, tiles: TileType[], window_width: number}) {
-    const {position, tiles, window_width} = args;
-
-    let possible_directions = Object.values(DIRECTION).length;
-    let position_potential = 0;
-                                            
-    const can_go_left = position % window_width > 0;
-    if (!can_go_left) {
-        possible_directions--;
-    } else {
-        position_potential += evalMapPosition({position: position - 1, tiles});
-    }
-    const can_go_up = position - window_width > -1
-    if (!can_go_up) {
-        possible_directions--;
-    } else {
-        position_potential += evalMapPosition({position: position - window_width, tiles});
-    }
-    const can_go_right = position % window_width < window_width - 1;
-    if (!can_go_right) {
-        possible_directions--;
-    } else {
-        position_potential += evalMapPosition({position: position + 1, tiles});
-    }
-    const can_go_down = position + window_width < tiles.length;  
-     if (!can_go_down) {
-        possible_directions--;
-    } else {
-        position_potential += evalMapPosition({position: position + window_width, tiles});
-    }
-    
-    // TODO: in the future, take into account an occupient of nearby tiles and their strengths;
-    
-    return evalMapPosition({position, tiles}) + ((position_potential / possible_directions)
-        / possible_directions
-    );
-}
-
-/**
  * Ties go to the a_combatant (the attacker)
  * @param {*} a the attacking combatant
  * @param {*} b the defending combatant
@@ -318,7 +256,7 @@ function compete(a: CombatantModel, b: CombatantModel) {
     return b_fitness > a_fitness ? b: a;
 }
 
-export function getSurroundingPos(args: {position: number, window_width: number, tiles: TileType[], combatants: Combatants}): PosData {
+export function getSurroundingPos(args: {position: number, window_width: number, tiles: TileModel[], combatants: Combatants}): PosData {
     const {position, window_width, tiles, combatants} = args;
     const ret = {positions: {}, tiles: {}, combatants: {}, position_scores: {}} as PosData;
 
@@ -358,16 +296,6 @@ export function getSurroundingPos(args: {position: number, window_width: number,
     ret.combatants.br = combatants[ret.positions.br];
     ret.combatants.b = combatants[ret.positions.b];
     ret.combatants.bl = combatants[ret.positions.bl];
-    
-    ret.position_scores.tr = evalMapePositionPotential({position: ret.positions.tr, tiles, window_width});
-    ret.position_scores.t = evalMapePositionPotential({position: ret.positions.t, tiles, window_width});
-    ret.position_scores.tl = evalMapePositionPotential({position: ret.positions.tl, tiles, window_width});
-    ret.position_scores.l = evalMapePositionPotential({position: ret.positions.l, tiles, window_width});
-    ret.position_scores.c = evalMapePositionPotential({position: ret.positions.c, tiles, window_width});
-    ret.position_scores.r = evalMapePositionPotential({position: ret.positions.r, tiles, window_width});
-    ret.position_scores.br = evalMapePositionPotential({position: ret.positions.br, tiles, window_width});
-    ret.position_scores.b = evalMapePositionPotential({position: ret.positions.b, tiles, window_width});
-    ret.position_scores.bl = evalMapePositionPotential({position: ret.positions.bl, tiles, window_width});
 
     return ret;
 };

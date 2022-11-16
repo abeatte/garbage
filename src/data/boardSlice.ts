@@ -6,7 +6,7 @@ import {
     updateCombatants,
     MIN_HEALTH,
 } from './CombatantUtils';
-import { Type as TileType } from "../models/TileModel";
+import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import CombatantModel, { createCombatant } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
@@ -16,31 +16,36 @@ const NUM_COMBATANTS = 24;
 
 export type Combatants = {[position: number]: CombatantModel};
 
-function initDefaultTiles(dimens: {width: number, height: number}) {
+function initDefaultTiles(dimens: {width: number, height: number}): TileModel[] {
     const {width, height} = dimens;
-    const tiles = Array(width * height);
+    const tiles = Array(width * height) as TileModel[];
     let idx = 0;
     for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
             if (h === 0 || h === height-1 || w === 0 || w === width-1) {
-                tiles[idx] = TileType.Fire;
+                tiles[idx] = createTileModel({index: idx, type: TileType.Fire});
             } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
-                tiles[idx] = Math.random() < 0.1 ?
-                    TileType.Grass : 
-                    Math.random() < 0.1 ? 
-                    TileType.Water : 
-                    TileType.Rock;
+                tiles[idx] = createTileModel({
+                    index: idx, 
+                    type: Math.random() < 0.1 ?
+                        TileType.Grass : 
+                        Math.random() < 0.1 ? 
+                        TileType.Water : 
+                        TileType.Rock,
+                });
             } else {
-                tiles[idx] = TileType.Sand;
+                tiles[idx] = createTileModel({index: idx, type: TileType.Sand});
             }
             idx++;
         }
     }
 
+    updateMapTileScorePotentials(tiles, width);
+
     return tiles;
 };
 
-function initCombatants(args: {tiles: TileType[]}): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
+function initCombatants(args: {tiles: TileModel[]}): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
     const {tiles} = args;
     const combatants = {} as Combatants;
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
@@ -74,7 +79,7 @@ function initState(width?: number, height?: number): {
     global_combatant_stats: GlobalCombatantStatsModel,
     width: number,
     height: number,
-    tiles: TileType[],
+    tiles: TileModel[],
     combatants: Combatants,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
@@ -244,7 +249,8 @@ export const boardSlice = createSlice({
     },
     updateSelectedTile: (state, action: {payload: {field: 'type', value: TileType}}) => {
         if (state.selected_position) {
-            state.tiles[state.selected_position] = action.payload.value
+            state.tiles[state.selected_position] = createTileModel({index: state.selected_position, type: action.payload.value});
+            updateMapTileScorePotentials(state.tiles, state.width);
         }
     },
     killSelected: (state) => {

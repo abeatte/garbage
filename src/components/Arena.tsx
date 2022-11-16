@@ -108,7 +108,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
             tiles.push(
                 <Tile 
                 id={idx}
-                type={tile} 
+                type={tile.type} 
                 className={classNames({"Clickable" : !!maybe_combatant})}
                 onClick={() => {
                     this.props.clickOnTile(select_args);
