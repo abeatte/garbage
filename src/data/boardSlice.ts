@@ -10,7 +10,7 @@ import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotenti
 import CombatantModel, { createCombatant } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
-const WINDOW_WIDTH = 14;
+const WINDOW_WIDTH = 13;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 
