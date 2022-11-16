@@ -2,8 +2,7 @@ import uuid from "react-uuid";
 import { Character } from "../components/Combatant";
 import { 
     MAX_YOUNGLING_TICK, 
-    DIRECTION, 
-    getRandomTeam, 
+    DIRECTION,
     getSurroundingPos, 
     PosDataKey 
 } from "../data/CombatantUtils";
@@ -129,5 +128,10 @@ function getNewPositionFromDirection(current_position: number, direction: number
     }
     return new_position;
 };
+
+export function getRandomTeam(): keyof typeof Character  {
+    const set = Object.keys(Character);
+    return set[Math.round(Math.random() * (set.length - 1))] as keyof typeof Character;
+}
 
 export default CombatantModel;
