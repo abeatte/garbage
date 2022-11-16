@@ -6,7 +6,7 @@ import React from "react";
 import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
-import { tick, reset as resetTicker, pauseUnpause } from '../data/tickerSlice'
+import { tick, reset as resetTicker, pause, pauseUnpause } from '../data/tickerSlice'
 import { tick as combatantTick, reset as resetBoard, select, Combatants } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
@@ -88,6 +88,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
         // handle combatant updates
         if (Object.keys(this.props.board.combatants).length < 1) {
+            this.props.pause();
             clearInterval(this.interval);
         }
     }
@@ -160,6 +161,7 @@ interface DispatchProps {
     reset: () => void,
     performTick: () => void,
     pauseUnpause: () => void,
+    pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
 }
 
@@ -174,6 +176,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
             dispatch(tick());
             dispatch(combatantTick());
         },
+        pause: () => dispatch(pause()),
         pauseUnpause: () => dispatch(pauseUnpause()),
         clickOnTile: (select_args) => {
             dispatch(select(select_args));
