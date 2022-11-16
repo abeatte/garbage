@@ -26,7 +26,7 @@ function getEditableField(
         editing_value: string | undefined, 
         enabled?: boolean, 
         editing_type?: string, 
-        options?: ReactElement[] | undefined 
+        options?: (ReactElement | undefined)[] | undefined 
         label: ReactElement, 
         display: ReactElement, 
         edit?: () => void, 
@@ -135,7 +135,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 editing_value: tile?.type as string, 
                                 enabled: !tile,
                                 options: Object.keys(TileType).map(
-                                    t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : (<></>)),
+                                    t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : undefined),
                                 label: (<text className={'Label'}>{'Tile: '}</text>),
                                 display: (<text>{tile?.type ?? ""}</text>),
                                 update: input => {
