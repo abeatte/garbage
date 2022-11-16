@@ -88,9 +88,9 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
 
     const [editing, setEditing] = useState({} as EditingObject);
 
-    const selected_position = board.selected_position;
-    const combatant = !!selected_position ? board.combatants[selected_position] : undefined;
-    const tile = !!selected_position ? board.tiles[selected_position]: undefined;
+    const selected_position = board.selected_position ?? -1;
+    const combatant = selected_position > -1 ? board.combatants[selected_position] : undefined;
+    const tile = selected_position > -1 ? board.tiles[selected_position]: undefined;
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
     useEffect(() => {
@@ -141,7 +141,9 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             },
                         }
                     )}
-                    <view style={{paddingLeft: "8px"}} ><text>{`( ${tile?.score_potential ?? ""} )`}</text></view>
+                    <view style={{paddingLeft: "8px"}} >
+                        <text>{`( ${tile?.score_potential ? Math.round(tile?.score_potential) : ""} )`}</text>
+                    </view>
                 </view>
                 {
                     !!combatant && 
