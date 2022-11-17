@@ -90,7 +90,7 @@ function getCombatantNextPosition(current_position: number, tiles: TileModel[], 
         }
         attepts--;
         // avoid fire if you can
-    } while (tiles[position].tile_effect > -1 && attepts > 0);
+    } while (tiles[position].tile_effect < 0 && attepts > 0);
 
     return position;
 };
