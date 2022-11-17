@@ -121,7 +121,6 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
 
     return (
       <view className='Hud'>
-        {escape_button}
         <view style={{width: "200px"}}>
             <view className='Badge'>
                 <Tile tile={tile}>
@@ -156,6 +155,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                 }
             </view>
         </view> 
+        {escape_button}
         <view className='Info_container'>
             <view className='Details_container'>
             { !!combatant && (
