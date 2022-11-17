@@ -160,25 +160,25 @@ const Dashboard = (args: {onReset: () => void}) => {
                 {speed_section}
                 {resize_section}
             </view>
-            <view>
-                <view className={'Row'}>
+            <view style={{flexGrow: 1}}>
+                <view className={'Row_group'}>
                     <view className={'Row'}>
                         <text className={'Label'}>{'Game:'}</text>
                         <text className="Data_row">{board.game_count}</text>
                     </view>
-                    <view className={classNames('Row', 'Count_item')}>
-                        <text className={'Label'}>{'Tick:'}</text>
+                    <view className={classNames('Row')}>
+                        <text className={'Label'}>{'Year:'}</text>
                         <text className="Data_row">{ticker.tick}</text>
                     </view>
-                    <view className={classNames('Row', 'Count_item')}>
+                    <view className={classNames('Row')}>
                         <text className={'Label'}>{`Combatants:`}</text>
                         <text className="Data_row">{`${Object.keys(board.combatants).length}`}</text>
                     </view>
-                    <view className={classNames('Row', 'Count_item')}>
+                    <view className={classNames('Row')}>
                         <text className={'Label'}>{`Births:`}</text>
                         <text className="Data_row">{`${board.global_combatant_stats.births}`}</text>
                     </view>
-                    <view className={classNames('Row', 'Count_item')}>
+                    <view className={classNames('Row')}>
                         <text className={'Label'}>{`Deaths:`}</text>
                         <text className="Data_row">{`${board.global_combatant_stats.deaths}`}</text>
                     </view>

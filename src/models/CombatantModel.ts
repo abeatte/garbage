@@ -22,6 +22,7 @@ export interface CombatantModel {
     immortal: boolean;
     team: keyof typeof Character;
     spawning: CombatantModel | undefined;
+    children: number,
 }
 
 export function createCombatant(args: {spawn_position: number, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
@@ -35,6 +36,7 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
         tick: 0,
         position: args.spawn_position,
         spawning: undefined,
+        children: 0,
     }
 }
 

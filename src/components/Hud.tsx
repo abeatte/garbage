@@ -213,8 +213,11 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
                         }
                     )}
-                    <view>
-                        <text className={'Label'}>{'Tick: '}</text><text>{combatant?.tick ?? ""}</text>
+                    <view className='Non_editable_row'>
+                        <text className={'Label'}>{'Age: '}</text><text>{combatant?.tick ?? ""}</text>
+                    </view>
+                    <view className='Non_editable_row'>
+                        <text className={'Label'}>{'Children: '}</text><text>{combatant?.children ?? ""}</text>
                     </view>
                     <view className='Toggles'>
                         <view>

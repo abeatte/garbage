@@ -3,6 +3,12 @@
     flex-direction: row;
     flex-wrap: wrap;
     max-width: fit-content;
+    padding-right: 8px;
+}
+.Dashboard .Row_group {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .Dashboard .Control_container {
@@ -17,11 +23,6 @@
 
 .Dashboard .Update_button.updated:hover {
     background-color: rgb(82, 204, 244);
-}
-
-.Dashboard .Count_item {
-    padding-left: 16px;
-    padding-right: 16px;
 }
 
 .Dashboard .Fitness {

@@ -136,6 +136,8 @@ export function calcMovements(args:
                     live_combatants: new_combatants, 
                     arena_size: tiles.length});
                 if (!!spawn) {
+                    combatant.children += 1;
+                    occupient.children += 1;
                     births++
                 }
             }
