@@ -7,21 +7,27 @@ export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
-export enum PosDataKey {
-    tr = 'tr', t = 't', tl = 'tl', 
-    r = 'r', c = 'c', l = 'l', 
-    br = 'br', b = 'b', bl = 'bl'
+export enum ClockFace {  
+    c = 0, 
+    tl = 1, t = 2, tr = 3, 
+    r = 4,  
+    br = 5, b = 6, bl = 7,
+    l = 8, 
 };
+
+interface Surroundings {
+    position: number,
+    occupant: CombatantModel | undefined,
+    tile: TileModel | undefined,
+}
+    
 export interface PosData {
     coord: {x: number, y: number},
     can_go_left: boolean,
     can_go_up: boolean,
     can_go_right: boolean,
     can_go_down: boolean,
-    positions: {[key in PosDataKey]: number},
-    tiles: {[key in PosDataKey]: TileModel},
-    combatants: {[key in PosDataKey]: CombatantModel | undefined},
-    position_scores: {[key in PosDataKey]: number}
+    surroundings: Surroundings[],
 }
 
 export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: Combatants}): number {
@@ -61,20 +67,20 @@ export function updateCombatantsPositionsAfterResize(
             // they fell off the world; let's try to move them up/left
             const posData = 
                 getSurroundingPos({position: old_pos, window_width: old_window_width, tiles, combatants});
-            const can_move_up = posData.can_go_up && !posData.combatants.t;
-            const can_move_diag = posData.can_go_left && posData.can_go_up && !posData.combatants.tl;
-            const can_move_left = posData.can_go_left && !posData.combatants.l;
+            const can_move_up = posData.can_go_up && !posData.surroundings[ClockFace.t].occupant;
+            const can_move_diag = posData.can_go_left && posData.can_go_up && !posData.surroundings[ClockFace.tl].occupant;
+            const can_move_left = posData.can_go_left && !posData.surroundings[ClockFace.l].occupant;
 
             const dice_roll = Math.random();
 
             if (dice_roll < .33 && can_move_left && dif_col > -1) {
-                new_pos = posData.positions.l;
+                new_pos = posData.surroundings[ClockFace.l].position;
                 coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
             } else if (dice_roll < .66 && can_move_up && dif_row > -1) {
-                new_pos = posData.positions.t;
+                new_pos = posData.surroundings[ClockFace.t].position;
                 coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
             } else if (can_move_diag) {
-                new_pos = posData.positions.tl;
+                new_pos = posData.surroundings[ClockFace.tl].position;
                 coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
             } else {
                 new_pos = -1;
@@ -208,38 +214,37 @@ function spawnNextGen(args:
     {posData: PosData, live_combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, arena_size: number}): 
 CombatantModel | undefined {
     const {posData, live_combatants, global_combatant_stats, arena_size} = args;
-    const {positions, combatants} = posData;
-    const self = combatants[PosDataKey.c] as CombatantModel;
-    const nearby_friends = [];
-    const nearby_enemies = [];
-    const empty_space = [] as PosDataKey[];
+    const {surroundings} = posData;
+    const self = surroundings[ClockFace.c].occupant as CombatantModel;
+    const friendly_positions = [], 
+    enemy_positions = [], 
+    empty_positions = [] as number[];
 
-    Object.keys(combatants).forEach(key => {
-        const ck = key as PosDataKey;
-        const c = combatants[ck];
+    surroundings.forEach((surrounding, idx, s_arr) => {
+        const {position, occupant: c} = surrounding;
 
         if (!c) {
-            if (positions[ck] > -1 && positions[ck] < arena_size) {
-                empty_space.push(ck)
+            if (position > -1 && position < arena_size) {
+                empty_positions.push(position)
             }
         } else if (c.team === self.team) {
-            nearby_friends.push(c);
+            friendly_positions.push(c);
         } else {
-            nearby_enemies.push(c);
+            enemy_positions.push(c);
         }
     });
 
     let spawn = undefined;
-    if (nearby_enemies.length > 1) {
+    if (enemy_positions.length > 1) {
         // too dangerous, nothing happens
     } else {
         // safe, let's do it!
-        const spawn_pos = positions[empty_space[Math.round(Math.random() * (empty_space.length - 1))]];
+        const spawn_pos = empty_positions[Math.round(Math.random() * (empty_positions.length - 1))];
         delete self.spawning?.spawning;
         delete self.spawning;
         live_combatants[spawn_pos] = createCombatant({spawn_position: spawn_pos, global_combatant_stats});
         // too many of my kind here, let's diverge
-        live_combatants[spawn_pos].team = nearby_friends.length < 4 ? self.team : getRandomTeam();
+        live_combatants[spawn_pos].team = friendly_positions.length < 4 ? self.team : getRandomTeam();
 
         spawn = live_combatants[spawn_pos];
     }
@@ -260,44 +265,33 @@ function compete(a: CombatantModel, b: CombatantModel) {
 
 export function getSurroundingPos(args: {position: number, window_width: number, tiles: TileModel[], combatants: Combatants}): PosData {
     const {position, window_width, tiles, combatants} = args;
-    const ret = {positions: {}, tiles: {}, combatants: {}, position_scores: {}} as PosData;
+    const ret = {surroundings: [] as Surroundings[]} as PosData;
 
     ret.coord = {y: Math.floor(position / window_width), x: position % window_width};
     ret.can_go_left = position % window_width > 0;
     ret.can_go_up = position - window_width > -1
     ret.can_go_right = position % window_width < window_width - 1;
-    ret.can_go_down = position + window_width < tiles.length;  
+    ret.can_go_down = position + window_width < tiles.length; 
+    
+    const setSurrounding = (position: number) => {
+        return {
+            position,
+            occupant: combatants[position],
+            tile: tiles[position]
+        }
+    }
 
-
-    ret.positions.tr = position - window_width + 1;
-    ret.positions.t = position - window_width;
-    ret.positions.tl = position - window_width - 1
-    ret.positions.r = position + 1;
-    ret.positions.c = position;
-    ret.positions.l = position - 1;
-    ret.positions.br = position + window_width + 1;
-    ret.positions.b = position + window_width;
-    ret.positions.bl = position + window_width - 1;
-
-    ret.tiles.tr = tiles[ret.positions.tr];
-    ret.tiles.t = tiles[ret.positions.t];
-    ret.tiles.tl = tiles[ret.positions.tl];
-    ret.tiles.l = tiles[ret.positions.l];
-    ret.tiles.c = tiles[ret.positions.c];
-    ret.tiles.r = tiles[ret.positions.r];
-    ret.tiles.br = tiles[ret.positions.br];
-    ret.tiles.b = tiles[ret.positions.b];
-    ret.tiles.bl = tiles[ret.positions.bl];
-
-    ret.combatants.tr = combatants[ret.positions.tr];
-    ret.combatants.t = combatants[ret.positions.t];
-    ret.combatants.tl = combatants[ret.positions.tl];
-    ret.combatants.l = combatants[ret.positions.l];
-    ret.combatants.c = combatants[ret.positions.c];
-    ret.combatants.r = combatants[ret.positions.r];
-    ret.combatants.br = combatants[ret.positions.br];
-    ret.combatants.b = combatants[ret.positions.b];
-    ret.combatants.bl = combatants[ret.positions.bl];
+    // start at center position and then move clockwise around
+    ret.surroundings = Array(9);
+    ret.surroundings[ClockFace.c] = setSurrounding(position);
+    ret.surroundings[ClockFace.tl] = setSurrounding(position - window_width - 1);
+    ret.surroundings[ClockFace.t] = setSurrounding(position - window_width);
+    ret.surroundings[ClockFace.tr] = setSurrounding(position - window_width + 1);
+    ret.surroundings[ClockFace.r] = setSurrounding(position + 1);
+    ret.surroundings[ClockFace.br] = setSurrounding(position + window_width + 1);
+    ret.surroundings[ClockFace.b] = setSurrounding(position + window_width);
+    ret.surroundings[ClockFace.bl] = setSurrounding(position + window_width - 1);
+    ret.surroundings[ClockFace.l] = setSurrounding(position - 1);
 
     return ret;
 };

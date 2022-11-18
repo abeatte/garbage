@@ -3,8 +3,8 @@ import { Character } from "../components/Combatant";
 import { 
     MAX_YOUNGLING_TICK, 
     DIRECTION,
-    getSurroundingPos, 
-    PosDataKey 
+    getSurroundingPos,
+    ClockFace, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
 import { Combatants } from "../data/boardSlice";
@@ -51,38 +51,41 @@ function getCombatantNextPosition(current_position: number, tiles: TileModel[], 
     let attepts = 3;
 
     const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
-    const self = posData.combatants.c as CombatantModel;
+    const self = posData.surroundings[ClockFace.c].occupant as CombatantModel;
 
-    const friendly_pos = Object.keys(posData.combatants)
-        .filter(
-            key => {
-                const ck = key as PosDataKey;
-                
-                // not yourself
-                return ck !== PosDataKey.c && 
-                // not diagonal
-                ck.length === 1 && 
-                // present and with same team
-                posData.combatants[ck]?.team === self.team &&
-                // not already spawning
-                !posData.combatants[ck]?.spawning &&
-                // are they old enough
-                (posData.combatants[ck]?.tick ?? 0) > MAX_YOUNGLING_TICK &&
-                // not on hurtful tiles (fire or water)
-                posData.tiles[ck].tile_effect > -1
-                // TODO: add only mate with similar fitness
+    const mate_positions = [] as number[],
+    enemy_positions = [] as number[], 
+    empty_positions = [] as number[];
+
+    posData.surroundings.forEach((surrounding, idx, s_arr) => {
+        const {position, occupant: c, tile} = surrounding;
+
+        const illegal_moves = [ClockFace.c, ClockFace.bl, ClockFace.br, ClockFace.tl, ClockFace.tr]
+        if (illegal_moves.includes(idx)) {
+            // don't count yourself or diagonal positions
+            return;
+        }
+
+        if (!c) {
+            if (position > -1 && position < window_width) {
+                empty_positions.push(position)
             }
-        )
-        .map(key => {
-            const frd = key as PosDataKey
-
-            return posData.positions[frd];
-        });
+        } else if (
+            c.team === self.team && 
+            !c.spawning && 
+            c.tick > MAX_YOUNGLING_TICK && 
+            (tile?.tile_effect ?? -1) > -1
+        ) {
+            mate_positions.push(position);
+        } else {
+            enemy_positions.push(position);
+        }
+    });
 
     do {
         direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
-        if (friendly_pos.length > 1 && Math.random() > 0.1) {
-            position = friendly_pos[Math.floor(Math.random() * friendly_pos.length)];
+        if (mate_positions.length > 1 && Math.random() > 0.1) {
+            position = mate_positions[Math.floor(Math.random() * mate_positions.length)];
         } else {
             position = getNewPositionFromDirection(
                 current_position, 
