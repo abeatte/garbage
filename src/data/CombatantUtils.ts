@@ -128,8 +128,8 @@ export function calcMovements(args:
             
             // space is occupied by a friendly
             if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
-                combatant.spawning = occupient;
-                occupient.spawning = combatant;
+                combatant.mating_with_id = occupient.id;
+                occupient.mating_with_id = combatant.id;
                 const spawn = spawnNextGen({
                     posData:
                         getSurroundingPos({
@@ -140,6 +140,8 @@ export function calcMovements(args:
                         }), 
                     global_combatant_stats: global_combatant_stats,
                     arena_size: tiles.length});
+                combatant.mating_with_id = undefined;
+                occupient.mating_with_id = undefined;
                 if (spawn) {
                     new_combatants[spawn.position] = spawn;
                     combatant.children += 1;
@@ -210,10 +212,9 @@ GlobalCombatantStatsModel {
     return c.fitness > MIN_HEALTH;
 };
 
-function spawnNextGen(args: 
+function spawnNextGen({posData, global_combatant_stats, arena_size}: 
     {posData: PosData, global_combatant_stats: GlobalCombatantStatsModel, arena_size: number}): 
 CombatantModel | undefined {
-    const {posData, global_combatant_stats, arena_size} = args;
     const {surroundings} = posData;
     const self = surroundings[ClockFace.c].occupant as CombatantModel;
     const friendly_positions = [], 
@@ -240,8 +241,6 @@ CombatantModel | undefined {
     } else {
         // safe, let's do it!
         const spawn_pos = empty_positions[Math.round(Math.random() * (empty_positions.length - 1))];
-        delete self.spawning?.spawning;
-        delete self.spawning;
         spawn = createCombatant({spawn_position: spawn_pos, global_combatant_stats});
         // too many of my kind here, let's diverge
         spawn.team = friendly_positions.length < 4 ? self.team : getRandomTeam();

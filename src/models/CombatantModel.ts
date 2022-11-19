@@ -21,7 +21,7 @@ export interface CombatantModel {
     strength: keyof typeof Strength;
     immortal: boolean;
     team: keyof typeof Character;
-    spawning: CombatantModel | undefined;
+    mating_with_id: string | undefined;
     children: number,
 }
 
@@ -35,7 +35,7 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
         team: getRandomTeam(),
         tick: 0,
         position: args.spawn_position,
-        spawning: undefined,
+        mating_with_id: undefined,
         children: 0,
     }
 }
@@ -72,7 +72,7 @@ function getCombatantNextPosition(current_position: number, tiles: TileModel[], 
             }
         } else if (
             c.team === self.team && 
-            !c.spawning && 
+            !c.mating_with_id && 
             c.tick > MAX_YOUNGLING_TICK && 
             (tile?.tile_effect ?? -1) > -1
         ) {
