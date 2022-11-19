@@ -16,8 +16,7 @@ const NUM_COMBATANTS = 24;
 
 export type Combatants = {[position: number]: CombatantModel};
 
-function initDefaultTiles(dimens: {width: number, height: number}): TileModel[] {
-    const {width, height} = dimens;
+function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
     const tiles = Array(width * height) as TileModel[];
     let idx = 0;
     for (let h = 0; h < height; h++) {
@@ -45,8 +44,7 @@ function initDefaultTiles(dimens: {width: number, height: number}): TileModel[] 
     return tiles;
 };
 
-function initCombatants(args: {tiles: TileModel[]}): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
-    const {tiles} = args;
+function initCombatants({tiles}: {tiles: TileModel[]}): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
     const combatants = {} as Combatants;
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
     const num_combatants = NUM_COMBATANTS;
