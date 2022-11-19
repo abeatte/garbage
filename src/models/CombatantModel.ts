@@ -46,15 +46,31 @@ export function requestMove(args: {combatant: CombatantModel, tiles: TileModel[]
 }
 
 function getCombatantNextPosition(current_position: number, tiles: TileModel[], window_width: number, combatants: Combatants): number {
-    let direction;
-    let position;
-    let attepts = 3;
-
     const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
     const self = posData.surroundings[ClockFace.c].occupant as CombatantModel;
 
-    const mate_positions = [] as number[],
-    enemy_positions = [] as number[], 
+    // returns negative if B is stronger
+    const b_vs_a_strength = (a: CombatantModel | undefined, b: CombatantModel | undefined): number => {
+        const bs = b?.strength, as = a?.strength;
+        if (bs === undefined) {
+            return -1;
+        } else if (as === undefined) {
+            return 1;
+        } else if (bs === as) {
+            return 0;
+        } else if (bs === Strength.Immortal) {
+            return 1;
+        } else if (bs === Strength.Strong && as !== Strength.Immortal) {
+            return 1;
+        } else if (bs === Strength.Average && (as !== Strength.Immortal && as !== Strength.Strong)) {
+            return 1;
+        } else { 
+            return -1;
+        }
+    };
+
+    let potential_mates = [] as CombatantModel[],
+    enemies = [] as CombatantModel[], 
     empty_positions = [] as number[];
 
     posData.surroundings.forEach((surrounding, idx, s_arr) => {
@@ -67,32 +83,74 @@ function getCombatantNextPosition(current_position: number, tiles: TileModel[], 
         }
 
         if (!c) {
-            if (position > -1 && position < window_width) {
+            if (position > -1 && position < tiles.length) {
                 empty_positions.push(position)
             }
         } else if (
+            // same team
             c.team === self.team && 
+            // not already 'engaged'
             !c.mating_with_id && 
+            // not too young
             c.tick > MAX_YOUNGLING_TICK && 
+            // not on hurtful tile
             (tile?.tile_effect ?? -1) > -1
         ) {
-            mate_positions.push(position);
-        } else {
-            enemy_positions.push(position);
+            potential_mates.push(c);
+        } else if (
+            // enemy
+            c.team !== self.team
+        ) {
+            enemies.push(c);
         }
     });
 
+    potential_mates = potential_mates.sort(b_vs_a_strength);
+    enemies = enemies.sort(b_vs_a_strength);
+    const bucketed_potential_ranked_tiles = Object.values(posData.surroundings).reduce((buckets, s) => {
+        const tile = s.tile;
+        if (tile !== undefined) {
+            const position = tile.index;
+            if (empty_positions.includes(position)) {
+                if (buckets[tile.score_potential] === undefined) {
+                    buckets[tile.score_potential] = [];
+                }
+                const bucket = buckets[tile.score_potential];
+                bucket.push(position);
+            }
+        }
+        return buckets;
+    }, {} as {[key: number]: number[]});
+
+    let position;
+    let attepts = 3;
     do {
-        direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
-        if (mate_positions.length > 1 && Math.random() > 0.1) {
-            position = mate_positions[Math.floor(Math.random() * mate_positions.length)];
+        // position based on best safe space
+        const best_safe_position_bucket = bucketed_potential_ranked_tiles[Object.keys(bucketed_potential_ranked_tiles)
+            .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
+        const best_safe_position = best_safe_position_bucket?.length > 0 ? 
+            best_safe_position_bucket[Math.floor(Math.random() * best_safe_position_bucket.length)] : undefined;
+
+        // position based on best mate space
+        const best_mate_position = 
+            // find me someone better than me
+            potential_mates.find(m => b_vs_a_strength(self, m) >= 0)?.position ?? 
+            // or just find me anyone
+            potential_mates[Math.floor(Math.random() * potential_mates.length)]?.position
+
+        // 90 % chance you'll choose to mate
+        if (best_mate_position !== undefined && Math.random() > 0.1) {
+            position = best_mate_position;
+        } else if (best_safe_position !== undefined) {
+            position = best_safe_position;
         } else {
+            const direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
             position = getNewPositionFromDirection(
                 current_position, 
                 direction, 
                 window_width, 
                 tiles.length);
-        }
+                    }
         attepts--;
         // avoid fire if you can
     } while (tiles[position].tile_effect < 0 && attepts > 0);
