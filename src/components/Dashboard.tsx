@@ -35,11 +35,11 @@ const getTeamStats = (combatants: Combatants, selected_position: number | undefi
             .slice(0, 10)
             .forEach((c: CombatantModel, idx: number, subset: CombatantModel[]) => {
                 if (idx === 0) {
-                    team_array.push(<text key={"["}>{"[ "}</text>);
+                    team_array.push(<span key={"["}>{"[ "}</span>);
                 }
 
                 team_array.push(
-                    <text 
+                    <span 
                         key={`${c.id}`}
                         className={selected_position === c.position ? "Selected" : ""} 
                         onClick={() => {
@@ -48,25 +48,25 @@ const getTeamStats = (combatants: Combatants, selected_position: number | undefi
                         }}
                     >
                         {`${c.immortal ? Infinity : c.fitness}`}
-                    </text>
+                    </span>
                 );
 
                 if (idx < teams[team].length - 1) {
-                    team_array.push(<text key={`${idx}','`}>{', '}</text>);
+                    team_array.push(<span key={`${idx}','`}>{', '}</span>);
                 }
 
                 if (idx === teams[team].length - 1) {
-                    team_array.push(<text key={"]"}>{" ]"}</text>);
+                    team_array.push(<span key={"]"}>{" ]"}</span>);
                 } else if (idx === subset.length - 1) {
-                    team_array.push(<text key={"...]"}>{ " ... ]"}</text>);
+                    team_array.push(<span key={"...]"}>{ " ... ]"}</span>);
                 }
             });
         return (
             <view key={team} className={'Team_group'}>
-                <text className={'Label'}>{`${team}`}</text><text>{` (${teams[team].length}):`}</text>
+                <span className={'Label'}>{`${team}`}</span><span>{` (${teams[team].length}):`}</span>
                 <view className={classNames("Data_row", "Team", "Clickable")}>
                     {teams[team].length < 1 ? 
-                        (<text>{"[ ]"}</text>) : 
+                        (<span>{"[ ]"}</span>) : 
                         team_array
                     }
                 </view>
@@ -90,7 +90,7 @@ const Dashboard = (args: {onReset: () => void}) => {
    
     const speed_section = (
         <view className="Control_container">
-            <text  className="Label" style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</text>
+            <span  className="Label" style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</span>
             <view className="Speed_buttons_container">
                 <button className="Clickable" onClick={() => {
                     dispatch(slowDown());
@@ -118,20 +118,20 @@ const Dashboard = (args: {onReset: () => void}) => {
         <>
             <view>
                 <button className="Clickable" onClick={() => dispatch(shrinkWidth())}>
-                    <text>{"<"}</text>
+                    <span>{"<"}</span>
                 </button>
-                <text className="Label">{`Width: ${board.width}`}</text>
+                <span className="Label">{`Width: ${board.width}`}</span>
                 <button className="Clickable" onClick={() => dispatch(growWidth())}>
-                    <text>{">"}</text>
+                    <span>{">"}</span>
                 </button>
             </view> 
             <view>
                 <button className="Clickable" onClick={() => dispatch(shrinkHeight())}>
-                    <text>{"<"}</text>
+                    <span>{"<"}</span>
                 </button>
-                <text className="Label">{`Height: ${board.height}`}</text>
+                <span className="Label">{`Height: ${board.height}`}</span>
                 <button className="Clickable" onClick={() => dispatch(growHeight())}>
-                    <text>{">"}</text>
+                    <span>{">"}</span>
                 </button>
             </view> 
             <view style={{marginTop: "4px"}}>
@@ -143,7 +143,7 @@ const Dashboard = (args: {onReset: () => void}) => {
                         dispatch(toggleShowTilePotentials());
                     }}
                 />
-                <text className={'Label'}>{'Show Tile Potential'}</text>
+                <span className={'Label'}>{'Show Tile Potential'}</span>
             </view>
         </>
     );
@@ -155,7 +155,7 @@ const Dashboard = (args: {onReset: () => void}) => {
                     className={classNames("Update_button", "Clickable")} 
                     onClick={() => onReset()
                 }>
-                    <text>{"Restart"}</text>
+                    <span>{"Restart"}</span>
                 </button>
                 {speed_section}
                 {resize_section}
@@ -163,24 +163,24 @@ const Dashboard = (args: {onReset: () => void}) => {
             <view style={{flexGrow: 1}}>
                 <view className={'Row_group'}>
                     <view className={'Row'}>
-                        <text className={'Label'}>{'Game:'}</text>
-                        <text className="Data_row">{board.game_count}</text>
+                        <span className={'Label'}>{'Game:'}</span>
+                        <span className="Data_row">{board.game_count}</span>
                     </view>
                     <view className={classNames('Row')}>
-                        <text className={'Label'}>{'Year:'}</text>
-                        <text className="Data_row">{ticker.tick}</text>
+                        <span className={'Label'}>{'Year:'}</span>
+                        <span className="Data_row">{ticker.tick}</span>
                     </view>
                     <view className={classNames('Row')}>
-                        <text className={'Label'}>{`Combatants:`}</text>
-                        <text className="Data_row">{`${Object.keys(board.combatants).length}`}</text>
+                        <span className={'Label'}>{`Combatants:`}</span>
+                        <span className="Data_row">{`${Object.keys(board.combatants).length}`}</span>
                     </view>
                     <view className={classNames('Row')}>
-                        <text className={'Label'}>{`Births:`}</text>
-                        <text className="Data_row">{`${board.global_combatant_stats.births}`}</text>
+                        <span className={'Label'}>{`Births:`}</span>
+                        <span className="Data_row">{`${board.global_combatant_stats.births}`}</span>
                     </view>
                     <view className={classNames('Row')}>
-                        <text className={'Label'}>{`Deaths:`}</text>
-                        <text className="Data_row">{`${board.global_combatant_stats.deaths}`}</text>
+                        <span className={'Label'}>{`Deaths:`}</span>
+                        <span className="Data_row">{`${board.global_combatant_stats.deaths}`}</span>
                     </view>
                 </view>
                 {teamStats}

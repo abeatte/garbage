@@ -111,7 +111,7 @@ const Combatant = (props: {team: keyof typeof Character, detail?: boolean}) => {
     const char = getCharacter(props.team);
     const for_detail_view = props.detail;
     if (!char.sheet) {
-        return (<text style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</text>);
+        return (<span style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</span>);
     } else {
         return (<div className="Sprite" style={
             {

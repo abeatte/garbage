@@ -62,7 +62,7 @@ function getEditableField(
             className="Clickable" 
             onClick={done}
             >
-            <text>{"OK"}</text>
+            <span>{"OK"}</span>
         </button>);
 
     return editing_value === undefined ? 
@@ -114,7 +114,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     dispatch(setIsHudActionable(false));
                 }}
             >
-            <text>{"X"}</text>
+            <span>{"X"}</span>
             </button>
         </view>
     );
@@ -135,22 +135,22 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 enabled: !tile,
                                 options: Object.keys(TileType).map(
                                     t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : undefined),
-                                label: (<text className={'Label'}>{'Tile: '}</text>),
-                                display: (<text>{tile?.type ?? ""}</text>),
+                                label: (<span className={'Label'}>{'Tile: '}</span>),
+                                display: (<span>{tile?.type ?? ""}</span>),
                                 update: input => {
                                     dispatch(updateSelectedTile({field: 'type', value: input.target.value as TileType}));
                                 },
                             }
                         )}
                         <view style={{paddingLeft: "8px"}} >
-                            <text>{`( ${Math.round(tile.score_potential)} )`}</text>
+                            <span>{`( ${Math.round(tile.score_potential)} )`}</span>
                         </view>
                     </view>
                 }
                 {
                     !!combatant && 
                     <view className='Below_image'>
-                        <text className={'Label'}>{'ID: '}</text><text>{combatant?.id ?? ""}</text>
+                        <span className={'Label'}>{'ID: '}</span><span>{combatant?.id ?? ""}</span>
                     </view>
                 }
             </view>
@@ -170,14 +170,14 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                             }}
                         />
-                        <text className={'Label'}>{'Lock on Combatant'}</text>
+                        <span className={'Label'}>{'Lock on Combatant'}</span>
                     </view>
                     {getEditableField(
                         {
                             editing_value: edited_name,
                             editing_type: 'text',
-                            label: (<text className={'Label'}>{'Name: '}</text>),
-                            display: (<text>{combatant?.name ?? ""}</text>),
+                            label: (<span className={'Label'}>{'Name: '}</span>),
+                            display: (<span>{combatant?.name ?? ""}</span>),
                             edit: () => setEditing({...editing, name: combatant?.name}),
                             update: input => setEditing({...editing, name: input.target.value}),
                             done: () => {
@@ -190,8 +190,8 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                         {
                             editing_value: combatant?.immortal ? undefined : edited_fitness,
                             editing_type: 'number',
-                            label: (<text className={'Label'}>{'Fitness: '}</text>),
-                            display: (<text>{combatant?.immortal ? Infinity : combatant?.fitness ?? ""}</text>), 
+                            label: (<span className={'Label'}>{'Fitness: '}</span>),
+                            display: (<span>{combatant?.immortal ? Infinity : combatant?.fitness ?? ""}</span>), 
                             edit: () => setEditing({...editing, fitness: combatant?.fitness?.toString()}),
                             update: input => setEditing({...editing, fitness: input.target.value}),
                             done: () => {
@@ -201,23 +201,23 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                         }
                     )}
                     <view className='Non_editable_row'>
-                        <text className={'Label'}>{'Strength: '}</text><text>{combatant?.strength}</text>
+                        <span className={'Label'}>{'Strength: '}</span><span>{combatant?.strength}</span>
                     </view>
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 
                             options: Object.values(Character).map(
                                 c => (<option key={`${c}`}>{c}</option>)),
-                            label: (<text className={'Label'}>{'Team: '}</text>),
-                            display: (<text>{combatant?.team ?? ""}</text>),
+                            label: (<span className={'Label'}>{'Team: '}</span>),
+                            display: (<span>{combatant?.team ?? ""}</span>),
                             update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
                         }
                     )}
                     <view className='Non_editable_row'>
-                        <text className={'Label'}>{'Age: '}</text><text>{combatant?.tick ?? ""}</text>
+                        <span className={'Label'}>{'Age: '}</span><span>{combatant?.tick ?? ""}</span>
                     </view>
                     <view className='Non_editable_row'>
-                        <text className={'Label'}>{'Children: '}</text><text>{combatant?.children ?? ""}</text>
+                        <span className={'Label'}>{'Children: '}</span><span>{combatant?.children ?? ""}</span>
                     </view>
                     <view className='Toggles'>
                         <view>
@@ -231,7 +231,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     setEditing({...editing, fitness: undefined});
                                 }}
                             />
-                            <text className={'Label'}>{'Immortal'}</text>
+                            <span className={'Label'}>{'Immortal'}</span>
                         </view>
                     </view>
                 </view>
@@ -243,7 +243,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     className={classNames('Clickable', 'Kill_button')}
                     onClick={() => dispatch(killSelected())}
                     >
-                        <text>{"Kill"}</text>
+                        <span>{"Kill"}</span>
                     </button>
                 </view>
                 )
@@ -254,7 +254,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     className={classNames('Clickable', 'Spawn_button')}
                     onClick={() => dispatch(spawnAtSelected())}
                     >
-                        <text>{"Spawn"}</text>
+                        <span>{"Spawn"}</span>
                     </button>
                 </view>
                 )

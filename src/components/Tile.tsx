@@ -23,9 +23,9 @@ import { TileModel, Type as TileType } from '../models/TileModel';
       <view id={id?.toString()} className={classNames('Tile', tile?.type ?? TileType.Void, className, {"Selected" : isSelected})} onClick={onClick} >
         {
           showPotential && tile && !children &&
-          <text className='Tile_potential'>
+          <span className='Tile_potential'>
             {Math.round(tile.score_potential)}
-          </text>
+          </span>
         }
         {children}
       </view>
