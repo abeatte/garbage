@@ -20,7 +20,7 @@ import { TileModel, Type as TileType } from '../models/TileModel';
 ) => {
   const {id, children, className, tile, isSelected, showPotential,  onClick} = args;
     return (
-      <view id={id?.toString()} className={classNames('Tile', tile?.type ?? TileType.Void, className, {"Selected" : isSelected})} onClick={onClick} >
+      <div id={id?.toString()} className={classNames('Tile', tile?.type ?? TileType.Void, className, {"Selected" : isSelected})} onClick={onClick} >
         {
           showPotential && tile && !children &&
           <span className='Tile_potential'>
@@ -28,7 +28,7 @@ import { TileModel, Type as TileType } from '../models/TileModel';
           </span>
         }
         {children}
-      </view>
+      </div>
     );
  }; 
  

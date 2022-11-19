@@ -135,16 +135,16 @@ class Arena extends React.Component<AppState & DispatchProps> {
         const isShownWithHud = this.props.hud.hudDisplayMode === HudDisplayMode.SIDE_PANEL;
 
         return (
-            <view className={classNames({"Arena_container": true, "With_hud" : isShownWithHud})}>
+            <div className={classNames({"Arena_container": true, "With_hud" : isShownWithHud})}>
                 <Dashboard
                     onReset={this.props.reset}
                 />
-                <view className="Arena_inner_container">
-                    <view className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
+                <div className="Arena_inner_container">
+                    <div className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
                         {tiles}
-                    </view>
-                </view>
-            </view>
+                    </div>
+                </div>
+            </div>
         );
     }
 }

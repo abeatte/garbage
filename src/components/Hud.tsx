@@ -66,17 +66,17 @@ function getEditableField(
         </button>);
 
     return editing_value === undefined ? 
-    (<view 
+    (<div 
         className={classNames('Clickable', 'Editable_row')}
         onClick={edit}
     >
-        <view>{label}{display}</view>
-    </view>) :
-    (<view className='Editing_row'>
+        <div>{label}{display}</div>
+    </div>) :
+    (<div className='Editing_row'>
         {label}
         {edit_field}
         {edit_done}
-    </view>)
+    </div>)
 };
 
 interface EditingObject {name: string | undefined, fitness: string | undefined};
@@ -107,7 +107,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     const edited_fitness = editing['fitness'];
 
     const escape_button = isFullScreen && (
-        <view className='Escape_container'>
+        <div className='Escape_container'>
             <button 
                 className={classNames("Clickable", "Exit")} 
                 onClick={() => {
@@ -116,19 +116,19 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             >
             <span>{"X"}</span>
             </button>
-        </view>
+        </div>
     );
 
     return (
-      <view className='Hud'>
-        <view style={{width: "200px"}}>
-            <view className='Badge'>
+      <div className='Hud'>
+        <div style={{width: "200px"}}>
+            <div className='Badge'>
                 <Tile tile={tile}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
                 </Tile>
                 {
                     !!tile &&
-                    <view className='Below_image'>
+                    <div className='Below_image'>
                         {getEditableField(
                             {
                                 editing_value: tile?.type as string, 
@@ -142,25 +142,25 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 },
                             }
                         )}
-                        <view style={{paddingLeft: "8px"}} >
+                        <div style={{paddingLeft: "8px"}} >
                             <span>{`( ${Math.round(tile.score_potential)} )`}</span>
-                        </view>
-                    </view>
+                        </div>
+                    </div>
                 }
                 {
                     !!combatant && 
-                    <view className='Below_image'>
+                    <div className='Below_image'>
                         <span className={'Label'}>{'ID: '}</span><span>{combatant?.id ?? ""}</span>
-                    </view>
+                    </div>
                 }
-            </view>
-        </view> 
+            </div>
+        </div> 
         {escape_button}
-        <view className='Info_container'>
-            <view className='Details_container'>
+        <div className='Info_container'>
+            <div className='Details_container'>
             { !!combatant && (
-                <view className="Details">
-                    <view className='Meta_data_toggles'>
+                <div className="Details">
+                    <div className='Meta_data_toggles'>
                         <input 
                             className='Checkbox' 
                             type="checkbox" 
@@ -171,7 +171,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             }}
                         />
                         <span className={'Label'}>{'Lock on Combatant'}</span>
-                    </view>
+                    </div>
                     {getEditableField(
                         {
                             editing_value: edited_name,
@@ -200,9 +200,9 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             }
                         }
                     )}
-                    <view className='Non_editable_row'>
+                    <div className='Non_editable_row'>
                         <span className={'Label'}>{'Strength: '}</span><span>{combatant?.strength}</span>
-                    </view>
+                    </div>
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 
@@ -213,14 +213,14 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
                         }
                     )}
-                    <view className='Non_editable_row'>
+                    <div className='Non_editable_row'>
                         <span className={'Label'}>{'Age: '}</span><span>{combatant?.tick ?? ""}</span>
-                    </view>
-                    <view className='Non_editable_row'>
+                    </div>
+                    <div className='Non_editable_row'>
                         <span className={'Label'}>{'Children: '}</span><span>{combatant?.children ?? ""}</span>
-                    </view>
-                    <view className='Toggles'>
-                        <view>
+                    </div>
+                    <div className='Toggles'>
+                        <div>
                             <input 
                                 className='Checkbox' 
                                 type="checkbox" 
@@ -232,36 +232,36 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 }}
                             />
                             <span className={'Label'}>{'Immortal'}</span>
-                        </view>
-                    </view>
-                </view>
+                        </div>
+                    </div>
+                </div>
                 )
             }
             {!!combatant && (
-                <view className='Life_buttons_container'>
+                <div className='Life_buttons_container'>
                     <button 
                     className={classNames('Clickable', 'Kill_button')}
                     onClick={() => dispatch(killSelected())}
                     >
                         <span>{"Kill"}</span>
                     </button>
-                </view>
+                </div>
                 )
             }
             {!combatant && selected_position !== undefined && (
-                <view className='Life_buttons_container'>
+                <div className='Life_buttons_container'>
                     <button 
                     className={classNames('Clickable', 'Spawn_button')}
                     onClick={() => dispatch(spawnAtSelected())}
                     >
                         <span>{"Spawn"}</span>
                     </button>
-                </view>
+                </div>
                 )
             }
-            </view>
-        </view>
-      </view>
+            </div>
+        </div>
+      </div>
     );
  }; 
  

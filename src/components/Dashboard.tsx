@@ -62,22 +62,22 @@ const getTeamStats = (combatants: Combatants, selected_position: number | undefi
                 }
             });
         return (
-            <view key={team} className={'Team_group'}>
+            <div key={team} className={'Team_group'}>
                 <span className={'Label'}>{`${team}`}</span><span>{` (${teams[team].length}):`}</span>
-                <view className={classNames("Data_row", "Team", "Clickable")}>
+                <div className={classNames("Data_row", "Team", "Clickable")}>
                     {teams[team].length < 1 ? 
                         (<span>{"[ ]"}</span>) : 
                         team_array
                     }
-                </view>
-            </view>
+                </div>
+            </div>
         );
     }).sort((a, b) => (a.key as string).localeCompare(b.key as string));
 
     return (
-        <view className={'Stat_group'}>
-            <view>{counts}</view>
-        </view>
+        <div className={'Stat_group'}>
+            <div>{counts}</div>
+        </div>
     );
 };
 
@@ -89,9 +89,9 @@ const Dashboard = (args: {onReset: () => void}) => {
     const teamStats = getTeamStats(board.combatants, board.selected_position, dispatch);
    
     const speed_section = (
-        <view className="Control_container">
+        <div className="Control_container">
             <span  className="Label" style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</span>
-            <view className="Speed_buttons_container">
+            <div className="Speed_buttons_container">
                 <button className="Clickable" onClick={() => {
                     dispatch(slowDown());
                 }}>
@@ -111,12 +111,12 @@ const Dashboard = (args: {onReset: () => void}) => {
                 }}>
                     <img className="Speed_button" alt="Forward" src={Forward} />
                 </button>
-            </view> 
-        </view>
+            </div> 
+        </div>
     );
     const resize_section = (
         <>
-            <view>
+            <div>
                 <button className="Clickable" onClick={() => dispatch(shrinkWidth())}>
                     <span>{"<"}</span>
                 </button>
@@ -124,8 +124,8 @@ const Dashboard = (args: {onReset: () => void}) => {
                 <button className="Clickable" onClick={() => dispatch(growWidth())}>
                     <span>{">"}</span>
                 </button>
-            </view> 
-            <view>
+            </div> 
+            <div>
                 <button className="Clickable" onClick={() => dispatch(shrinkHeight())}>
                     <span>{"<"}</span>
                 </button>
@@ -133,8 +133,8 @@ const Dashboard = (args: {onReset: () => void}) => {
                 <button className="Clickable" onClick={() => dispatch(growHeight())}>
                     <span>{">"}</span>
                 </button>
-            </view> 
-            <view style={{marginTop: "4px"}}>
+            </div> 
+            <div style={{marginTop: "4px"}}>
                 <input 
                     className={classNames('Clickable', 'Checkbox')} 
                     type="checkbox" 
@@ -144,13 +144,13 @@ const Dashboard = (args: {onReset: () => void}) => {
                     }}
                 />
                 <span className={'Label'}>{'Show Tile Potential'}</span>
-            </view>
+            </div>
         </>
     );
 
     return (
-        <view className={'Dashboard'}>
-            <view className="Control_container">
+        <div className={'Dashboard'}>
+            <div className="Control_container">
                 <button 
                     className={classNames("Update_button", "Clickable")} 
                     onClick={() => onReset()
@@ -159,33 +159,33 @@ const Dashboard = (args: {onReset: () => void}) => {
                 </button>
                 {speed_section}
                 {resize_section}
-            </view>
-            <view style={{flexGrow: 1}}>
-                <view className={'Row_group'}>
-                    <view className={'Row'}>
+            </div>
+            <div style={{flexGrow: 1}}>
+                <div className={'Row_group'}>
+                    <div className={'Row'}>
                         <span className={'Label'}>{'Game:'}</span>
                         <span className="Data_row">{board.game_count}</span>
-                    </view>
-                    <view className={classNames('Row')}>
+                    </div>
+                    <div className={classNames('Row')}>
                         <span className={'Label'}>{'Year:'}</span>
                         <span className="Data_row">{ticker.tick}</span>
-                    </view>
-                    <view className={classNames('Row')}>
+                    </div>
+                    <div className={classNames('Row')}>
                         <span className={'Label'}>{`Combatants:`}</span>
                         <span className="Data_row">{`${Object.keys(board.combatants).length}`}</span>
-                    </view>
-                    <view className={classNames('Row')}>
+                    </div>
+                    <div className={classNames('Row')}>
                         <span className={'Label'}>{`Births:`}</span>
                         <span className="Data_row">{`${board.global_combatant_stats.births}`}</span>
-                    </view>
-                    <view className={classNames('Row')}>
+                    </div>
+                    <div className={classNames('Row')}>
                         <span className={'Label'}>{`Deaths:`}</span>
                         <span className="Data_row">{`${board.global_combatant_stats.deaths}`}</span>
-                    </view>
-                </view>
+                    </div>
+                </div>
                 {teamStats}
-            </view>
-        </view>
+            </div>
+        </div>
     )
 };
 

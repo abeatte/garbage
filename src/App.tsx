@@ -6,11 +6,11 @@ import Game from './components/Game';
 
 function App() { 
   return (
-    <view className={'App'}> 
+    <div className={'App'}> 
       <Provider store={store}>
         <Game/>
       </Provider>
-    </view>
+    </div>
   );
 }
 
