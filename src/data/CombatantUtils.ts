@@ -139,9 +139,9 @@ export function calcMovements(args:
                             combatants: new_combatants
                         }), 
                     global_combatant_stats: global_combatant_stats,
-                    live_combatants: new_combatants, 
                     arena_size: tiles.length});
-                if (!!spawn) {
+                if (spawn) {
+                    new_combatants[spawn.position] = spawn;
                     combatant.children += 1;
                     occupient.children += 1;
                     births++
@@ -211,9 +211,9 @@ GlobalCombatantStatsModel {
 };
 
 function spawnNextGen(args: 
-    {posData: PosData, live_combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, arena_size: number}): 
+    {posData: PosData, global_combatant_stats: GlobalCombatantStatsModel, arena_size: number}): 
 CombatantModel | undefined {
-    const {posData, live_combatants, global_combatant_stats, arena_size} = args;
+    const {posData, global_combatant_stats, arena_size} = args;
     const {surroundings} = posData;
     const self = surroundings[ClockFace.c].occupant as CombatantModel;
     const friendly_positions = [], 
@@ -242,11 +242,9 @@ CombatantModel | undefined {
         const spawn_pos = empty_positions[Math.round(Math.random() * (empty_positions.length - 1))];
         delete self.spawning?.spawning;
         delete self.spawning;
-        live_combatants[spawn_pos] = createCombatant({spawn_position: spawn_pos, global_combatant_stats});
+        spawn = createCombatant({spawn_position: spawn_pos, global_combatant_stats});
         // too many of my kind here, let's diverge
-        live_combatants[spawn_pos].team = friendly_positions.length < 4 ? self.team : getRandomTeam();
-
-        spawn = live_combatants[spawn_pos];
+        spawn.team = friendly_positions.length < 4 ? self.team : getRandomTeam();
     }
     return spawn;
 }
