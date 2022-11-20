@@ -82,6 +82,7 @@ function initState(width?: number, height?: number): {
     combatants: Combatants,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
+    random_walk_enabled: boolean,
 } {
     width = width ?? WINDOW_WIDTH;
     height = height ?? WINDOW_HEIGHT;
@@ -97,6 +98,7 @@ function initState(width?: number, height?: number): {
         combatants,
         selected_position: undefined,
         follow_selected_combatant: false,
+        random_walk_enabled: false,
     };
   }
 
@@ -196,6 +198,7 @@ export const boardSlice = createSlice({
             combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
         const result = calcMovements({
+            random_walk_enabled: state.random_walk_enabled,
             combatants: state.combatants, 
             global_combatant_stats: state.global_combatant_stats,
             window_width: state.width, 
@@ -277,6 +280,9 @@ export const boardSlice = createSlice({
     toggleShowTilePotentials: (state) => {
         state.show_tile_potentials = !state.show_tile_potentials;
     },
+    toggleRandomWalkEnabled: (state) => {
+        state.random_walk_enabled = !state.random_walk_enabled;
+    }
   }
 })
 
@@ -293,6 +299,7 @@ export const {
     killSelected,
     spawnAtSelected,
     toggleShowTilePotentials,
+    toggleRandomWalkEnabled,
 } = boardSlice.actions
 
 export default boardSlice.reducer

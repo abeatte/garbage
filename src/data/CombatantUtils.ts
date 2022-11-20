@@ -103,16 +103,16 @@ export function updateCombatantsPositionsAfterResize(
     return new_combatants;
 }
 
-export function calcMovements(args: 
-    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}): 
-{combatants: Combatants, births: number, deaths: number} {
-    const {combatants, global_combatant_stats, window_width, tiles} = args;
+export function calcMovements(
+    {random_walk_enabled, combatants, global_combatant_stats, window_width, tiles}: 
+    {random_walk_enabled: boolean, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}
+): {combatants: Combatants, births: number, deaths: number} {
     const new_combatants = {} as Combatants;
     let births = 0, deaths = 0;
     Object.keys(combatants).forEach((position) => {
         const combatant = combatants[position as unknown as number];
         const current_position = parseInt(position);
-        const new_position = requestMove({combatant, tiles, window_width, combatants});
+        const new_position = requestMove({random_walk_enabled, combatant, tiles, window_width, combatants});
 
         const occupient = new_combatants[new_position];
         if (!evalHealth(combatant)) {

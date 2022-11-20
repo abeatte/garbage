@@ -40,12 +40,14 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
     }
 }
 
-export function requestMove(args: {combatant: CombatantModel, tiles: TileModel[], window_width: number, combatants: Combatants}) {
-    const {combatant, tiles, window_width, combatants} = args;
-    return getCombatantNextPosition(combatant.position, tiles, window_width, combatants);
+export function requestMove(
+    {random_walk_enabled, combatant, tiles, window_width, combatants}: 
+    {random_walk_enabled: boolean, combatant: CombatantModel, tiles: TileModel[], window_width: number, combatants: Combatants}
+) {
+    return getCombatantNextPosition(random_walk_enabled, combatant.position, tiles, window_width, combatants);
 }
 
-function getCombatantNextPosition(current_position: number, tiles: TileModel[], window_width: number, combatants: Combatants): number {
+function getCombatantNextPosition(random_walk_enabled: boolean, current_position: number, tiles: TileModel[], window_width: number, combatants: Combatants): number {
     const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
     const self = posData.surroundings[ClockFace.c].occupant as CombatantModel;
 
@@ -141,7 +143,7 @@ function getCombatantNextPosition(current_position: number, tiles: TileModel[], 
         // 90 % chance you'll choose to mate
         if (best_mate_position !== undefined && Math.random() > 0.1) {
             position = best_mate_position;
-        } else if (best_safe_position !== undefined) {
+        } else if (best_safe_position !== undefined && !random_walk_enabled) {
             position = best_safe_position;
         } else {
             const direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
