@@ -143,7 +143,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             }
                         )}
                         <div style={{paddingLeft: "8px"}} >
-                            <span>{`( ${Math.round(tile.score_potential)} )`}</span>
+                            <span>{`( ${tile.score_potential} )`}</span>
                         </div>
                     </div>
                 }

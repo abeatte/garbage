@@ -24,7 +24,7 @@ import { TileModel, Type as TileType } from '../models/TileModel';
         {
           showPotential && tile && !children &&
           <span className='Tile_potential'>
-            {Math.round(tile.score_potential)}
+            {tile.score_potential}
           </span>
         }
         {children}

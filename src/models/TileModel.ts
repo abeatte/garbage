@@ -39,7 +39,7 @@ export function createTileModel(args: {index: number, type: Type}): TileModel {
 
 export function updateMapTileScorePotentials(tiles: TileModel[], window_width: number) {
     tiles.forEach((t, idx) => t.score_potential = 
-        getMapTileScorePotential({position: idx, tiles, window_width}));
+        Math.round(getMapTileScorePotential({position: idx, tiles, window_width})));
 }
 
 /**
