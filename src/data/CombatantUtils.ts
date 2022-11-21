@@ -1,5 +1,5 @@
 import { Combatants } from "./boardSlice";
-import CombatantModel, { createCombatant, getRandomTeam, requestMove } from "../models/CombatantModel";
+import CombatantModel, { createCombatant, getRandomTeam, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
 
@@ -105,65 +105,96 @@ export function updateCombatantsPositionsAfterResize(
 
 export function calcMovements(
     {random_walk_enabled, combatants, global_combatant_stats, window_width, tiles}: 
-    {random_walk_enabled: boolean, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}
+    {
+        random_walk_enabled: boolean, 
+        combatants: Combatants, 
+        global_combatant_stats: GlobalCombatantStatsModel, 
+        window_width: number, 
+        tiles: TileModel[]
+    }
 ): {combatants: Combatants, births: number, deaths: number} {
     const new_combatants = {} as Combatants;
     let births = 0, deaths = 0;
-    Object.keys(combatants).forEach((position) => {
-        const combatant = combatants[position as unknown as number];
+
+    Object.keys(combatants)
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .forEach((position) => {
+        const combatant = combatants[parseInt(position)];
         const current_position = parseInt(position);
         const new_position = requestMove({random_walk_enabled, combatant, tiles, window_width, combatants});
 
-        const occupient = new_combatants[new_position];
-        if (!evalHealth(combatant)) {
+        const current_occupant = new_combatants[new_position];
+        const moved_occupant = combatants[new_position];
+
+        if (!evalHealth(combatant) || combatant.state === State.Dead) {
             // you die
+            combatant.state = State.Dead;
             deaths++;
-        } else if (!occupient) {
+        } else if (combatant.state === State.Mating) {
+            // do nothing; their turn is taken up by mating
+            new_combatants[current_position] = combatant;
+            combatant.position = current_position;
+        } else if (!current_occupant && !moved_occupant) {
             // space is empty; OK to move there if you are healthy enough
             new_combatants[new_position] = combatant;
             combatant.position = new_position;
-        } else if(occupient.team === combatant.team) {                
+        } else if((!moved_occupant && current_occupant && current_occupant.team === combatant.team) ||
+        (moved_occupant && moved_occupant.team === combatant.team)) {  
+            const occupant = moved_occupant || current_occupant;
+
             new_combatants[current_position] = combatant;
             combatant.position = current_position;
             
             // space is occupied by a friendly
-            if (occupient.tick > MAX_YOUNGLING_TICK && combatant.tick > MAX_YOUNGLING_TICK) {
-                combatant.mating_with_id = occupient.id;
-                occupient.mating_with_id = combatant.id;
-                const spawn = spawnNextGen({
-                    posData:
-                        getSurroundingPos({
-                            position: new_position, 
-                            window_width, 
-                            tiles, 
-                            combatants: new_combatants
-                        }), 
-                    global_combatant_stats: global_combatant_stats,
-                    arena_size: tiles.length});
-                combatant.mating_with_id = undefined;
-                occupient.mating_with_id = undefined;
-                if (spawn) {
-                    new_combatants[spawn.position] = spawn;
-                    combatant.children += 1;
-                    occupient.children += 1;
-                    births++
-                }
+            if (combatant.tick > MAX_YOUNGLING_TICK && occupant.tick > MAX_YOUNGLING_TICK) {
+                occupant.state = State.Mating;
+                combatant.state = State.Mating;
+                combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
             }
         } else {
             // space is occupied by a foe
-            new_combatants[new_position] = compete(combatant, occupient)
+            const occupant = moved_occupant || current_occupant;
+            new_combatants[new_position] = compete(combatant, occupant)
             new_combatants[new_position].position = new_position;
-            deaths++;
+            deaths++;            
         }
     });
+
+    Object.values(new_combatants)
+        .filter(c => c.state === State.Mating)
+        .forEach(parent => {
+            const spawn = parent?.spawn as CombatantModel;
+            if (spawn === undefined) {
+                // congrats, dad... get
+                parent.state = State.Alive;
+                return;
+            }
+            parent.spawn = undefined;
+            birthSpawn({
+                posData:
+                    getSurroundingPos({
+                        position: parent.position,
+                        window_width, 
+                        tiles, 
+                        combatants: new_combatants,
+                    }), 
+                spawn,
+                parent,
+                combatants: new_combatants,
+                arena_size: tiles.length});
+            if (spawn.position > -1) {
+                new_combatants[spawn.position] = spawn;
+                parent.children += 1;
+                births++
+            }
+        });
 
     return {combatants: new_combatants, births, deaths};
 }
 
-export function updateCombatants(args: 
+export function updateCombatants({combatants, global_combatant_stats, tiles}: 
     {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}):
 GlobalCombatantStatsModel {
-    const {combatants, global_combatant_stats, tiles} = args;
     const new_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
 
     const combatant_keys = Object.keys(combatants);
@@ -212,11 +243,10 @@ GlobalCombatantStatsModel {
     return c.fitness > MIN_HEALTH;
 };
 
-function spawnNextGen({posData, global_combatant_stats, arena_size}: 
-    {posData: PosData, global_combatant_stats: GlobalCombatantStatsModel, arena_size: number}): 
-CombatantModel | undefined {
+function birthSpawn({posData, spawn, parent, combatants, arena_size}: 
+    {posData: PosData, spawn: CombatantModel, parent: CombatantModel, combatants: Combatants, arena_size: number})
+{
     const {surroundings} = posData;
-    const self = surroundings[ClockFace.c].occupant as CombatantModel;
     const friendly_positions = [], 
     enemy_positions = [], 
     empty_positions = [] as number[];
@@ -228,24 +258,26 @@ CombatantModel | undefined {
             if (position > -1 && position < arena_size) {
                 empty_positions.push(position)
             }
-        } else if (c.team === self.team) {
+        } else if (c.team === parent.team) {
             friendly_positions.push(c);
         } else {
             enemy_positions.push(c);
         }
     });
 
-    let spawn = undefined;
     if (enemy_positions.length > 1) {
-        // too dangerous, nothing happens
+        // spawn dies; too dangerous
     } else {
         // safe, let's do it!
-        const spawn_pos = empty_positions[Math.round(Math.random() * (empty_positions.length - 1))];
-        spawn = createCombatant({spawn_position: spawn_pos, global_combatant_stats});
-        // too many of my kind here, let's diverge
-        spawn.team = friendly_positions.length < 4 ? self.team : getRandomTeam();
+        const spawn_pos = empty_positions.length > 0 ? 
+            empty_positions[Math.round(Math.random() * (empty_positions.length - 1))]:
+            -1;
+        if (spawn_pos > -1) {
+            spawn.position = spawn_pos;
+            // too many of my kind here, let's diverge
+            spawn.team = friendly_positions.length < 4 ? parent.team : getRandomTeam();
+        }
     }
-    return spawn;
 }
 
 /**
@@ -257,7 +289,13 @@ CombatantModel | undefined {
 function compete(a: CombatantModel, b: CombatantModel) {
     const a_fitness = a.immortal ? Infinity : a.fitness;
     const b_fitness = b.immortal ? Infinity : b.fitness;
-    return b_fitness > a_fitness ? b: a;
+    if (b_fitness > a_fitness) {
+        a.state = State.Dead;
+        return b;
+    } else {
+        b.state = State.Dead;
+        return a;
+    }
 }
 
 export function getSurroundingPos(args: {position: number, window_width: number, tiles: TileModel[], combatants: Combatants}): PosData {

@@ -10,18 +10,20 @@ import { TileModel } from "./TileModel";
 import { Combatants } from "../data/boardSlice";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 
-export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" }
+export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
+export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
 
 export interface CombatantModel {
     id: string;
     name: string | undefined;
+    state: State;
     tick: number;
     position: number;
     fitness: number;
     strength: keyof typeof Strength;
     immortal: boolean;
     team: keyof typeof Character;
-    mating_with_id: string | undefined;
+    spawn: CombatantModel | undefined;
     children: number,
 }
 
@@ -29,13 +31,14 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
     return {   
         id: uuid(),
         name: "",
+        state: State.Spawning, 
         fitness: 0,
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
         immortal: false,
         team: getRandomTeam(),
         tick: 0,
         position: args.spawn_position,
-        mating_with_id: undefined,
+        spawn: undefined,
         children: 0,
     }
 }
@@ -92,7 +95,7 @@ function getCombatantNextPosition(random_walk_enabled: boolean, current_position
             // same team
             c.team === self.team && 
             // not already 'engaged'
-            !c.mating_with_id && 
+            c.state !== State.Mating && 
             // not too young
             c.tick > MAX_YOUNGLING_TICK && 
             // not on hurtful tile
