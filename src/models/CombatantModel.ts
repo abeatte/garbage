@@ -19,6 +19,7 @@ export interface CombatantModel {
     state: State;
     tick: number;
     position: number;
+    kills: number;
     fitness: number;
     strength: keyof typeof Strength;
     immortal: boolean;
@@ -32,6 +33,7 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
         id: uuid(),
         name: "",
         state: State.Spawning, 
+        kills: 0,
         fitness: 0,
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
         immortal: false,

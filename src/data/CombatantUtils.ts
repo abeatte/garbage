@@ -291,9 +291,11 @@ function compete(a: CombatantModel, b: CombatantModel) {
     const b_fitness = b.immortal ? Infinity : b.fitness;
     if (b_fitness > a_fitness) {
         a.state = State.Dead;
+        b.kills += 1;
         return b;
     } else {
         b.state = State.Dead;
+        a.kills += 1;
         return a;
     }
 }

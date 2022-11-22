@@ -217,6 +217,9 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                         <span className={'Label'}>{'Age: '}</span><span>{combatant?.tick ?? ""}</span>
                     </div>
                     <div className='Non_editable_row'>
+                        <span className={'Label'}>{'Kills: '}</span><span>{combatant?.kills ?? ""}</span>
+                    </div>
+                    <div className='Non_editable_row'>
                         <span className={'Label'}>{'Children: '}</span><span>{combatant?.children ?? ""}</span>
                     </div>
                     <div className='Toggles'>
