@@ -5,7 +5,8 @@ import {
     DIRECTION,
     getSurroundingPos,
     ClockFace,
-    Surroundings, 
+    Surroundings,
+    PosData, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
@@ -63,20 +64,19 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-export function requestMove({random_walk_enabled, current_position, tiles, window_width, combatants}:
-    {random_walk_enabled: boolean, 
-    current_position: number, 
-    tiles: TileModel[], 
-    window_width: number, 
-    combatants: {[position: number]: CombatantModel | undefined}
+export function requestMove({random_walk_enabled, posData, current_position, tiles, window_width}:
+    {
+        random_walk_enabled: boolean, 
+        posData: PosData,
+        current_position: number, 
+        tiles: TileModel[], 
+        window_width: number,
 }): number {
-    const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
-    const self = (posData.surroundings[ClockFace.c] as Surroundings).occupant as CombatantModel;
+    const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
 
     // returns negative if B is stronger
     const strength_sort = (a: CombatantModel | undefined, b: CombatantModel | undefined): number => {
-        const bs = b?.strength, as = a?.strength;
-        return b_vs_a_strength(as as Strength | undefined, bs as Strength | undefined);
+        return b_vs_a_strength(a?.strength as Strength | undefined, b?.strength as Strength | undefined);
     };
 
     let potential_mates = [] as CombatantModel[],
@@ -97,9 +97,7 @@ export function requestMove({random_walk_enabled, current_position, tiles, windo
         }
 
         if (!c) {
-            if (position > -1 && position < tiles.length) {
-                empty_positions.push(position)
-            }
+            empty_positions.push(position)
         } else if (
             // same team
             c.team === self.team && 
@@ -172,7 +170,7 @@ export function requestMove({random_walk_enabled, current_position, tiles, windo
         if (best_hunter_position && !random_walk_enabled) {
             position = best_hunter_position;
         // % chance you'll choose to mate
-        } else if (best_mate_position !== undefined && Math.random() > 0.1) {
+        } else if (best_mate_position !== undefined && Math.random() > 0.3) {
             position = best_mate_position;
         } else if (best_safe_position !== undefined && !random_walk_enabled) {
             position = best_safe_position;

@@ -121,11 +121,17 @@ export function calcMovements(
         const current_position = combatant.position;
         const new_position = requestMove(
             {
+                posData:
+                    getSurroundingPos({
+                        position: current_position,
+                        window_width, 
+                        tiles, 
+                        combatants: new_combatants,
+                    }),
                 random_walk_enabled, 
                 current_position, 
                 tiles, 
-                window_width, 
-                combatants: new_combatants
+                window_width,
             });
 
         const occupant = new_combatants[new_position];
@@ -163,9 +169,9 @@ export function calcMovements(
         .forEach(c => {
             const parent = c as CombatantModel;
             const spawn = parent.spawn as CombatantModel;
+            parent.state = State.Alive;
             if (spawn === undefined) {
                 // congrats, dad... get lost
-                parent.state = State.Alive;
                 parent.children += 1;
                 return;
             }
