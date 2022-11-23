@@ -117,7 +117,16 @@ export function requestMove({random_walk_enabled, posData, current_position, til
         }
     });
 
-    potential_mates = potential_mates.sort(strength_sort);
+    const bucketed_mate_strengths = Object.values(potential_mates).reduce((buckets, m) => {
+        const strength = m.strength;
+        const position = m.position;
+        if (buckets[strength] === undefined) {
+            buckets[strength] = [];
+        }
+        const bucket = buckets[strength];
+        bucket.push(position);
+        return buckets;
+    }, {} as {[key: string]: number[]});
 
     const bucketed_enemy_strengths = Object.values(enemies).reduce((buckets, e) => {
         const strength = e.strength;
@@ -155,17 +164,17 @@ export function requestMove({random_walk_enabled, posData, current_position, til
             best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : undefined;
 
         // position based on best safe space
-        const best_safe_position_bucket = bucketed_potential_ranked_tiles[Object.keys(bucketed_potential_ranked_tiles)
+        const best_safe_bucket = bucketed_potential_ranked_tiles[Object.keys(bucketed_potential_ranked_tiles)
             .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
-        const best_safe_position = best_safe_position_bucket?.length > 0 ? 
-            best_safe_position_bucket[Math.floor(Math.random() * best_safe_position_bucket.length)] : undefined;
+        const best_safe_position = best_safe_bucket?.length > 0 ? 
+        best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : undefined;
 
         // position based on best mate space
-        const best_mate_position = 
-            // find me someone better than me
-            potential_mates.find(m => strength_sort(self, m) >= 0)?.position ?? 
-            // or just find me anyone
-            potential_mates[Math.floor(Math.random() * potential_mates.length)]?.position
+        const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
+            .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
+            .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
+        const best_mate_position = best_mate_bucket?.length > 0 ?
+        best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : undefined;
 
         if (best_hunter_position && !random_walk_enabled) {
             position = best_hunter_position;
