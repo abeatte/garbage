@@ -3,9 +3,7 @@ import { Character } from "../components/Combatant";
 import { 
     MAX_YOUNGLING_TICK, 
     DIRECTION,
-    getSurroundingPos,
     ClockFace,
-    Surroundings,
     PosData, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
@@ -73,11 +71,6 @@ export function requestMove({random_walk_enabled, posData, current_position, til
         window_width: number,
 }): number {
     const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
-
-    // returns negative if B is stronger
-    const strength_sort = (a: CombatantModel | undefined, b: CombatantModel | undefined): number => {
-        return b_vs_a_strength(a?.strength as Strength | undefined, b?.strength as Strength | undefined);
-    };
 
     let potential_mates = [] as CombatantModel[],
     enemies = [] as CombatantModel[], 
