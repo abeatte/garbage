@@ -217,9 +217,6 @@ export const boardSlice = createSlice({
         });
 
         state.combatants = new_combatants;
-        
-        new_global_combatant_stats.births += result.births;
-        new_global_combatant_stats.deaths += result.deaths;
         state.global_combatant_stats = new_global_combatant_stats;
 
         if (!!combatant_id_to_follow) {
