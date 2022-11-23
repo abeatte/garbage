@@ -49,7 +49,7 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
  function getMapTileScorePotential(args: {position: number, tiles: TileModel[], window_width: number}): number {
     const {position, tiles, window_width} = args;
 
-    let possible_directions = Object.values(DIRECTION).length;
+    let possible_directions = Object.values(DIRECTION).length - 1;
     let position_potential = 0;
                                             
     const can_go_left = position % window_width > 0;
@@ -79,7 +79,5 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
     
     // TODO: in the future, take into account an occupient of nearby tiles and their strengths;
     
-    return getMapTileEffect(tiles[position].type) + ((position_potential / possible_directions)
-        / possible_directions
-    );
+    return getMapTileEffect(tiles[position].type) + (position_potential / possible_directions);
 }
