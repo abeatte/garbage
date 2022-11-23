@@ -31,7 +31,15 @@ const getTeamStats = (combatants: Combatants, selected_position: number | undefi
         const team = t as keyof typeof Character
         const team_array = [] as JSX.Element[];
         teams[team]
-            .sort((a, b) => b.fitness - a.fitness)
+            .sort((a, b) => {
+                if (b.immortal) {
+                    return 1;
+                } else if (a.immortal) {
+                    return -1;
+                } else {
+                    return b.fitness - a.fitness
+                }
+            })
             .slice(0, 10)
             .forEach((c: CombatantModel, idx: number, subset: CombatantModel[]) => {
                 if (idx === 0) {
