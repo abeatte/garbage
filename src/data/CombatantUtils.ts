@@ -116,9 +116,14 @@ export function calcMovements(
     const new_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
-    Object.values(combatants)
-    .forEach((combatant) => {
-        const current_position = combatant.position;
+    Object.keys(new_combatants)
+    .forEach((p) => {
+        const current_position = parseInt(p);
+        const combatant = new_combatants[current_position];
+        if (combatant === undefined) {
+            debugger;
+            return;
+        }
         const new_position = requestMove(
             {
                 posData:
