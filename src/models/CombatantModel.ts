@@ -8,7 +8,6 @@ import {
     Surroundings, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
-import { Combatants } from "../data/boardSlice";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
@@ -46,13 +45,6 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
     }
 }
 
-export function requestMove(
-    {random_walk_enabled, combatant, tiles, window_width, combatants}: 
-    {random_walk_enabled: boolean, combatant: CombatantModel, tiles: TileModel[], window_width: number, combatants: Combatants}
-) {
-    return getCombatantNextPosition(random_walk_enabled, combatant.position, tiles, window_width, combatants);
-}
-
 function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): number {
     if (b === undefined) {
         return -1;
@@ -71,7 +63,13 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-function getCombatantNextPosition(random_walk_enabled: boolean, current_position: number, tiles: TileModel[], window_width: number, combatants: Combatants): number {
+export function requestMove({random_walk_enabled, current_position, tiles, window_width, combatants}:
+    {random_walk_enabled: boolean, 
+    current_position: number, 
+    tiles: TileModel[], 
+    window_width: number, 
+    combatants: {[position: number]: CombatantModel | undefined}
+}): number {
     const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
     const self = (posData.surroundings[ClockFace.c] as Surroundings).occupant as CombatantModel;
 
@@ -152,13 +150,6 @@ function getCombatantNextPosition(random_walk_enabled: boolean, current_position
     let position;
     let attepts = 3;
     do {
-        // position based on best mate space
-        const best_mate_position = 
-            // find me someone better than me
-            potential_mates.find(m => strength_sort(self, m) >= 0)?.position ?? 
-            // or just find me anyone
-            potential_mates[Math.floor(Math.random() * potential_mates.length)]?.position
-
         const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
             .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
             .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
@@ -171,6 +162,12 @@ function getCombatantNextPosition(random_walk_enabled: boolean, current_position
         const best_safe_position = best_safe_position_bucket?.length > 0 ? 
             best_safe_position_bucket[Math.floor(Math.random() * best_safe_position_bucket.length)] : undefined;
 
+        // position based on best mate space
+        const best_mate_position = 
+            // find me someone better than me
+            potential_mates.find(m => strength_sort(self, m) >= 0)?.position ?? 
+            // or just find me anyone
+            potential_mates[Math.floor(Math.random() * potential_mates.length)]?.position
 
         if (best_hunter_position && !random_walk_enabled) {
             position = best_hunter_position;

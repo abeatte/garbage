@@ -113,38 +113,36 @@ export function calcMovements(
         tiles: TileModel[]
     }
 ): {combatants: Combatants, births: number, deaths: number} {
-    const new_combatants = {} as Combatants;
+    const new_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
-    Object.keys(combatants)
-    .sort((a, b) => parseInt(a) - parseInt(b))
-    .forEach((position) => {
-        const combatant = combatants[parseInt(position)];
-        const current_position = parseInt(position);
-        const new_position = requestMove({random_walk_enabled, combatant, tiles, window_width, combatants});
+    Object.values(combatants)
+    .forEach((combatant) => {
+        const current_position = combatant.position;
+        const new_position = requestMove(
+            {
+                random_walk_enabled, 
+                current_position, 
+                tiles, 
+                window_width, 
+                combatants: new_combatants
+            });
 
-        const current_occupant = new_combatants[new_position];
-        const moved_occupant = combatants[new_position];
+        const occupant = new_combatants[new_position];
 
         if (!evalHealth(combatant) || combatant.state === State.Dead) {
             // you die
             combatant.state = State.Dead;
+            new_combatants[current_position] = undefined;
             deaths++;
         } else if (combatant.state === State.Mating) {
             // do nothing; their turn is taken up by mating
-            new_combatants[current_position] = combatant;
-            combatant.position = current_position;
-        } else if (!current_occupant && !moved_occupant) {
-            // space is empty; OK to move there if you are healthy enough
+        } else if (!occupant) {
+            // space is empty; OK to move
+            new_combatants[current_position] = undefined;
             new_combatants[new_position] = combatant;
             combatant.position = new_position;
-        } else if((!moved_occupant && current_occupant && current_occupant.team === combatant.team) ||
-        (moved_occupant && moved_occupant.team === combatant.team)) {  
-            const occupant = moved_occupant || current_occupant;
-
-            new_combatants[current_position] = combatant;
-            combatant.position = current_position;
-            
+        } else if(occupant.team === combatant.team) {
             // space is occupied by a friendly
             if (combatant.tick > MAX_YOUNGLING_TICK && occupant.tick > MAX_YOUNGLING_TICK) {
                 occupant.state = State.Mating;
@@ -152,21 +150,23 @@ export function calcMovements(
                 combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
             }
         } else {
-            // space is occupied by a foe
-            const occupant = moved_occupant || current_occupant;
-            new_combatants[new_position] = compete(combatant, occupant)
-            new_combatants[new_position].position = new_position;
+            // space is occupied by a enemy
+            new_combatants[current_position] = undefined;
+            new_combatants[new_position] = compete(combatant, occupant);
+            (new_combatants[new_position] as CombatantModel).position = new_position;
             deaths++;            
         }
     });
 
     Object.values(new_combatants)
-        .filter(c => c.state === State.Mating)
-        .forEach(parent => {
-            const spawn = parent?.spawn as CombatantModel;
+        .filter(c => c?.state === State.Mating)
+        .forEach(c => {
+            const parent = c as CombatantModel;
+            const spawn = parent.spawn as CombatantModel;
             if (spawn === undefined) {
-                // congrats, dad... get
+                // congrats, dad... get lost
                 parent.state = State.Alive;
+                parent.children += 1;
                 return;
             }
             parent.spawn = undefined;
@@ -180,7 +180,6 @@ export function calcMovements(
                     }), 
                 spawn,
                 parent,
-                combatants: new_combatants,
                 arena_size: tiles.length});
             if (spawn.position > -1) {
                 new_combatants[spawn.position] = spawn;
@@ -189,17 +188,21 @@ export function calcMovements(
             }
         });
 
-    return {combatants: new_combatants, births, deaths};
+    // This step is crucial as without copying the Redux store will 
+    // duplicate the now undefined combatants 
+    const ret_combatants = {} as Combatants;
+    Object.values(new_combatants).forEach(c => {
+        if (c !== undefined) {
+            ret_combatants[c.position] = c;
+        }
+    })
+
+    return {combatants: ret_combatants, births, deaths};
 }
 
 export function updateCombatants({combatants, global_combatant_stats, tiles}: 
-    {
-        combatants: Combatants, 
-        global_combatant_stats: GlobalCombatantStatsModel, 
-        window_width: number, 
-        tiles: TileModel[]
-    }
-): GlobalCombatantStatsModel {
+    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}):
+GlobalCombatantStatsModel {
     const new_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
 
     const combatant_keys = Object.keys(combatants);
@@ -248,8 +251,8 @@ export function updateCombatants({combatants, global_combatant_stats, tiles}:
     return c.fitness > MIN_HEALTH;
 };
 
-function birthSpawn({posData, spawn, parent, combatants, arena_size}: 
-    {posData: PosData, spawn: CombatantModel, parent: CombatantModel, combatants: Combatants, arena_size: number})
+function birthSpawn({posData, spawn, parent, arena_size}: 
+    {posData: PosData, spawn: CombatantModel, parent: CombatantModel, arena_size: number})
 {
     const {surroundings} = posData;
     const friendly_positions = [], 
@@ -309,8 +312,10 @@ function compete(a: CombatantModel, b: CombatantModel) {
     }
 }
 
-export function getSurroundingPos(args: {position: number, window_width: number, tiles: TileModel[], combatants: Combatants}): PosData {
-    const {position, window_width, tiles, combatants} = args;
+export function getSurroundingPos(
+    {position, window_width, tiles, combatants}: 
+    {position: number, window_width: number, tiles: TileModel[], combatants: {[position: number]: CombatantModel | undefined}}
+): PosData {
     const ret = {surroundings: [] as Surroundings[]} as PosData;
 
     ret.coord = {y: Math.floor(position / window_width), x: position % window_width};
