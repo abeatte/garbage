@@ -4,7 +4,8 @@ import {
     MAX_YOUNGLING_TICK, 
     DIRECTION,
     getSurroundingPos,
-    ClockFace, 
+    ClockFace,
+    Surroundings, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
 import { Combatants } from "../data/boardSlice";
@@ -72,7 +73,7 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
 
 function getCombatantNextPosition(random_walk_enabled: boolean, current_position: number, tiles: TileModel[], window_width: number, combatants: Combatants): number {
     const posData = getSurroundingPos({position: current_position, window_width, tiles, combatants});
-    const self = posData.surroundings[ClockFace.c].occupant as CombatantModel;
+    const self = (posData.surroundings[ClockFace.c] as Surroundings).occupant as CombatantModel;
 
     // returns negative if B is stronger
     const strength_sort = (a: CombatantModel | undefined, b: CombatantModel | undefined): number => {
@@ -85,6 +86,10 @@ function getCombatantNextPosition(random_walk_enabled: boolean, current_position
     empty_positions = [] as number[];
 
     posData.surroundings.forEach((surrounding, idx, s_arr) => {
+        if (!surrounding) {
+            return;
+        }
+
         const {position, occupant: c, tile} = surrounding;
 
         const illegal_moves = [ClockFace.c, ClockFace.bl, ClockFace.br, ClockFace.tl, ClockFace.tr]
@@ -130,7 +135,7 @@ function getCombatantNextPosition(random_walk_enabled: boolean, current_position
     }, {} as {[key: string]: number[]});
 
     const bucketed_potential_ranked_tiles = Object.values(posData.surroundings).reduce((buckets, s) => {
-        const tile = s.tile;
+        const tile = s?.tile;
         if (tile !== undefined) {
             const position = tile.index;
             if (empty_positions.includes(position)) {

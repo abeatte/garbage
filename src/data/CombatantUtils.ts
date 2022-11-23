@@ -15,7 +15,7 @@ export enum ClockFace {
     l = 8, 
 };
 
-interface Surroundings {
+export interface Surroundings {
     position: number,
     occupant: CombatantModel | undefined,
     tile: TileModel | undefined,
@@ -27,7 +27,7 @@ export interface PosData {
     can_go_up: boolean,
     can_go_right: boolean,
     can_go_down: boolean,
-    surroundings: Surroundings[],
+    surroundings: (Surroundings | undefined)[],
 }
 
 export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: Combatants}): number {
@@ -44,7 +44,8 @@ export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: 
 };
 
 export function updateCombatantsPositionsAfterResize(
-    args: {
+{combatants, window_width, window_height, old_window_width, old_window_height, tiles}: 
+    {
         combatants: Combatants, 
         window_width: number, 
         window_height: number, 
@@ -53,7 +54,6 @@ export function updateCombatantsPositionsAfterResize(
         tiles: TileModel[]
     }
 ) {
-    const {combatants, window_width, window_height, old_window_width, old_window_height, tiles} = args;
     const new_combatants = {} as Combatants;
 
     const dif_row = window_width - old_window_width;
@@ -67,20 +67,20 @@ export function updateCombatantsPositionsAfterResize(
             // they fell off the world; let's try to move them up/left
             const posData = 
                 getSurroundingPos({position: old_pos, window_width: old_window_width, tiles, combatants});
-            const can_move_up = posData.can_go_up && !posData.surroundings[ClockFace.t].occupant;
-            const can_move_diag = posData.can_go_left && posData.can_go_up && !posData.surroundings[ClockFace.tl].occupant;
-            const can_move_left = posData.can_go_left && !posData.surroundings[ClockFace.l].occupant;
+            const up_position = posData.surroundings[ClockFace.t];
+            const up_left_position = posData.surroundings[ClockFace.tl];
+            const left_position = posData.surroundings[ClockFace.l];
 
             const dice_roll = Math.random();
 
-            if (dice_roll < .33 && can_move_left && dif_col > -1) {
-                new_pos = posData.surroundings[ClockFace.l].position;
+            if (dice_roll < .33 && left_position && dif_col > -1) {
+                new_pos = left_position.position;
                 coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
-            } else if (dice_roll < .66 && can_move_up && dif_row > -1) {
-                new_pos = posData.surroundings[ClockFace.t].position;
+            } else if (dice_roll < .66 && up_position && dif_row > -1) {
+                new_pos = up_position.position;
                 coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
-            } else if (can_move_diag) {
-                new_pos = posData.surroundings[ClockFace.tl].position;
+            } else if (up_left_position) {
+                new_pos = up_left_position.position;
                 coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
             } else {
                 new_pos = -1;
@@ -193,8 +193,13 @@ export function calcMovements(
 }
 
 export function updateCombatants({combatants, global_combatant_stats, tiles}: 
-    {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]}):
-GlobalCombatantStatsModel {
+    {
+        combatants: Combatants, 
+        global_combatant_stats: GlobalCombatantStatsModel, 
+        window_width: number, 
+        tiles: TileModel[]
+    }
+): GlobalCombatantStatsModel {
     const new_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
 
     const combatant_keys = Object.keys(combatants);
@@ -252,6 +257,10 @@ function birthSpawn({posData, spawn, parent, combatants, arena_size}:
     empty_positions = [] as number[];
 
     surroundings.forEach((surrounding, idx, s_arr) => {
+        if (!surrounding) {
+            return;
+        }
+        
         const {position, occupant: c} = surrounding;
 
         if (!c) {
@@ -320,15 +329,24 @@ export function getSurroundingPos(args: {position: number, window_width: number,
 
     // start at center position and then move clockwise around
     ret.surroundings = Array(9);
-    ret.surroundings[ClockFace.c] = setSurrounding(position);
-    ret.surroundings[ClockFace.tl] = setSurrounding(position - window_width - 1);
-    ret.surroundings[ClockFace.t] = setSurrounding(position - window_width);
-    ret.surroundings[ClockFace.tr] = setSurrounding(position - window_width + 1);
-    ret.surroundings[ClockFace.r] = setSurrounding(position + 1);
-    ret.surroundings[ClockFace.br] = setSurrounding(position + window_width + 1);
-    ret.surroundings[ClockFace.b] = setSurrounding(position + window_width);
-    ret.surroundings[ClockFace.bl] = setSurrounding(position + window_width - 1);
-    ret.surroundings[ClockFace.l] = setSurrounding(position - 1);
+    ret.surroundings[ClockFace.c] = 
+        setSurrounding(position);
+    ret.surroundings[ClockFace.tl] = ret.can_go_up && ret.can_go_left ? 
+        setSurrounding(position - window_width - 1) : undefined;
+    ret.surroundings[ClockFace.t] = ret.can_go_up ? 
+        setSurrounding(position - window_width) : undefined;
+    ret.surroundings[ClockFace.tr] = ret.can_go_up && ret.can_go_right ? 
+        setSurrounding(position - window_width + 1) : undefined;
+    ret.surroundings[ClockFace.r] = ret.can_go_right ? 
+        setSurrounding(position + 1) : undefined;
+    ret.surroundings[ClockFace.br] = ret.can_go_down && ret.can_go_right ? 
+        setSurrounding(position + window_width + 1) : undefined;
+    ret.surroundings[ClockFace.b] = ret.can_go_down ? 
+        setSurrounding(position + window_width) : undefined;
+    ret.surroundings[ClockFace.bl] = ret.can_go_down && ret.can_go_left ? 
+        setSurrounding(position + window_width - 1) : undefined;
+    ret.surroundings[ClockFace.l] = ret.can_go_left ? 
+        setSurrounding(position - 1) : undefined;
 
     return ret;
 };
