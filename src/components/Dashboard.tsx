@@ -3,7 +3,7 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, toggleRandomWalkEnabled } from '../data/boardSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic } from '../data/boardSlice'
 import { Character } from "./Combatant";
 import { setIsHudActionable } from "../data/hudSlice";
 // @ts-ignore
@@ -154,15 +154,13 @@ const Dashboard = (args: {onReset: () => void}) => {
                 <span className={'Label'}>{'Show Tile Potential'}</span>
             </div>
             <div style={{marginTop: "4px"}}>
-                <input 
-                    className={classNames('Clickable', 'Checkbox')} 
-                    type="checkbox" 
-                    checked={board.random_walk_enabled}
-                    onChange={(input) => {
-                        dispatch(toggleRandomWalkEnabled());
-                    }}
-                />
-                <span className={'Label'}>{'Random Walk'}</span>
+            <span className={'Label'}>{'Movement: '}</span>
+                <select
+                    value={board.movement_logic}
+                    onChange={(input) => dispatch(setMovementLogic(input.target.value as unknown as MovementLogic))}
+                    >
+                        {Object.values(MovementLogic).map(l => (<option key={l.toString()}>{l}</option>))}
+                    </select>
             </div>
         </>
     );

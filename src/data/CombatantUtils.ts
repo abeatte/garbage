@@ -1,4 +1,4 @@
-import { Combatants } from "./boardSlice";
+import { Combatants, MovementLogic } from "./boardSlice";
 import CombatantModel, { createCombatant, getRandomTeam, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
@@ -104,9 +104,9 @@ export function updateCombatantsPositionsAfterResize(
 }
 
 export function calcMovements(
-    {random_walk_enabled, combatants, global_combatant_stats, window_width, tiles}: 
+    {movement_logic, combatants, global_combatant_stats, window_width, tiles}: 
     {
-        random_walk_enabled: boolean, 
+        movement_logic: MovementLogic, 
         combatants: Combatants, 
         global_combatant_stats: GlobalCombatantStatsModel, 
         window_width: number, 
@@ -133,7 +133,7 @@ export function calcMovements(
                         tiles, 
                         combatants: new_combatants,
                     }),
-                random_walk_enabled, 
+                movement_logic, 
                 current_position, 
                 tiles, 
                 window_width,

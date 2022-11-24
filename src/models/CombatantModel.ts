@@ -8,6 +8,7 @@ import {
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
+import { MovementLogic } from "../data/boardSlice";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
@@ -62,9 +63,9 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-export function requestMove({random_walk_enabled, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, posData, current_position, tiles, window_width}:
     {
-        random_walk_enabled: boolean, 
+        movement_logic: MovementLogic, 
         posData: PosData,
         current_position: number, 
         tiles: TileModel[], 
@@ -144,6 +145,7 @@ export function requestMove({random_walk_enabled, posData, current_position, til
         const best_mate_position = best_mate_bucket?.length > 0 ?
         best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : undefined;
 
+        const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;
         if (best_hunter_position && !random_walk_enabled) {
             position = best_hunter_position;
         // % chance you'll choose to mate

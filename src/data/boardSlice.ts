@@ -14,6 +14,8 @@ const WINDOW_WIDTH = 13;
 const WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 
+export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
+
 export type Combatants = {[position: number]: CombatantModel};
 
 function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
@@ -82,7 +84,7 @@ function initState(width?: number, height?: number): {
     combatants: Combatants,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
-    random_walk_enabled: boolean,
+    movement_logic: MovementLogic,
 } {
     width = width ?? WINDOW_WIDTH;
     height = height ?? WINDOW_HEIGHT;
@@ -98,7 +100,7 @@ function initState(width?: number, height?: number): {
         combatants,
         selected_position: undefined,
         follow_selected_combatant: false,
-        random_walk_enabled: false,
+        movement_logic: MovementLogic.DecisionTree,
     };
   }
 
@@ -198,7 +200,7 @@ export const boardSlice = createSlice({
             combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
         const result = calcMovements({
-            random_walk_enabled: state.random_walk_enabled,
+            movement_logic: state.movement_logic,
             combatants: state.combatants, 
             global_combatant_stats: state.global_combatant_stats,
             window_width: state.width, 
@@ -277,8 +279,8 @@ export const boardSlice = createSlice({
     toggleShowTilePotentials: (state) => {
         state.show_tile_potentials = !state.show_tile_potentials;
     },
-    toggleRandomWalkEnabled: (state) => {
-        state.random_walk_enabled = !state.random_walk_enabled;
+    setMovementLogic: (state, action: {payload: MovementLogic}) => {
+        state.movement_logic = action.payload;
     }
   }
 })
@@ -296,7 +298,7 @@ export const {
     killSelected,
     spawnAtSelected,
     toggleShowTilePotentials,
-    toggleRandomWalkEnabled,
+    setMovementLogic,
 } = boardSlice.actions
 
 export default boardSlice.reducer
