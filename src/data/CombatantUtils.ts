@@ -15,6 +15,9 @@ export enum ClockFace {
     l = 8, 
 };
 
+export const LegalMoves = [ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l]
+export const IllegalMoves = [ClockFace.c, ClockFace.tl, ClockFace.tr, ClockFace.bl, ClockFace.br]
+
 export interface Surroundings {
     position: number,
     occupant: CombatantModel | undefined,
