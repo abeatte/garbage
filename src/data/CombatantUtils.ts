@@ -27,6 +27,8 @@ export interface PosData {
     can_go_up: boolean,
     can_go_right: boolean,
     can_go_down: boolean,
+    window_width: number,
+    tile_count: number,
     surroundings: (Surroundings | undefined)[],
 }
 
@@ -339,6 +341,8 @@ export function getSurroundingPos(
     ret.can_go_up = position - window_width > -1
     ret.can_go_right = position % window_width < window_width - 1;
     ret.can_go_down = position + window_width < tiles.length; 
+    ret.window_width = window_width;
+    ret.tile_count = tiles.length;
     
     const setSurrounding = (position: number) => {
         return {
