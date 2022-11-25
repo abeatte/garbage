@@ -4,8 +4,10 @@ import CombatantModel, { getNewPositionFromDirection } from "./CombatantModel";
 // import on brain.js not supported. 
 // import brain from 'brain.js';
 const brain = require('brain.js');
+import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neural-network";
 
-interface TrainingSet {
+type TrainingType = {[direction: string]: number};
+interface TrainingSet extends INeuralNetworkDatum<TrainingType, TrainingType> {
     input: {[direction: string]: number},
     output: {[direction: string]: number},
 }
@@ -29,13 +31,12 @@ const train = () => {
     const width = 3, height = 3;
 
     // 1. create 20,000 training sets using 3x3 maps with no combatants
-    for(let i = 0; i < 500; i++) {
+    for(let i = 0; i < 100; i++) {
 
         const tiles = initDefaultTiles({for_training, width, height})
         const posData = getSurroundingPos({position, window_width: width, tiles, combatants: {}})
         training_sets.push(getTrainingSet(posData));
     }
-
 
     net.train(training_sets);
 }
@@ -57,6 +58,17 @@ const getTrainingSet = (posData: PosData): TrainingSet => {
     return { input, output };
 }
 
+// TODO: fs not able to be used in browsers
+// const writeJSONToFile = (nn_json: INeuralNetworkJSON) => {
+//     fs.writeFileSync('../NeuralNetwork.json', JSON.stringify(nn_json), 'utf8');
+// };
+
+// TODO: fs not able to be used in browsers
+// const readJSONFromFile = (): INeuralNetworkJSON => {
+//     const text = fs.readFileSync('../data/NeuralNetwork.json', 'utf8');
+//     return JSON.parse(text);
+// }
+
 const move = (combatant: CombatantModel, posData: PosData): number => {
     // keys are ClockFace values (b, t, l, r); values are potentials (53, -2, ...)
     const move_potentials = LegalMoves.reduce((move_potentials, direction) => {
@@ -65,8 +77,14 @@ const move = (combatant: CombatantModel, posData: PosData): number => {
         return move_potentials;
     }, {} as {[direction: string]: number});
 
+    // debugger;
     // train();
     // debugger;
+    // writeJSONToFile(net.toJSON());
+    // debugger;
+    // net.fromJSON(readJSONFromFile());
+    // debugger;
+    // console.log(net.toJSON());
 
     // "network not runnable" error in console without training model first.
     const output: {[direction: string]: number} = net.run(move_potentials);
