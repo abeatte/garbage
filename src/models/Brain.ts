@@ -1,9 +1,13 @@
-import { ClockFace, LegalMoves, PosData } from "../data/CombatantUtils";
+import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
 import CombatantModel, { getNewPositionFromDirection } from "./CombatantModel";
-
 // import on brain.js not supported. 
 // import brain from 'brain.js';
 const brain = require('brain.js');
+
+interface TrainingSet {
+    input: {[direction: string]: number},
+    output: {[direction: string]: number},
+}
 
 // provide optional config object (or undefined). Defaults shown.
 const config = {
@@ -16,17 +20,26 @@ const config = {
 // create a simple feed forward neural network with backpropagation
 const net = new brain.NeuralNetwork(config);
 
-const train = (combatant: CombatantModel, posData: PosData) => {
-    // TODO: implement. 
-    throw new Error("Not yet implemented!!!");
+const train = () => {
+    // TODO: implement
+    throw new Error("Not yet implemented!");
+}
 
+const trainSpace = (posData: PosData): TrainingSet => {
+    const input = {} as {[direction: string]: number}, 
+    output = {} as {[direction: string]: number};
 
-    net.train([
-        { input: [0, 0], output: [0] },
-        { input: [0, 1], output: [1] },
-        { input: [1, 0], output: [1] },
-        { input: [1, 1], output: [0] },
-    ]);
+    posData.surroundings.forEach((surrounding, idx) => {
+        if (!surrounding || !LegalMoves.includes(idx)) {
+            input[idx] = MIN_HEALTH;
+            output[idx] = MIN_HEALTH;
+        } else {
+            input[idx] = surrounding.tile.tile_effect;
+            output[idx] = surrounding.tile.score_potential;
+        }
+    });
+
+    return { input, output };
 }
 
 const move = (combatant: CombatantModel, posData: PosData): number => {
@@ -37,7 +50,7 @@ const move = (combatant: CombatantModel, posData: PosData): number => {
         return move_potentials;
     }, {} as {[direction: string]: number});
     
-    // TODO: getting "network not runnable error in console."
+    // "network not runnable" error in console without training model first.
     const output: {[direction: string]: number} = net.run(move_potentials);
     const move_direction = Object.keys(output).reduce((move_direction, output_key) => {
         const potential = output[output_key];
