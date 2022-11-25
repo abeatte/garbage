@@ -72,16 +72,14 @@ export function requestMove({random_walk_enabled, posData, current_position, til
 }): number {
     const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
 
-    let potential_mates = [] as CombatantModel[],
-    enemies = [] as CombatantModel[], 
-    empty_positions = [] as number[];
+    const bucketed_enemy_strengths = {} as {[key: string]: number[]}; 
+    const bucketed_mate_strengths = {} as {[key: string]: number[]};
+    const bucketed_empty_tiles = {} as {[key: number]: number[]}; 
 
     posData.surroundings.forEach((surrounding, idx, s_arr) => {
         if (!surrounding) {
             return;
         }
-
-        const {position, occupant: c, tile} = surrounding;
 
         const illegal_moves = [ClockFace.c, ClockFace.bl, ClockFace.br, ClockFace.tl, ClockFace.tr]
         if (illegal_moves.includes(idx)) {
@@ -89,63 +87,40 @@ export function requestMove({random_walk_enabled, posData, current_position, til
             return;
         }
 
-        if (!c) {
-            empty_positions.push(position)
+        const occupant = surrounding.occupant;
+        if (!occupant) {
+            if (surrounding.tile !== undefined) {
+                if (bucketed_empty_tiles[surrounding.tile.score_potential] === undefined) {
+                    bucketed_empty_tiles[surrounding.tile.score_potential] = [];
+                }
+                bucketed_empty_tiles[surrounding.tile.score_potential].push(surrounding.position);
+            }
         } else if (
             // same team
-            c.team === self.team && 
+            occupant.team === self.team && 
             // not already 'engaged'
-            c.state !== State.Mating && 
+            occupant.state !== State.Mating && 
             // not too young
-            c.tick > MAX_YOUNGLING_TICK && 
+            occupant.tick > MAX_YOUNGLING_TICK && 
             // not on hurtful tile
-            (tile?.tile_effect ?? -1) > -1
+            (surrounding.tile?.tile_effect ?? -1) > -1
         ) {
-            potential_mates.push(c);
+            const strength = occupant.strength;
+            if (bucketed_mate_strengths[strength] === undefined) {
+                bucketed_mate_strengths[strength] = [];
+            }
+            bucketed_mate_strengths[strength].push(surrounding.position);
         } else if (
             // enemy
-            c.team !== self.team
+            occupant.team !== self.team
         ) {
-            enemies.push(c);
+            const strength = occupant.strength;
+            if (bucketed_enemy_strengths[strength] === undefined) {
+                bucketed_enemy_strengths[strength] = [];
+            }
+            bucketed_enemy_strengths[strength].push(surrounding.position);
         }
     });
-
-    const bucketed_mate_strengths = Object.values(potential_mates).reduce((buckets, m) => {
-        const strength = m.strength;
-        const position = m.position;
-        if (buckets[strength] === undefined) {
-            buckets[strength] = [];
-        }
-        const bucket = buckets[strength];
-        bucket.push(position);
-        return buckets;
-    }, {} as {[key: string]: number[]});
-
-    const bucketed_enemy_strengths = Object.values(enemies).reduce((buckets, e) => {
-        const strength = e.strength;
-        const position = e.position;
-        if (buckets[strength] === undefined) {
-            buckets[strength] = [];
-        }
-        const bucket = buckets[strength];
-        bucket.push(position);
-        return buckets;
-    }, {} as {[key: string]: number[]});
-
-    const bucketed_potential_ranked_tiles = Object.values(posData.surroundings).reduce((buckets, s) => {
-        const tile = s?.tile;
-        if (tile !== undefined) {
-            const position = tile.index;
-            if (empty_positions.includes(position)) {
-                if (buckets[tile.score_potential] === undefined) {
-                    buckets[tile.score_potential] = [];
-                }
-                const bucket = buckets[tile.score_potential];
-                bucket.push(position);
-            }
-        }
-        return buckets;
-    }, {} as {[key: number]: number[]});
 
     let position;
     let attepts = 3;
@@ -157,7 +132,7 @@ export function requestMove({random_walk_enabled, posData, current_position, til
             best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : undefined;
 
         // position based on best safe space
-        const best_safe_bucket = bucketed_potential_ranked_tiles[Object.keys(bucketed_potential_ranked_tiles)
+        const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
             .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
         const best_safe_position = best_safe_bucket?.length > 0 ? 
         best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : undefined;

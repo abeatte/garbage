@@ -325,7 +325,12 @@ function compete(a: CombatantModel, b: CombatantModel) {
 
 export function getSurroundingPos(
     {position, window_width, tiles, combatants}: 
-    {position: number, window_width: number, tiles: TileModel[], combatants: {[position: number]: CombatantModel | undefined}}
+    {
+        position: number, 
+        window_width: number, 
+        tiles: TileModel[], 
+        combatants: {[position: number]: CombatantModel | undefined}
+    }
 ): PosData {
     const ret = {surroundings: [] as Surroundings[]} as PosData;
 
