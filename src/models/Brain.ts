@@ -1,4 +1,5 @@
-import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
+import { initDefaultTiles } from "../data/boardSlice";
+import { ClockFace, getSurroundingPos, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
 import CombatantModel, { getNewPositionFromDirection } from "./CombatantModel";
 // import on brain.js not supported. 
 // import brain from 'brain.js';
@@ -21,11 +22,25 @@ const config = {
 const net = new brain.NeuralNetwork(config);
 
 const train = () => {
-    // TODO: implement
-    throw new Error("Not yet implemented!");
+    const training_sets = [] as TrainingSet[];
+
+    const for_training = true;
+    const position = 4; // 4 = center
+    const width = 3, height = 3;
+
+    // 1. create 20,000 training sets using 3x3 maps with no combatants
+    for(let i = 0; i < 500; i++) {
+
+        const tiles = initDefaultTiles({for_training, width, height})
+        const posData = getSurroundingPos({position, window_width: width, tiles, combatants: {}})
+        training_sets.push(getTrainingSet(posData));
+    }
+
+
+    net.train(training_sets);
 }
 
-const trainSpace = (posData: PosData): TrainingSet => {
+const getTrainingSet = (posData: PosData): TrainingSet => {
     const input = {} as {[direction: string]: number}, 
     output = {} as {[direction: string]: number};
 
@@ -49,9 +64,14 @@ const move = (combatant: CombatantModel, posData: PosData): number => {
             posData.surroundings[direction]?.tile?.score_potential ?? -Infinity
         return move_potentials;
     }, {} as {[direction: string]: number});
-    
+
+    // train();
+    // debugger;
+
     // "network not runnable" error in console without training model first.
     const output: {[direction: string]: number} = net.run(move_potentials);
+    debugger;
+
     const move_direction = Object.keys(output).reduce((move_direction, output_key) => {
         const potential = output[output_key];
         const current_potential = output[move_direction] ?? -Infinity;
