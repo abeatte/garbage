@@ -16,12 +16,13 @@ export enum ClockFace {
 };
 
 export const LegalMoves = [ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l]
-export const IllegalMoves = [ClockFace.c, ClockFace.tl, ClockFace.tr, ClockFace.bl, ClockFace.br]
+export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.bl, ClockFace.br]
+export const IllegalMoves = [ClockFace.c, ...DiagonalMoves]
 
 export interface Surroundings {
     position: number,
     occupant: CombatantModel | undefined,
-    tile: TileModel | undefined,
+    tile: TileModel,
 }
     
 export interface PosData {
