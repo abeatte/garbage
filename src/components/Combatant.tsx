@@ -4,12 +4,12 @@
 
 import React from 'react';
 import '../css/Combatant.css';
+import { Character } from '../models/CombatantModel';
 const Bunny = require('../images/combatants/bunny.png');
 const Turtle = require('../images/combatants/turtle.png');
 const Elephant = require('../images/combatants/lil_eli.png');
 const Lizard = require('../images/combatants/lizard.png');
 
-export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
 interface CharacterType {
     team: keyof typeof Character,
     color: string,

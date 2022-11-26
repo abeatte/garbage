@@ -1,5 +1,4 @@
 import uuid from "react-uuid";
-import { Character } from "../components/Combatant";
 import { 
     MAX_YOUNGLING_TICK, 
     DIRECTION,
@@ -13,6 +12,8 @@ import Brain from "./Brain";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
+
+export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
 
 export interface CombatantModel {
     id: string;
