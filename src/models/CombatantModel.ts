@@ -9,6 +9,8 @@ import { TileModel } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 import { MovementLogic } from "../data/boardSlice";
 import Brain from "./Brain";
+import { NeuralNetwork } from "brain.js/dist/src";
+import { TrainingType } from "../scripts/BrainTrainer";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
@@ -65,9 +67,10 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-export function requestMove({movement_logic, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, brain, posData, current_position, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
+        brain: NeuralNetwork<TrainingType, TrainingType>,
         posData: PosData,
         current_position: number, 
         tiles: TileModel[], 
@@ -127,7 +130,7 @@ export function requestMove({movement_logic, posData, current_position, tiles, w
 
     let position;
     if (movement_logic === MovementLogic.NeuralNetwork) {
-        position = Brain.move(self, posData);
+        position = Brain.move(brain, self, posData);
     } else {
         let attepts = 3;
         do {

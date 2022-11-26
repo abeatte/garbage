@@ -2,6 +2,7 @@ import { Combatants, MovementLogic } from "./boardSlice";
 import CombatantModel, { createCombatant, getRandomTeam, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
+import Brain from "../models/Brain";
 
 export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 export const MAX_YOUNGLING_TICK = 5;
@@ -34,6 +35,10 @@ export interface PosData {
     window_width: number,
     tile_count: number,
     surroundings: (Surroundings | undefined)[],
+}
+
+export function getDirectionFromClockFace(clockFace: ClockFace): number {
+    return clockFace / 2;
 }
 
 export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: Combatants}): number {
@@ -119,6 +124,7 @@ export function calcMovements(
         tiles: TileModel[]
     }
 ): {combatants: Combatants, births: number, deaths: number} {
+    const brain = Brain.init();
     const new_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
@@ -127,7 +133,6 @@ export function calcMovements(
         const current_position = parseInt(p);
         const combatant = new_combatants[current_position];
         if (combatant === undefined) {
-            debugger;
             return;
         }
         const new_position = requestMove(
@@ -140,6 +145,7 @@ export function calcMovements(
                         combatants: new_combatants,
                     }),
                 movement_logic, 
+                brain, 
                 current_position, 
                 tiles, 
                 window_width,
