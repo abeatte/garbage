@@ -4,14 +4,10 @@
 
 import React from 'react';
 import '../css/Combatant.css';
-// @ts-ignore
-import Bunny from '../images/combatants/bunny.png';
-// @ts-ignore
-import Turtle from '../images/combatants/turtle.png';
-// @ts-ignore
-import Elephant from '../images/combatants/lil_eli.png';
-// @ts-ignore
-import Lizard from '../images/combatants/lizard.png';
+const Bunny = require('../images/combatants/bunny.png');
+const Turtle = require('../images/combatants/turtle.png');
+const Elephant = require('../images/combatants/lil_eli.png');
+const Lizard = require('../images/combatants/lizard.png');
 
 export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
 interface CharacterType {
