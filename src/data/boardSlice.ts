@@ -18,16 +18,14 @@ export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural 
 
 export type Combatants = {[position: number]: CombatantModel};
 
-export function initDefaultTiles({width, height, for_training}: {width: number, height: number, for_training: boolean}): TileModel[] {
+export function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
     const tiles = Array(width * height) as TileModel[];
     let idx = 0;
     for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
-            if (!for_training && (h === 0 || h === height-1 || w === 0 || w === width-1)) {
+            if (h === 0 || h === height-1 || w === 0 || w === width-1) {
                 tiles[idx] = createTileModel({index: idx, type: TileType.Fire});
-            } else if (
-                (for_training && Math.random() < 0.5) || 
-                (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3)) {
+            } else if (h > height/5 && h < height/5*4 && w > width/5 && w < width/5*4) {
                 tiles[idx] = createTileModel({
                     index: idx, 
                     type: Math.random() < 0.1 ?
@@ -88,9 +86,9 @@ function initState(width?: number, height?: number): {
     follow_selected_combatant: boolean,
     movement_logic: MovementLogic,
 } {
-    width = width ?? WINDOW_WIDTH;
-    height = height ?? WINDOW_HEIGHT;
-    const tiles = initDefaultTiles({for_training: false, width, height});
+    width = width ?? DEFAULT_WINDOW_WIDTH;
+    height = height ?? DEFAULT_WINDOW_HEIGHT;
+    const tiles = initDefaultTiles({width, height});
     const {combatants, global_combatant_stats} = initCombatants({tiles});
     return {
         game_count: 1,
@@ -119,7 +117,7 @@ export const boardSlice = createSlice({
         const old_window_height = state.height;
         const old_window_width = state.width;
         state.width -= 1
-        state.tiles = initDefaultTiles({for_training: false, width: state.width, height: state.height});
+        state.tiles = initDefaultTiles({width: state.width, height: state.height});
         const combatants = updateCombatantsPositionsAfterResize(
             {combatants: Object.assign({}, state.combatants), 
                 window_width: state.width, 
@@ -136,7 +134,7 @@ export const boardSlice = createSlice({
         const old_window_height = state.height;
         const old_window_width = state.width;
         state.width += 1
-        state.tiles = initDefaultTiles({for_training: false, width: state.width, height: state.height});
+        state.tiles = initDefaultTiles({width: state.width, height: state.height});
         const combatants = updateCombatantsPositionsAfterResize(
             {combatants: state.combatants, 
                 window_width: state.width, 
@@ -156,7 +154,7 @@ export const boardSlice = createSlice({
         const old_window_height = state.height;
         const old_window_width = state.width;
         state.height -= 1
-        state.tiles = initDefaultTiles({for_training: false, width: state.width, height: state.height});
+        state.tiles = initDefaultTiles({width: state.width, height: state.height});
         const combatants = updateCombatantsPositionsAfterResize(
             {combatants: state.combatants, 
                 window_width: state.width, 
@@ -173,7 +171,7 @@ export const boardSlice = createSlice({
         const old_window_height = state.height;
         const old_window_width = state.width;
         state.height += 1
-        state.tiles = initDefaultTiles({for_training: false, width: state.width, height: state.height});
+        state.tiles = initDefaultTiles({width: state.width, height: state.height});
         const combatants = updateCombatantsPositionsAfterResize(
             {combatants: state.combatants, 
                 window_width: state.width, 
