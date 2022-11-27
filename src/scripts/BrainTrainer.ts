@@ -24,7 +24,9 @@ const getTrainingSet = (posData: PosData): TrainingSet => {
     posData.surroundings.forEach((surrounding, idx) => {
         if (!surrounding || !LegalMoves.includes(idx)) {
             input[idx] = MIN_HEALTH;
-            output[idx] = MIN_HEALTH;
+            if (LegalMoves.includes(idx)) {
+                output[idx] = MIN_HEALTH;
+            }
         } else {
             input[idx] = surrounding.tile.tile_effect;
             output[idx] = surrounding.tile.score_potential;
@@ -85,9 +87,10 @@ const readTextFromJSONFile = (): string => {
 export function run() {
     console.log("Commencing training...")
 
+    // https://www.npmjs.com/package/brain.js?activeTab=readme
     const config = {
         binaryThresh: 0.5,
-        hiddenLayers: [3], // array of ints for the sizes of the hidden layers in the network
+        hiddenLayers: [9, 5, 5], // inputs -> 9 -> 5 -> 5 -> outputs
         activation: 'sigmoid', // supported activation types: ['sigmoid', 'relu', 'leaky-relu', 'tanh'],
         leakyReluAlpha: 0.01, // supported for activation type 'leaky-relu'
     };
