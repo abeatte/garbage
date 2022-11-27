@@ -1,4 +1,4 @@
-import { DIRECTION } from "../data/CombatantUtils";
+import { LegalMoves } from "../data/CombatantUtils";
 
 export enum Type {Void = "Void", Water = "Water", Fire = "Fire", Rock = "Rock", Sand = "Sand", Grass ="Grass"};
 
@@ -49,7 +49,7 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
  function getMapTileScorePotential(args: {position: number, tiles: TileModel[], window_width: number}): number {
     const {position, tiles, window_width} = args;
 
-    let possible_directions = Object.values(DIRECTION).length - 1;
+    let possible_directions = Object.values(LegalMoves).length - 2;
     let position_potential = 0;
                                             
     const can_go_left = position % window_width > 0;

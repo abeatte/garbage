@@ -1,9 +1,10 @@
 import uuid from "react-uuid";
 import { 
     MAX_YOUNGLING_TICK, 
-    DIRECTION,
     ClockFace,
-    PosData, 
+    PosData,
+    IllegalMoves,
+    LegalMoves, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
@@ -87,8 +88,7 @@ export function requestMove({movement_logic, brain, posData, current_position, t
             return;
         }
 
-        const illegal_moves = [ClockFace.c, ClockFace.bl, ClockFace.br, ClockFace.tl, ClockFace.tr]
-        if (illegal_moves.includes(idx)) {
+        if ([ClockFace.c, ...IllegalMoves].includes(idx)) {
             // don't count yourself or diagonal positions
             return;
         }
@@ -164,13 +164,13 @@ export function requestMove({movement_logic, brain, posData, current_position, t
             } else if (best_safe_position !== undefined && !random_walk_enabled) {
                 position = best_safe_position;
             } else {
-                const direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
-                position = getNewPositionFromDirection(
+                const clockFace = Math.floor(Math.random() * Object.values(LegalMoves).length);
+                position = getNewPositionFromClockFace(
                     current_position, 
-                    direction, 
+                    clockFace, 
                     window_width, 
                     tiles.length);
-                        }
+            }
             attepts--;
             // avoid fire if you can
         } while (tiles[position].tile_effect < 0 && attepts > 0);
@@ -179,30 +179,30 @@ export function requestMove({movement_logic, brain, posData, current_position, t
     return position;
 };
 
-export function getNewPositionFromDirection(current_position: number, direction: number, window_width: number, tile_count: number) {
+export function getNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
     let new_position = current_position;
-    switch (direction) {
-        case DIRECTION.left:
+    switch (clockFace) {
+        case ClockFace.l:
             new_position = 
                 current_position % window_width > 0 ? 
                     current_position - 1 : current_position;
             break;
-        case DIRECTION.up:
+        case ClockFace.t:
             new_position = 
                 current_position - window_width > -1 ? 
                     current_position - window_width : current_position;
             break;
-        case DIRECTION.right:
+        case ClockFace.r:
             new_position = 
                 current_position % window_width < window_width - 1 ? 
                     current_position + 1 : current_position;
             break;
-        case DIRECTION.down:
+        case ClockFace.b:
             new_position = 
                 current_position + window_width < tile_count ? 
                     current_position + window_width : current_position;
             break;
-        case DIRECTION.none:
+        case ClockFace.c:
             // fallthrough
         default:
             new_position = current_position;

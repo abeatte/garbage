@@ -4,7 +4,6 @@ import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantSta
 import { TileModel } from "../models/TileModel";
 import Brain from "../models/Brain";
 
-export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
@@ -16,9 +15,9 @@ export enum ClockFace {
     l = 8, 
 };
 
-export const LegalMoves = [ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l]
-export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.bl, ClockFace.br]
-export const IllegalMoves = [ClockFace.c, ...DiagonalMoves]
+export const LegalMoves = [ClockFace.c, ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l]
+export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFace.bl]
+export const IllegalMoves = [...DiagonalMoves]
 
 export interface Surroundings {
     position: number,
