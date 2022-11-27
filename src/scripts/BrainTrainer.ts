@@ -1,5 +1,6 @@
 import { NeuralNetwork } from "brain.js/dist/src";
 import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neural-network";
+import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles } from "../data/boardSlice";
@@ -52,7 +53,12 @@ const train = (net: NeuralNetwork<TrainingType, TrainingType>) => {
     console.log(`\nGenerated a total of ${training_sets.length} training sets.\n`);
 
     console.log('\nTraining...');
-    net.train(training_sets);
+    net.train(training_sets, {
+        log: (status: INeuralNetworkState) => {
+            console.log(`Training Delta: ${status.error}`, '...'.repeat(status.iterations / 2000));
+        },
+        logPeriod: 2000,
+    });
     console.log('Neural Network trained!\n');
 }
 
