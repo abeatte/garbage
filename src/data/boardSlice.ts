@@ -10,8 +10,8 @@ import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotenti
 import CombatantModel, { createCombatant } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
-const WINDOW_WIDTH = 13;
-const WINDOW_HEIGHT = 15;
+export const DEFAULT_WINDOW_WIDTH = 13;
+export const DEFAULT_WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }

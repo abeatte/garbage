@@ -2,7 +2,7 @@ import { NeuralNetwork } from "brain.js/dist/src";
 import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neural-network";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { initDefaultTiles } from "../data/boardSlice";
+import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles } from "../data/boardSlice";
 import { getSurroundingPos, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
 
 const brain = require('brain.js');
@@ -14,7 +14,7 @@ interface TrainingSet extends INeuralNetworkDatum<TrainingType, TrainingType> {
 }
 
 const JSON_FILE_PATH = path.join(__dirname, '../data/NeuralNetwork.json');
-const TRAINING_SETS = 100
+const NUM_TRAINING_MAPS = 3;
 
 const getTrainingSet = (posData: PosData): TrainingSet => {
     const input = {} as {[direction: string]: number}, 
@@ -35,21 +35,21 @@ const getTrainingSet = (posData: PosData): TrainingSet => {
 
 const train = (net: NeuralNetwork<TrainingType, TrainingType>) => {
     const training_sets = [] as TrainingSet[];
+    
+    for(let map = 0; map < NUM_TRAINING_MAPS; map++) {
+        const width = DEFAULT_WINDOW_WIDTH;
+        const height = DEFAULT_WINDOW_HEIGHT;
+        const tiles = initDefaultTiles({width, height});
 
-    const for_training = true;
-    const position = 4; // 4 = center
-    const width = 3, height = 3;
-
-    // 1. create 20,000 training sets using 3x3 maps with no combatants
-    for(let i = 1; i < TRAINING_SETS + 1; i++) {
-        if (i%10 === 0) {
-            console.log(`Building Training sets: (${i}/${TRAINING_SETS})`);
+        for(let position = 0; position < tiles.length; position++) {
+            const posData = getSurroundingPos({position, window_width: width, tiles, combatants: {}})
+            training_sets.push(getTrainingSet(posData));
         }
 
-        const tiles = initDefaultTiles({for_training, width, height})
-        const posData = getSurroundingPos({position, window_width: width, tiles, combatants: {}})
-        training_sets.push(getTrainingSet(posData));
+        console.log(`Training sets for map ${map}: Built (${map + 1}/${NUM_TRAINING_MAPS})\n`);
     }
+
+    console.log(`Generated a total of ${training_sets.length} training sets.\n`);
 
     console.log('\nTraining...');
     net.train(training_sets);
