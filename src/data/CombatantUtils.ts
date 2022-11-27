@@ -33,6 +33,8 @@ export interface PosData {
     can_go_down: boolean,
     window_width: number,
     tile_count: number,
+    min_potential: number, 
+    max_potential: number,
     surroundings: (Surroundings | undefined)[],
 }
 
@@ -352,8 +354,18 @@ export function getSurroundingPos(
     ret.can_go_down = position + window_width < tiles.length; 
     ret.window_width = window_width;
     ret.tile_count = tiles.length;
+    ret.min_potential = Number.MAX_VALUE;
+    ret.max_potential = Number.MIN_VALUE;
     
     const setSurrounding = (position: number) => {
+        if (tiles[position].score_potential < ret.min_potential) {
+            ret.min_potential = tiles[position].score_potential;
+        }
+
+        if (tiles[position].score_potential > ret.max_potential) {
+            ret.max_potential = tiles[position].score_potential;
+        }
+
         return {
             position,
             occupant: combatants[position],
