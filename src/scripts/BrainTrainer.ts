@@ -14,7 +14,7 @@ interface TrainingSet extends INeuralNetworkDatum<TrainingType, TrainingType> {
 }
 
 const JSON_FILE_PATH = path.join(__dirname, '../data/NeuralNetwork.json');
-const NUM_TRAINING_MAPS = 3;
+const NUM_TRAINING_MAPS = 10;
 
 const getTrainingSet = (posData: PosData): TrainingSet => {
     const input = {} as {[direction: string]: number}, 
@@ -46,10 +46,10 @@ const train = (net: NeuralNetwork<TrainingType, TrainingType>) => {
             training_sets.push(getTrainingSet(posData));
         }
 
-        console.log(`Training sets for map ${map}: Built (${map + 1}/${NUM_TRAINING_MAPS})\n`);
+        console.log(`Training sets for map ${map}: Built (${map + 1}/${NUM_TRAINING_MAPS})`);
     }
 
-    console.log(`Generated a total of ${training_sets.length} training sets.\n`);
+    console.log(`\nGenerated a total of ${training_sets.length} training sets.\n`);
 
     console.log('\nTraining...');
     net.train(training_sets);
