@@ -11,7 +11,7 @@ import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantS
 import { MovementLogic } from "../data/boardSlice";
 import Brain from "./Brain";
 import { NeuralNetwork } from "brain.js/dist/src";
-import { TrainingType } from "../scripts/BrainTrainer";
+import { Input, Output } from "../scripts/BrainTrainer";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
@@ -71,7 +71,7 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
 export function requestMove({movement_logic, brain, posData, current_position, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
-        brain: NeuralNetwork<TrainingType, TrainingType>,
+        brain: NeuralNetwork<Input, Output>,
         posData: PosData,
         current_position: number, 
         tiles: TileModel[], 

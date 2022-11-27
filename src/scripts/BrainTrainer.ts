@@ -3,40 +3,44 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles } from "../data/boardSlice";
-import { getSurroundingPos, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
+import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles, MovementLogic } from "../data/boardSlice";
+import { ClockFace, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
+import { requestMove } from "../models/CombatantModel";
+import { TileModel } from "../models/TileModel";
 
 const brain = require('brain.js');
 
-export type TrainingType = {[direction: string]: number};
-interface TrainingSet extends INeuralNetworkDatum<TrainingType, TrainingType> {
-    input: TrainingType,
-    output: TrainingType,
+export type Input = {[position: string]: number};
+export type Output = ClockFace[];
+interface TrainingSet extends INeuralNetworkDatum<Input, Output> {
+    input: Input,
+    output: Output,
 }
 
 const JSON_FILE_PATH = path.join(__dirname, '../data/NeuralNetwork.json');
 const NUM_TRAINING_MAPS = 10;
 
-const getTrainingSet = (posData: PosData): TrainingSet => {
-    const input = {} as {[direction: string]: number}, 
-    output = {} as {[direction: string]: number};
-
-    posData.surroundings.forEach((surrounding, idx) => {
-        if (!surrounding || !LegalMoves.includes(idx)) {
-            input[idx] = MIN_HEALTH;
-            if (LegalMoves.includes(idx)) {
-                output[idx] = MIN_HEALTH;
-            }
-        } else {
-            input[idx] = surrounding.tile.tile_effect;
-            output[idx] = surrounding.tile.score_potential;
+const getTrainingSet = (current_position: number, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
+    const input = LegalMoves.reduce((move_potentials, clockFace) => {
+        const sur = posData.surroundings[clockFace];
+        if (sur !== undefined) {
+            const positive_shifted_potential = sur.tile.score_potential + Math.abs(posData.min_potential);
+            let range = Math.abs(posData.min_potential) + posData.max_potential;
+            move_potentials[clockFace] = positive_shifted_potential * 1.0/range;
         }
-    });
+        return move_potentials;
+    }, {} as {[direction: string]: number});
+
+    const requested_position = requestMove(
+        {movement_logic: MovementLogic.DecisionTree, brain, posData, current_position, tiles, window_width}
+    );
+    const output = [posData.surroundings.findIndex(sur => sur?.position === requested_position)];
+    console.log('input:', input, 'output:', output);
 
     return { input, output };
 }
 
-const train = (net: NeuralNetwork<TrainingType, TrainingType>) => {
+const train = (net: NeuralNetwork<Input, Output>) => {
     const training_sets = [] as TrainingSet[];
     
     for(let map = 0; map < NUM_TRAINING_MAPS; map++) {
@@ -46,7 +50,7 @@ const train = (net: NeuralNetwork<TrainingType, TrainingType>) => {
 
         for(let position = 0; position < tiles.length; position++) {
             const posData = getSurroundingPos({position, window_width: width, tiles, combatants: {}})
-            training_sets.push(getTrainingSet(posData));
+            training_sets.push(getTrainingSet(position, posData, tiles, width));
         }
 
         console.log(`Training sets for map ${map}: Built (${map + 1}/${NUM_TRAINING_MAPS})`);
