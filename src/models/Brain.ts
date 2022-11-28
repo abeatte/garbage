@@ -7,18 +7,19 @@ const neuralNetworkJSONFile = require('../data/NeuralNetwork.json');
 const brain = require('brain.js');
 
 const init = () => {
-    // provide optional config object (or undefined). Defaults shown.
+    // https://www.npmjs.com/package/brain.js?activeTab=readme
     const config = {
         binaryThresh: 0.5,
         hiddenLayers: [9, 5, 5], // inputs -> 9 -> 5 -> 5 -> outputs
         activation: 'sigmoid', // supported activation types: ['sigmoid', 'relu', 'leaky-relu', 'tanh'],
         leakyReluAlpha: 0.01, // supported for activation type 'leaky-relu'
     };
-
     // create a simple feed forward neural network with backpropagation
     const net = new brain.NeuralNetwork(config);
-    net.fromJSON(neuralNetworkJSONFile);
-
+    if (neuralNetworkJSONFile.length > 0 && neuralNetworkJSONFile !== "{}") {
+        net.fromJSON(neuralNetworkJSONFile);
+    }
+    
     return net;
 }
 

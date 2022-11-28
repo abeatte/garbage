@@ -5,6 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles, MovementLogic } from "../data/boardSlice";
 import { ClockFace, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
+import Brain from "../models/Brain";
 import { requestMove } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 
@@ -91,22 +92,7 @@ const readTextFromJSONFile = (): string => {
 export function run() {
     console.log("Commencing training...")
 
-    // https://www.npmjs.com/package/brain.js?activeTab=readme
-    const config = {
-        binaryThresh: 0.5,
-        hiddenLayers: [9, 5, 5], // inputs -> 9 -> 5 -> 5 -> outputs
-        activation: 'sigmoid', // supported activation types: ['sigmoid', 'relu', 'leaky-relu', 'tanh'],
-        leakyReluAlpha: 0.01, // supported for activation type 'leaky-relu'
-    };
-
-    // create a simple feed forward neural network with backpropagation
-    const net = new brain.NeuralNetwork(config);
-
-    const json_text = readTextFromJSONFile();
-    console.log(json_text, '\n');
-    if (json_text.length > 0 && json_text !== "{}") {
-        net.fromJSON(JSON.parse(json_text));
-    }
+    const net = Brain.init();
     train(net);
     writeJSONToFile(net.toJSON());
 
