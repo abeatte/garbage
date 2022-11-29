@@ -161,7 +161,7 @@ export function requestMove({movement_logic, brain, posData, current_position, t
             if (best_hunter_position && !random_walk_enabled) {
                 position = best_hunter_position;
             // % chance you'll choose to mate
-            } else if (best_mate_position !== undefined && Math.random() > 0.3 && !random_walk_enabled) {
+            } else if (best_mate_position !== undefined && Math.random() > 0.5 && !random_walk_enabled) {
                 position = best_mate_position;
             } else if (best_safe_position !== undefined && !random_walk_enabled) {
                 position = best_safe_position;

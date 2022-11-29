@@ -100,7 +100,7 @@ function initState(width?: number, height?: number): {
         combatants,
         selected_position: undefined,
         follow_selected_combatant: false,
-        movement_logic: MovementLogic.NeuralNetwork,
+        movement_logic: MovementLogic.DecisionTree,
     };
   }
 

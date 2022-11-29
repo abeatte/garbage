@@ -168,10 +168,14 @@ export function calcMovements(
             combatant.position = new_position;
         } else if(occupant.team === combatant.team) {
             // space is occupied by a friendly
-            if (combatant.tick > MAX_YOUNGLING_TICK && occupant.tick > MAX_YOUNGLING_TICK) {
-                occupant.state = State.Mating;
-                combatant.state = State.Mating;
-                combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
+            if (
+                combatant.id !== occupant.id && 
+                combatant.tick > MAX_YOUNGLING_TICK && 
+                occupant.tick > MAX_YOUNGLING_TICK) 
+            {
+                    occupant.state = State.Mating;
+                    combatant.state = State.Mating;
+                    combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
             }
         } else {
             // space is occupied by a enemy
