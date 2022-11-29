@@ -362,11 +362,11 @@ export function getSurroundingPos(
     ret.max_potential = Number.MIN_VALUE;
     
     const setSurrounding = (position: number) => {
-        if (tiles[position].score_potential < ret.min_potential) {
+        if (tiles[position]?.score_potential < ret.min_potential) {
             ret.min_potential = tiles[position].score_potential;
         }
 
-        if (tiles[position].score_potential > ret.max_potential) {
+        if (tiles[position]?.score_potential > ret.max_potential) {
             ret.max_potential = tiles[position].score_potential;
         }
 
