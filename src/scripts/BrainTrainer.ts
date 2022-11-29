@@ -4,7 +4,7 @@ import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles, MovementLogic } from "../data/boardSlice";
-import { ClockFace, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
+import { ClockFace, DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
 import Brain from "../models/Brain";
 import { requestMove } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
@@ -12,7 +12,7 @@ import { TileModel } from "../models/TileModel";
 const brain = require('brain.js');
 
 export type Input = {[position: string]: number};
-export type Output = ClockFace[];
+export type Output = {[direction: string]: number};
 interface TrainingSet extends INeuralNetworkDatum<Input, Output> {
     input: Input,
     output: Output,
@@ -22,7 +22,7 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/NeuralNetwork.json');
 const NUM_TRAINING_MAPS = 10;
 
 const getTrainingSet = (current_position: number, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
-    const input = LegalMoves.reduce((move_potentials, clockFace) => {
+    const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = posData.surroundings[clockFace];
         if (sur !== undefined) {
             const positive_shifted_potential = sur.tile.score_potential + Math.abs(posData.min_potential);
@@ -35,8 +35,9 @@ const getTrainingSet = (current_position: number, posData: PosData, tiles: TileM
     const requested_position = requestMove(
         {movement_logic: MovementLogic.DecisionTree, brain, posData, current_position, tiles, window_width}
     );
-    const output = [posData.surroundings.findIndex(sur => sur?.position === requested_position)];
-    console.log('input:', input, 'output:', output);
+    const output = {} as Output;
+    output[posData.surroundings.findIndex(sur => sur?.position === requested_position)] = 1;
+    // console.log('input:', input, 'output:', output);
 
     return { input, output };
 }
@@ -59,6 +60,7 @@ const train = (net: NeuralNetwork<Input, Output>) => {
 
     console.log(`\nGenerated a total of ${training_sets.length} training sets.\n`);
 
+    // throw new Error();
     console.log('\nTraining...');
     net.train(training_sets, {
         log: (status: INeuralNetworkState) => {

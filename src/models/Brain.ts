@@ -9,6 +9,8 @@ const brain = require('brain.js');
 const init = () => {
     // https://www.npmjs.com/package/brain.js?activeTab=readme
     const config = {
+        inputSize: 9,
+        outputSize: 5,
         binaryThresh: 0.5,
         hiddenLayers: [9, 5, 5], // inputs -> 9 -> 5 -> 5 -> outputs
         activation: 'sigmoid', // supported activation types: ['sigmoid', 'relu', 'leaky-relu', 'tanh'],
@@ -32,10 +34,14 @@ const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, po
         return move_potentials;
     }, {} as {[direction: string]: number});
 
-    // "network not runnable" error in console without training model first.
     const output = brain.run(move_potentials);
 
-    const clockFace = parseInt(Object.keys(output)[0]) as ClockFace;
+    const clockFace = Object.keys(output).reduce((clockFace, direction) => {
+        if (clockFace === 0 || output[direction] > output[clockFace]) {
+            return parseInt(direction);
+        }
+        return clockFace;
+    }, 0);
     const new_position = getNewPositionFromClockFace(
         combatant.position, 
         clockFace, 
