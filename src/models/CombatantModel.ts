@@ -130,6 +130,8 @@ export function requestMove({movement_logic, brain, posData, current_position, t
 
     let position;
     if (movement_logic === MovementLogic.NeuralNetwork) {
+        // TODO: the Neural Network is blind to mating situations. 
+        // this causes combatants to just sit in one spot when near others. 
         position = Brain.move(brain, self, posData);
     } else {
         let attepts = 3;
