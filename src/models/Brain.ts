@@ -3,7 +3,7 @@ import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUti
 import { Input, Output } from "../scripts/BrainTrainer";
 import CombatantModel, { getNewPositionFromClockFace } from "./CombatantModel";
 
-const neuralNetworkJSONFile = require('../data/NeuralNetwork.json');
+const neuralNetworkJSON = require('../data/NeuralNetwork.json');
 const brain = require('brain.js');
 
 const init = () => {
@@ -16,8 +16,9 @@ const init = () => {
     };
     // create a simple feed forward neural network with backpropagation
     const net = new brain.NeuralNetwork(config);
-    if (neuralNetworkJSONFile.length > 0 && neuralNetworkJSONFile !== "{}") {
-        net.fromJSON(neuralNetworkJSONFile);
+    
+    if (neuralNetworkJSON?.sizes?.length > 0) {
+        net.fromJSON(neuralNetworkJSON);
     }
     
     return net;
