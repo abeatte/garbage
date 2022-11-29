@@ -38,10 +38,6 @@ export interface PosData {
     surroundings: (Surroundings | undefined)[],
 }
 
-export function getDirectionFromClockFace(clockFace: ClockFace): number {
-    return clockFace / 2;
-}
-
 export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: Combatants}): number {
     let starting_pos = -1;
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
