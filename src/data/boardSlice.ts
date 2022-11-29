@@ -10,20 +10,22 @@ import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotenti
 import CombatantModel, { createCombatant } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
-const WINDOW_WIDTH = 13;
-const WINDOW_HEIGHT = 15;
+export const DEFAULT_WINDOW_WIDTH = 13;
+export const DEFAULT_WINDOW_HEIGHT = 15;
 const NUM_COMBATANTS = 24;
+
+export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
 export type Combatants = {[position: number]: CombatantModel};
 
-function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
+export function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
     const tiles = Array(width * height) as TileModel[];
     let idx = 0;
     for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
             if (h === 0 || h === height-1 || w === 0 || w === width-1) {
                 tiles[idx] = createTileModel({index: idx, type: TileType.Fire});
-            } else if (h > height/4 && h < height/4*3 && w > width/4 && w < width/4*3) {
+            } else if (h > height/5 && h < height/5*4 && w > width/5 && w < width/5*4) {
                 tiles[idx] = createTileModel({
                     index: idx, 
                     type: Math.random() < 0.1 ?
@@ -82,10 +84,10 @@ function initState(width?: number, height?: number): {
     combatants: Combatants,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
-    random_walk_enabled: boolean,
+    movement_logic: MovementLogic,
 } {
-    width = width ?? WINDOW_WIDTH;
-    height = height ?? WINDOW_HEIGHT;
+    width = width ?? DEFAULT_WINDOW_WIDTH;
+    height = height ?? DEFAULT_WINDOW_HEIGHT;
     const tiles = initDefaultTiles({width, height});
     const {combatants, global_combatant_stats} = initCombatants({tiles});
     return {
@@ -98,7 +100,7 @@ function initState(width?: number, height?: number): {
         combatants,
         selected_position: undefined,
         follow_selected_combatant: false,
-        random_walk_enabled: false,
+        movement_logic: MovementLogic.DecisionTree,
     };
   }
 
@@ -198,7 +200,7 @@ export const boardSlice = createSlice({
             combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
         const result = calcMovements({
-            random_walk_enabled: state.random_walk_enabled,
+            movement_logic: state.movement_logic,
             combatants: state.combatants, 
             global_combatant_stats: state.global_combatant_stats,
             window_width: state.width, 
@@ -277,8 +279,8 @@ export const boardSlice = createSlice({
     toggleShowTilePotentials: (state) => {
         state.show_tile_potentials = !state.show_tile_potentials;
     },
-    toggleRandomWalkEnabled: (state) => {
-        state.random_walk_enabled = !state.random_walk_enabled;
+    setMovementLogic: (state, action: {payload: MovementLogic}) => {
+        state.movement_logic = action.payload;
     }
   }
 })
@@ -296,7 +298,7 @@ export const {
     killSelected,
     spawnAtSelected,
     toggleShowTilePotentials,
-    toggleRandomWalkEnabled,
+    setMovementLogic,
 } = boardSlice.actions
 
 export default boardSlice.reducer

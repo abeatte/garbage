@@ -1,4 +1,6 @@
 To run this game use `npm start` and navigate to your browser.
+To train the game's Neural Network use `npm run train` and observe the NeuralNetwork.json file for changes. 
+    To reset Neural Network's training set the NeuralNetwork.json file's contents to `{}`.
 To publish this to gh pages use `npm run deploy` (but you still should `git push` as well).
 
 ![Alt text](repo_resources/Garbage.png?raw=true "Garbage")

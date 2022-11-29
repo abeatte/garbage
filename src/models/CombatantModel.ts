@@ -1,16 +1,22 @@
 import uuid from "react-uuid";
-import { Character } from "../components/Combatant";
 import { 
     MAX_YOUNGLING_TICK, 
-    DIRECTION,
     ClockFace,
-    PosData, 
+    PosData,
+    IllegalMoves,
+    LegalMoves, 
 } from "../data/CombatantUtils";
 import { TileModel } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
+import { MovementLogic } from "../data/boardSlice";
+import Brain from "./Brain";
+import { NeuralNetwork } from "brain.js/dist/src";
+import { Input, Output } from "../scripts/BrainTrainer";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
+
+export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
 
 export interface CombatantModel {
     id: string;
@@ -62,9 +68,10 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-export function requestMove({random_walk_enabled, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, brain, posData, current_position, tiles, window_width}:
     {
-        random_walk_enabled: boolean, 
+        movement_logic: MovementLogic, 
+        brain: NeuralNetwork<Input, Output>,
         posData: PosData,
         current_position: number, 
         tiles: TileModel[], 
@@ -81,8 +88,7 @@ export function requestMove({random_walk_enabled, posData, current_position, til
             return;
         }
 
-        const illegal_moves = [ClockFace.c, ClockFace.bl, ClockFace.br, ClockFace.tl, ClockFace.tr]
-        if (illegal_moves.includes(idx)) {
+        if ([ClockFace.c, ...IllegalMoves].includes(idx)) {
             // don't count yourself or diagonal positions
             return;
         }
@@ -123,73 +129,82 @@ export function requestMove({random_walk_enabled, posData, current_position, til
     });
 
     let position;
-    let attepts = 3;
-    do {
-        const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
-            .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-            .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
-        const best_hunter_position = best_hunter_bucket?.length > 0 ?
-            best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : undefined;
+    if (movement_logic === MovementLogic.NeuralNetwork) {
+        // TODO: the Neural Network is blind to mating situations. 
+        // this causes combatants to just sit in one spot when near others. 
+        position = Brain.move(brain, self, posData);
+    } else {
+        let attepts = 3;
+        do {
+            // position based on best prey (enemy) space
+            const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
+                .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
+                .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
+            const best_hunter_position = best_hunter_bucket?.length > 0 ?
+                best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : undefined;
 
-        // position based on best safe space
-        const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
-            .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
-        const best_safe_position = best_safe_bucket?.length > 0 ? 
-        best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : undefined;
+            // position based on best safe space
+            const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
+                .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
+            const best_safe_position = best_safe_bucket?.length > 0 ? 
+            best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : undefined;
 
-        // position based on best mate space
-        const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
-            .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-            .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
-        const best_mate_position = best_mate_bucket?.length > 0 ?
-        best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : undefined;
+            // position based on best mate space
+            const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
+                .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
+                .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
+            const best_mate_position = best_mate_bucket?.length > 0 ?
+            best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : undefined;
 
-        if (best_hunter_position && !random_walk_enabled) {
-            position = best_hunter_position;
-        // % chance you'll choose to mate
-        } else if (best_mate_position !== undefined && Math.random() > 0.3 && !random_walk_enabled) {
-            position = best_mate_position;
-        } else if (best_safe_position !== undefined && !random_walk_enabled) {
-            position = best_safe_position;
-        } else {
-            const direction = Math.floor(Math.random() * Object.values(DIRECTION).length);
-            position = getNewPositionFromDirection(
-                current_position, 
-                direction, 
-                window_width, 
-                tiles.length);
-                    }
-        attepts--;
-        // avoid fire if you can
-    } while (tiles[position].tile_effect < 0 && attepts > 0);
+            const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;
+            
+            if (best_hunter_position && !random_walk_enabled) {
+                position = best_hunter_position;
+            // % chance you'll choose to mate
+            } else if (best_mate_position !== undefined && Math.random() > 0.5 && !random_walk_enabled) {
+                position = best_mate_position;
+            } else if (best_safe_position !== undefined && !random_walk_enabled) {
+                position = best_safe_position;
+            } else {
+                const clockFace = Math.floor(Math.random() * Object.values(LegalMoves).length);
+                position = getNewPositionFromClockFace(
+                    current_position, 
+                    clockFace, 
+                    window_width, 
+                    tiles.length);
+            }
+            attepts--;
+            // avoid fire if you can
+        } while (tiles[position].tile_effect < 0 && attepts > 0);
+    }
 
     return position;
 };
 
-function getNewPositionFromDirection(current_position: number, direction: number, window_width: number, tile_count: number) {
+export function getNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
     let new_position = current_position;
-    switch (direction) {
-        case DIRECTION.left:
+    switch (clockFace) {
+        case ClockFace.l:
             new_position = 
                 current_position % window_width > 0 ? 
                     current_position - 1 : current_position;
             break;
-        case DIRECTION.up:
+        case ClockFace.t:
             new_position = 
                 current_position - window_width > -1 ? 
                     current_position - window_width : current_position;
             break;
-        case DIRECTION.right:
+        case ClockFace.r:
             new_position = 
                 current_position % window_width < window_width - 1 ? 
                     current_position + 1 : current_position;
             break;
-        case DIRECTION.down:
+        case ClockFace.b:
             new_position = 
                 current_position + window_width < tile_count ? 
                     current_position + window_width : current_position;
             break;
-        case DIRECTION.none:
+        case ClockFace.c:
             // fallthrough
         default:
             new_position = current_position;

@@ -1,9 +1,9 @@
-import { Combatants } from "./boardSlice";
+import { Combatants, MovementLogic } from "./boardSlice";
 import CombatantModel, { createCombatant, getRandomTeam, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
+import Brain from "../models/Brain";
 
-export const DIRECTION = {"left": 0, "up": 1, "right": 2, "down": 3, "none": 4};
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
@@ -15,10 +15,14 @@ export enum ClockFace {
     l = 8, 
 };
 
+export const LegalMoves = [ClockFace.c, ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l]
+export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFace.bl]
+export const IllegalMoves = [...DiagonalMoves]
+
 export interface Surroundings {
     position: number,
     occupant: CombatantModel | undefined,
-    tile: TileModel | undefined,
+    tile: TileModel,
 }
     
 export interface PosData {
@@ -27,6 +31,10 @@ export interface PosData {
     can_go_up: boolean,
     can_go_right: boolean,
     can_go_down: boolean,
+    window_width: number,
+    tile_count: number,
+    min_potential: number, 
+    max_potential: number,
     surroundings: (Surroundings | undefined)[],
 }
 
@@ -104,15 +112,16 @@ export function updateCombatantsPositionsAfterResize(
 }
 
 export function calcMovements(
-    {random_walk_enabled, combatants, global_combatant_stats, window_width, tiles}: 
+    {movement_logic, combatants, global_combatant_stats, window_width, tiles}: 
     {
-        random_walk_enabled: boolean, 
+        movement_logic: MovementLogic, 
         combatants: Combatants, 
         global_combatant_stats: GlobalCombatantStatsModel, 
         window_width: number, 
         tiles: TileModel[]
     }
 ): {combatants: Combatants, births: number, deaths: number} {
+    const brain = Brain.init();
     const new_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
@@ -121,7 +130,6 @@ export function calcMovements(
         const current_position = parseInt(p);
         const combatant = new_combatants[current_position];
         if (combatant === undefined) {
-            debugger;
             return;
         }
         const new_position = requestMove(
@@ -133,7 +141,8 @@ export function calcMovements(
                         tiles, 
                         combatants: new_combatants,
                     }),
-                random_walk_enabled, 
+                movement_logic, 
+                brain, 
                 current_position, 
                 tiles, 
                 window_width,
@@ -155,10 +164,14 @@ export function calcMovements(
             combatant.position = new_position;
         } else if(occupant.team === combatant.team) {
             // space is occupied by a friendly
-            if (combatant.tick > MAX_YOUNGLING_TICK && occupant.tick > MAX_YOUNGLING_TICK) {
-                occupant.state = State.Mating;
-                combatant.state = State.Mating;
-                combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
+            if (
+                combatant.id !== occupant.id && 
+                combatant.tick > MAX_YOUNGLING_TICK && 
+                occupant.tick > MAX_YOUNGLING_TICK) 
+            {
+                    occupant.state = State.Mating;
+                    combatant.state = State.Mating;
+                    combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
             }
         } else {
             // space is occupied by a enemy
@@ -339,8 +352,20 @@ export function getSurroundingPos(
     ret.can_go_up = position - window_width > -1
     ret.can_go_right = position % window_width < window_width - 1;
     ret.can_go_down = position + window_width < tiles.length; 
+    ret.window_width = window_width;
+    ret.tile_count = tiles.length;
+    ret.min_potential = Number.MAX_VALUE;
+    ret.max_potential = Number.MIN_VALUE;
     
     const setSurrounding = (position: number) => {
+        if (tiles[position]?.score_potential < ret.min_potential) {
+            ret.min_potential = tiles[position].score_potential;
+        }
+
+        if (tiles[position]?.score_potential > ret.max_potential) {
+            ret.max_potential = tiles[position].score_potential;
+        }
+
         return {
             position,
             occupant: combatants[position],

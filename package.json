@@ -10,7 +10,8 @@
     "build": "react-scripts build",
     "tsc": "tsc",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "train": "ts-node src/scripts/BrainTrainer.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.6",
@@ -21,6 +22,7 @@
     "@types/node": "^18.11.9",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
+    "brain.js": "^2.0.0-beta.17",
     "classnames": "^2.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
