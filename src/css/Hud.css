@@ -61,16 +61,12 @@
     margin-left: -8px;
 }
 
-.Hud .Kill_button {
+.Hud .Button.Kill {
     background-color: red;
-    padding: 6px 12px 6px 12px;
-    align-self: flex-end;
 }
 
-.Hud .Spawn_button {
+.Hud .Button.Spawn {
     background-color: limegreen;
-    padding: 6px 12px 6px 12px;
-    align-self: flex-end;
 }
 
 .Hud .Toggles {

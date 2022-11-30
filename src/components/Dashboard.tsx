@@ -96,7 +96,7 @@ const Dashboard = (args: {onReset: () => void}) => {
     const teamStats = getTeamStats(board.combatants, board.selected_position, dispatch);
    
     const speed_section = (
-        <div className="Control_container">
+        <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
             <span  className="Label" style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</span>
             <div className="Speed_buttons_container">
                 <button className="Clickable" onClick={() => {
@@ -123,25 +123,25 @@ const Dashboard = (args: {onReset: () => void}) => {
     );
     const resize_section = (
         <>
-            <div>
-                <button className="Clickable" onClick={() => dispatch(shrinkWidth())}>
+            <div className="Speed_buttons_container">
+                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(shrinkWidth())}>
                     <span>{"<"}</span>
                 </button>
-                <span className="Label">{`Width: ${board.width}`}</span>
-                <button className="Clickable" onClick={() => dispatch(growWidth())}>
+                <span className={classNames('Label', 'Centered')}>{`Width`}</span>
+                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(growWidth())}>
                     <span>{">"}</span>
                 </button>
             </div> 
-            <div>
-                <button className="Clickable" onClick={() => dispatch(shrinkHeight())}>
+            <div className="Speed_buttons_container">
+                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(shrinkHeight())}>
                     <span>{"<"}</span>
                 </button>
-                <span className="Label">{`Height: ${board.height}`}</span>
-                <button className="Clickable" onClick={() => dispatch(growHeight())}>
+                <span className={classNames('Label', 'Centered')}>{`Height`}</span>
+                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(growHeight())}>
                     <span>{">"}</span>
                 </button>
             </div> 
-            <div style={{marginTop: "4px"}}>
+            <div className={classNames('Checkbox_container')}>
                 <input 
                     className={classNames('Clickable', 'Checkbox')} 
                     type="checkbox" 
@@ -150,11 +150,12 @@ const Dashboard = (args: {onReset: () => void}) => {
                         dispatch(toggleShowTilePotentials());
                     }}
                 />
-                <span className={'Label'}>{'Show Tile Potential'}</span>
+                <span className={'Label'}>{'Show Tile Value'}</span>
             </div>
-            <div style={{marginTop: "4px"}}>
+            <div className={classNames('Dropdown_container')}>
             <span className={'Label'}>{'Movement: '}</span>
                 <select
+                    className={'Movement_selector'}
                     value={board.movement_logic}
                     onChange={(input) => dispatch(setMovementLogic(input.target.value as unknown as MovementLogic))}
                     >
@@ -168,7 +169,7 @@ const Dashboard = (args: {onReset: () => void}) => {
         <div className={'Dashboard'}>
             <div className="Control_container">
                 <button 
-                    className={classNames("Update_button", "Clickable")} 
+                    className={classNames('Clickable', 'Button', 'Restart')} 
                     onClick={() => onReset()
                 }>
                     <span>{"Restart"}</span>

@@ -244,7 +244,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             {!!combatant && (
                 <div className='Life_buttons_container'>
                     <button 
-                    className={classNames('Clickable', 'Kill_button')}
+                    className={classNames('Clickable', 'Button', 'Kill')}
                     onClick={() => dispatch(killSelected())}
                     >
                         <span>{"Kill"}</span>
@@ -255,7 +255,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             {!combatant && selected_position !== undefined && (
                 <div className='Life_buttons_container'>
                     <button 
-                    className={classNames('Clickable', 'Spawn_button')}
+                    className={classNames('Clickable', 'Button',  'Spawn')}
                     onClick={() => dispatch(spawnAtSelected())}
                     >
                         <span>{"Spawn"}</span>

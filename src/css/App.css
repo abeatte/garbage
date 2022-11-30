@@ -10,10 +10,27 @@
     overflow: hidden;
 }
 
+.Label {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.Label.Centered {
+    align-self: center;
+}
+
 .Clickable {
     cursor: pointer;
 }
 
+.Button {
+    padding: 6px 12px 6px 12px;
+    align-self: flex-end;
+}
+
 .Checkbox {
+    height: 25px;
+    width: 25px;
     margin-left: 0px;
 }
