@@ -1,42 +1,30 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const TICK_INTERVAL = 1000;
-const MAX_TICK_VALUE = 2000;
+const INITIAL_TICK_SPEED = 1000;
+export const MAX_TICK_SPEED = 2000;
 
 export const tickerSlice = createSlice({
   name: 'ticker',
   initialState: {
     tick: 0,
-    tick_speed: TICK_INTERVAL,
+    tick_speed: INITIAL_TICK_SPEED,
     prev_tick_speed: 0,
   },
   reducers: {
-    slowDown: (state) => {
-      let tick_speed = state.tick_speed;
-      let tick_interval = TICK_INTERVAL;
-      if (tick_speed === MAX_TICK_VALUE || tick_speed === 0) {
-        return;
-      } else if (tick_speed < TICK_INTERVAL && tick_speed > 0) {
-          tick_interval = Math.ceil(tick_speed / 2);
-          if (TICK_INTERVAL -  tick_speed - tick_interval < 26) {
-              tick_interval = TICK_INTERVAL - tick_speed;
-          }
+    speedChange: (state, action: {payload: number}) => {
+      const tick_speed = state.tick_speed;
+      let new_tick_speed = action.payload;
+      if (new_tick_speed > MAX_TICK_SPEED) {
+        new_tick_speed = MAX_TICK_SPEED;
+      } else if (new_tick_speed < 0) {
+        new_tick_speed = 0;
       }
-      state.prev_tick_speed = state.tick_speed;
-      state.tick_speed += tick_interval;
-    },
-    speedUp: (state) => {
-      let tick_speed = state.tick_speed;
-      let tick_interval = TICK_INTERVAL;
-      if (tick_speed === 1) {
-        return;
-      } else if (tick_speed === 0) {
-        tick_interval = -MAX_TICK_VALUE;
-      } else if (tick_speed <= TICK_INTERVAL && tick_speed > 1) {
-        tick_interval = Math.ceil(tick_speed / 2);
+
+      if (new_tick_speed !== tick_speed) {
+        state.tick_speed = new_tick_speed;
+        state.prev_tick_speed = tick_speed;
       }
-      state.prev_tick_speed = state.tick_speed;
-      state.tick_speed -= tick_interval;
+
     },
     pauseUnpause: (state) => {
         const tick_speed = state.tick_speed;
@@ -53,7 +41,7 @@ export const tickerSlice = createSlice({
     unpause: (state) => {
       const tick_speed = state.tick_speed;
       state.tick_speed = 
-        state.prev_tick_speed > 0 ? state.prev_tick_speed : TICK_INTERVAL;
+        state.prev_tick_speed > 0 ? state.prev_tick_speed : INITIAL_TICK_SPEED;
       state.prev_tick_speed = tick_speed;
     },
     tick: (state) => {
@@ -65,9 +53,8 @@ export const tickerSlice = createSlice({
   },
 })
 
-export const { 
-  slowDown, 
-  speedUp, 
+export const {
+  speedChange,
   pauseUnpause, 
   pause,
   unpause,

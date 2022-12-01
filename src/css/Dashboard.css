@@ -70,11 +70,6 @@
     padding: 4px 0px 4px 0px;
 }
 
-.Dashboard .Speed_buttons_container .Speed_button {
-    display: flex;
-    width: 20px;
-}
-
 .Dashboard .Team .Selected {
     border: 1px solid red;
     width: 23px;

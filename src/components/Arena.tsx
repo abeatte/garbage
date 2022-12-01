@@ -6,7 +6,7 @@ import React from "react";
 import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
-import { tick, reset as resetTicker, pause, pauseUnpause } from '../data/tickerSlice'
+import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/tickerSlice'
 import { tick as combatantTick, reset as resetBoard, select, Combatants } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
@@ -56,6 +56,15 @@ const printCombatants = (args: {tick: number, combatants: Combatants, height: nu
     console.log(print);
 }
 
+const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
+    if (tickSpeed === 0) {
+        return 0;
+    } else if (tickSpeed === MAX_TICK_SPEED) {
+        return 1;
+    }
+    return Math.abs(tickSpeed - MAX_TICK_SPEED);
+}
+
 class Arena extends React.Component<AppState & DispatchProps> {
 
     interval: NodeJS.Timer | undefined = undefined;
@@ -70,19 +79,19 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentDidMount() {
         document.addEventListener("keydown", this.spaceFunction, false);
-        const tick_speed = this.props.ticker.tick_speed;
-        if (tick_speed > 0) {
-            this.interval = setInterval(() => this.props.performTick(), tick_speed);
+        const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
+        if (tick_interval > 0) {
+            this.interval = setInterval(() => this.props.performTick(), tick_interval);
         }
     }
 
     componentDidUpdate(prevProps: AppState, prevState: AppState) {
         // handle tick_speed updates
         if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed) {
-            const tick_speed = this.props.ticker.tick_speed
+            const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
             clearInterval(this.interval);
-            if (tick_speed > 0) {
-                this.interval = setInterval(() => this.props.performTick(), tick_speed);
+            if (tick_interval > 0) {
+                this.interval = setInterval(() => this.props.performTick(), tick_interval);
             } 
         }
 

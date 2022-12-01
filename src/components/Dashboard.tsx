@@ -2,19 +2,13 @@ import React from "react";
 import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
-import { speedUp, slowDown, pauseUnpause } from '../data/tickerSlice'
+import { MAX_TICK_SPEED, speedChange } from '../data/tickerSlice'
 import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic } from '../data/boardSlice'
 import { setIsHudActionable } from "../data/hudSlice";
-// @ts-ignore
-import Back from '../images/icons/back.png'
-// @ts-ignore
-import Forward from '../images/icons/forward.png'
-// @ts-ignore
-import Pause from '../images/icons/pause.png'
-// @ts-ignore
-import Play from '../images/icons/play.png'
 import { AppDispatch, AppState } from "../data/store";
 import CombatantModel, { Character } from "../models/CombatantModel";
+import { useState } from "react";
+import { useEffect } from "react";
 
 const getTeamStats = (combatants: Combatants, selected_position: number | undefined, dispatch: AppDispatch) => {
     const teams = Object.values(Character).reduce((teams, cha) => {
@@ -94,31 +88,34 @@ const Dashboard = (args: {onReset: () => void}) => {
     const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch()
     const teamStats = getTeamStats(board.combatants, board.selected_position, dispatch);
-   
+
+    const [speed_setting, setSpeedSetting] = useState(ticker.tick_speed);
+   useEffect(() => {
+    // this keeps tick_speed in sync with pause (space bar) events. 
+    setSpeedSetting(ticker.tick_speed);
+   }, [ticker.tick_speed]);
+
     const speed_section = (
         <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
-            <span  className="Label" style={{alignSelf: 'center'}}>{`Speed: ${ticker.tick_speed}`}</span>
-            <div className="Speed_buttons_container">
-                <button className="Clickable" onClick={() => {
-                    dispatch(slowDown());
-                }}>
-                    <img className="Speed_button" alt="Back" src={Back} />
-                </button>
-                <button className="Clickable" onClick={() => {
-                    dispatch(pauseUnpause());
-                }}>
-                    <img 
-                        className="Speed_button" 
-                        alt={ticker.tick_speed === 0 ? "Play" : "Pause"} 
-                        src={ticker.tick_speed === 0 ? Play : Pause} 
-                    />
-                </button>
-                <button className="Clickable" onClick={() => {
-                    dispatch(speedUp());
-                }}>
-                    <img className="Speed_button" alt="Forward" src={Forward} />
-                </button>
-            </div> 
+            <span  className="Label" style={{alignSelf: 'center'}}>{`Speed`}</span>
+            <div className="slidecontainer">
+                <input 
+                    type="range" 
+                    className="slider" 
+                    min="0" 
+                    max={MAX_TICK_SPEED} 
+                    value={speed_setting}
+                    onKeyUpCapture={(input) => {
+                        dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
+                    }}
+                    onClickCapture={(input) => {
+                        dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
+                    }}
+                    onChange={(input) => {
+                        setSpeedSetting(parseInt(input.target.value));
+                    }}
+                />
+            </div>
         </div>
     );
     const resize_section = (
