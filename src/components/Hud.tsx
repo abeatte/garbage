@@ -224,7 +224,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                         <span className={'Label'}>{'Children: '}</span><span>{combatant?.children ?? ""}</span>
                     </div>
                     <div className='Toggles'>
-                        <div>
+                        <div style={{display: 'flex'}}>
                             <input 
                                 className='Checkbox' 
                                 type="checkbox" 
@@ -235,7 +235,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     setEditing({...editing, fitness: undefined});
                                 }}
                             />
-                            <span className={'Label'}>{'Immortal'}</span>
+                            <span className={classNames('Label', 'Centered')}>{'Immortal'}</span>
                         </div>
                     </div>
                 </div>
