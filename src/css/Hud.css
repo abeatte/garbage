@@ -29,6 +29,7 @@
 
 .Hud .Meta_data_toggles {
     margin-bottom: 8px;
+    display: flex;
 }
 
 .Hud .Editable_row {

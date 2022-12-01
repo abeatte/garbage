@@ -39,6 +39,7 @@ function getEditableField(
 
     const edit_field = !!options ?
         (<select 
+            className='Clickable'
             value={editing_value} 
             disabled={enabled ?? false}
             onChange={(e) => {
@@ -163,7 +164,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                 <div className="Details">
                     <div className='Meta_data_toggles'>
                         <input 
-                            className='Checkbox' 
+                            className={classNames('Checkbox', 'Clickable')}
                             type="checkbox" 
                             disabled={combatant.fitness <= MIN_HEALTH} 
                             checked={board.follow_selected_combatant}
@@ -171,7 +172,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                             }}
                         />
-                        <span className={'Label'}>{'Lock on Combatant'}</span>
+                        <span className={classNames('Label', 'Centered')}>{'Lock on Combatant'}</span>
                     </div>
                     {getEditableField(
                         {
@@ -226,7 +227,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     <div className='Toggles'>
                         <div style={{display: 'flex'}}>
                             <input 
-                                className='Checkbox' 
+                                className={classNames('Checkbox', 'Clickable')}
                                 type="checkbox" 
                                 checked={combatant?.immortal ?? false} 
                                 disabled={combatant?.fitness <= MIN_HEALTH} 
