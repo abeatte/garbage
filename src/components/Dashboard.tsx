@@ -90,10 +90,14 @@ const Dashboard = (args: {onReset: () => void}) => {
     const teamStats = getTeamStats(board.combatants, board.selected_position, dispatch);
 
     const [speed_setting, setSpeedSetting] = useState(ticker.tick_speed);
-   useEffect(() => {
-    // this keeps tick_speed in sync with pause (space bar) events. 
-    setSpeedSetting(ticker.tick_speed);
-   }, [ticker.tick_speed]);
+    useEffect(() => {
+        // this keeps tick_speed in sync with pause (space bar) events. 
+        setSpeedSetting(ticker.tick_speed);
+    }, [ticker.tick_speed]);
+
+    const speedChangeKeyCapture = (input: { target: HTMLInputElement }) => {
+        dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
+    };
 
     const speed_section = (
         <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
@@ -105,12 +109,12 @@ const Dashboard = (args: {onReset: () => void}) => {
                     min="0" 
                     max={MAX_TICK_SPEED} 
                     value={speed_setting}
-                    onKeyUpCapture={(input) => {
-                        dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
-                    }}
-                    onClickCapture={(input) => {
-                        dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
-                    }}
+                    // @ts-ignore
+                    onKeyUpCapture={speedChangeKeyCapture}
+                    // @ts-ignore
+                    onClickCapture={speedChangeKeyCapture}
+                    // @ts-ignore
+                    onTouchEndCapture={speedChangeKeyCapture}
                     onChange={(input) => {
                         setSpeedSetting(parseInt(input.target.value));
                     }}
