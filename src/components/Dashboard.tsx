@@ -102,10 +102,11 @@ const Dashboard = (args: {onReset: () => void}) => {
     const speed_section = (
         <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
             <span  className="Label" style={{alignSelf: 'center'}}>{`Speed`}</span>
-            <div className="slidecontainer">
+            <div className="Slider_container">
                 <input 
+                    style={{backgroundSize: `${speed_setting/MAX_TICK_SPEED*100}% 100%`}}
                     type="range" 
-                    className="slider" 
+                    className="Slider" 
                     min="0" 
                     max={MAX_TICK_SPEED} 
                     value={speed_setting}
@@ -156,7 +157,7 @@ const Dashboard = (args: {onReset: () => void}) => {
             <div className={classNames('Dropdown_container')}>
             <span className={'Label'}>{'Movement: '}</span>
                 <select
-                    className={'Movement_selector'}
+                    className={classNames('Movement_selector', 'Clickable')}
                     value={board.movement_logic}
                     onChange={(input) => dispatch(setMovementLogic(input.target.value as unknown as MovementLogic))}
                     >
