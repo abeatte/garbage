@@ -213,7 +213,7 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
             } else if (best_safe_position !== -1 && !random_walk_enabled) {
                 position = best_safe_position;
             } else {
-                const clockFace = Math.floor(Math.random() * Object.values(LegalMoves).length);
+                const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
                 position = getNewPositionFromClockFace(
                     current_position, 
                     clockFace, 
