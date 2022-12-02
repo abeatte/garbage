@@ -12,6 +12,7 @@ import { MovementLogic } from "../data/boardSlice";
 import Brain from "./Brain";
 import { NeuralNetwork } from "brain.js/dist/src";
 import { Input, Output } from "../scripts/BrainTrainer";
+import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
@@ -34,10 +35,18 @@ export interface CombatantModel {
     children: number,
 }
 
+const uniqueNamesConfig: UniqueNamesConfig = {
+    dictionaries: [colors, names, adjectives],
+    separator: '|',
+    style: 'capital',
+    length: 3,
+  };
+
 export function createCombatant(args: {spawn_position: number, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+    const nameParts = uniqueNamesGenerator(uniqueNamesConfig).split("|");
     return {   
         id: uuid(),
-        name: "",
+        name: `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`,
         state: State.Spawning, 
         kills: 0,
         fitness: 0,
