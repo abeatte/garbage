@@ -199,7 +199,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             color='dark' 
                             size='lg' 
                             style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
-                            onClick={(event) => {
+                            onClick={() => {
                                 const random_name = getRandomCombatantName();
                                 dispatch(updateSelectedCombatant({field:'name', value: random_name}));
                                 setEditing({...editing, name: undefined});
