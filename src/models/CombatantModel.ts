@@ -15,8 +15,8 @@ import { Input, Output } from "../scripts/BrainTrainer";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
-
 export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
+export enum DecisionType {Lover = "Lover", Fighter = "Fighter", Neutral = "Neutral"};
 
 export interface CombatantModel {
     id: string;
@@ -26,7 +26,8 @@ export interface CombatantModel {
     position: number;
     kills: number;
     fitness: number;
-    strength: keyof typeof Strength;
+    strength: Strength;
+    decision_type: DecisionType;
     immortal: boolean;
     team: keyof typeof Character;
     spawn: CombatantModel | undefined;
@@ -41,6 +42,7 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
         kills: 0,
         fitness: 0,
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
+        decision_type: DecisionType.Neutral,
         immortal: false,
         team: getRandomTeam(),
         tick: 0,
@@ -68,9 +70,64 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-export function requestMove({movement_logic, brain, posData, current_position, tiles, window_width}:
+// Lovers do not fight;
+function getBestEnemyPosition(
+    {self, movement_logic, bucketed_enemy_strengths}:
+    {self: CombatantModel, movement_logic: MovementLogic, bucketed_enemy_strengths: {[key: string]: number[]}}): number 
+{
+    // position based on best prey (enemy) space
+
+    if (movement_logic === MovementLogic.DecisionTree && self.decision_type === DecisionType.Lover) {
+        return -1;
+    }
+
+    const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
+        .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
+        .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
+    const best_hunter_position = best_hunter_bucket?.length > 0 ?
+        best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : -1;
+
+    return best_hunter_position;
+}
+
+// All types like open spaces;
+function getBestOpenPosition(
+    {self, movement_logic, bucketed_empty_tiles}:
+    {self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: {[key:string]: number[]}}): number
+{
+    // position based on best safe space
+    const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
+        .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
+    const best_safe_position = best_safe_bucket?.length > 0 ? 
+    best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : -1;
+
+    return best_safe_position;
+}
+
+// Fighters do not mate; 
+function getBestMatePosition(
+    {self, movement_logic, bucketed_mate_strengths}:
+    {self: CombatantModel, movement_logic: MovementLogic, bucketed_mate_strengths: {[key: string]: number[]}}): number
+{
+    // position based on best mate space
+
+    if (movement_logic === MovementLogic.DecisionTree && self.decision_type === DecisionType.Fighter) {
+        return -1;
+    }
+
+    const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
+        .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
+        .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
+    const best_mate_position = best_mate_bucket?.length > 0 ?
+    best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : -1;
+
+    return best_mate_position;
+}
+
+export function requestMove({movement_logic, decision_type, brain, posData, current_position, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
+        decision_type: DecisionType,
         brain: NeuralNetwork<Input, Output>,
         posData: PosData,
         current_position: number, 
@@ -128,42 +185,32 @@ export function requestMove({movement_logic, brain, posData, current_position, t
         }
     });
 
-    let position;
+    let position : number;
     if (movement_logic === MovementLogic.NeuralNetwork) {
         // TODO: the Neural Network is blind to mating situations. 
         // this causes combatants to just sit in one spot when near others. 
         position = Brain.move(brain, self, posData);
     } else {
+        const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;
+
         let attepts = 3;
         do {
             // position based on best prey (enemy) space
-            const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
-                .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-                .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
-            const best_hunter_position = best_hunter_bucket?.length > 0 ?
-                best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : undefined;
+            const best_hunter_position = getBestEnemyPosition({self, movement_logic, bucketed_enemy_strengths});
 
             // position based on best safe space
-            const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
-                .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
-            const best_safe_position = best_safe_bucket?.length > 0 ? 
-            best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : undefined;
+            const best_safe_position = getBestOpenPosition({self, movement_logic, bucketed_empty_tiles});
 
             // position based on best mate space
-            const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
-                .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-                .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
-            const best_mate_position = best_mate_bucket?.length > 0 ?
-            best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : undefined;
+            const best_mate_position = getBestMatePosition({self, movement_logic, bucketed_mate_strengths});
 
-            const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;
             
-            if (best_hunter_position && !random_walk_enabled) {
+            if (best_hunter_position !== -1 && !random_walk_enabled) {
                 position = best_hunter_position;
             // % chance you'll choose to mate
-            } else if (best_mate_position !== undefined && Math.random() > 0.5 && !random_walk_enabled) {
+            } else if (best_mate_position !== -1 && Math.random() > 0.5 && !random_walk_enabled) {
                 position = best_mate_position;
-            } else if (best_safe_position !== undefined && !random_walk_enabled) {
+            } else if (best_safe_position !== -1 && !random_walk_enabled) {
                 position = best_safe_position;
             } else {
                 const clockFace = Math.floor(Math.random() * Object.values(LegalMoves).length);
@@ -177,7 +224,7 @@ export function requestMove({movement_logic, brain, posData, current_position, t
             // avoid fire if you can
         } while (tiles[position].tile_effect < 0 && attepts > 0);
     }
-
+    
     return position;
 };
 

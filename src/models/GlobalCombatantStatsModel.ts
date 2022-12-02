@@ -31,7 +31,7 @@ export function getInitGlobalCombatantStatsModel(existing_values: {births: numbe
     }
 }
 
-export function getStrengthRating(args: {global_combatant_stats: GlobalCombatantStatsModel, fitness: number, immortal: boolean}): keyof typeof Strength {
+export function getStrengthRating(args: {global_combatant_stats: GlobalCombatantStatsModel, fitness: number, immortal: boolean}): Strength {
     if (args.immortal){
         return Strength.Immortal;
     } else if (args.fitness > args.global_combatant_stats.average_bar) {

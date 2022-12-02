@@ -12,7 +12,8 @@ import {
     updateSelectedTile, 
     killSelected,
     spawnAtSelected,
-    select 
+    select, 
+    MovementLogic
 } from '../data/boardSlice'
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
@@ -20,7 +21,7 @@ import { MIN_HEALTH } from '../data/CombatantUtils';
 import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
-import { Character } from '../models/CombatantModel';
+import { Character, DecisionType } from '../models/CombatantModel';
 
 function getEditableField(
     args: {
@@ -205,6 +206,16 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     <div className='Non_editable_row'>
                         <span className={'Label'}>{'Strength: '}</span><span>{combatant?.strength}</span>
                     </div>
+                    {board.movement_logic === MovementLogic.DecisionTree && getEditableField(
+                        {
+                            editing_value: combatant?.decision_type, 
+                            options: Object.values(DecisionType).map(
+                                c => (<option key={`${c}`}>{c}</option>)),
+                            label: (<span className={'Label'}>{'Type: '}</span>),
+                            display: (<span>{combatant?.decision_type ?? ""}</span>),
+                            update: input => dispatch(updateSelectedCombatant({field: 'decision_type', value: input.target.value})),
+                        }
+                    )}
                     {getEditableField(
                         {
                             editing_value: combatant?.team, 

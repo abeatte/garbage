@@ -142,6 +142,7 @@ export function calcMovements(
                         combatants: new_combatants,
                     }),
                 movement_logic, 
+                decision_type: combatant.decision_type,
                 brain, 
                 current_position, 
                 tiles, 

@@ -6,7 +6,7 @@ import path from "path";
 import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles, MovementLogic } from "../data/boardSlice";
 import { ClockFace, DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
 import Brain from "../models/Brain";
-import { requestMove } from "../models/CombatantModel";
+import { DecisionType, requestMove } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 
 const brain = require('brain.js');
@@ -33,7 +33,14 @@ const getTrainingSet = (current_position: number, posData: PosData, tiles: TileM
     }, {} as {[direction: string]: number});
 
     const requested_position = requestMove(
-        {movement_logic: MovementLogic.DecisionTree, brain, posData, current_position, tiles, window_width}
+        {
+            movement_logic: MovementLogic.DecisionTree, 
+            decision_type: DecisionType.Neutral, 
+            brain, posData, 
+            current_position, 
+            tiles, 
+            window_width
+        }
     );
     const output = {} as Output;
     output[posData.surroundings.findIndex(sur => sur?.position === requested_position)] = 1;
