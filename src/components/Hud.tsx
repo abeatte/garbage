@@ -21,7 +21,10 @@ import { MIN_HEALTH } from '../data/CombatantUtils';
 import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
-import { Character, DecisionType } from '../models/CombatantModel';
+import { Character, DecisionType, getRandomCombatantName } from '../models/CombatantModel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
+
 
 function getEditableField(
     args: {
@@ -101,7 +104,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     }, [selected_position]);
 
     useEffect(() => {
-        if (Object.values(editing).length > 0 && !isFullScreen) {
+        if (Object.values(editing).filter(value => value !== undefined).length > 0 && !isFullScreen) {
             dispatch(pause());
         }
     }, [editing, dispatch, isFullScreen])
@@ -175,20 +178,34 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                         />
                         <span className={classNames('Label', 'Centered')}>{'Lock on Combatant'}</span>
                     </div>
-                    {getEditableField(
-                        {
-                            editing_value: edited_name,
-                            editing_type: 'text',
-                            label: (<span className={'Label'}>{'Name: '}</span>),
-                            display: (<span>{combatant?.name ?? ""}</span>),
-                            edit: () => setEditing({...editing, name: combatant?.name}),
-                            update: input => setEditing({...editing, name: input.target.value}),
-                            done: () => {
-                                dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
-                                setEditing({...editing, name: undefined})
+                    <div style={{display: 'flex'}}>
+                        {getEditableField(
+                            {
+                                editing_value: edited_name,
+                                editing_type: 'text',
+                                label: (<span className={'Label'}>{'Name: '}</span>),
+                                display: (<span>{combatant?.name}</span>),
+                                edit: () => setEditing({...editing, name: combatant?.name}),
+                                update: input => setEditing({...editing, name: input.target.value}),
+                                done: () => {
+                                    dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
+                                    setEditing({...editing, name: undefined})
+                                }
                             }
-                        }
-                    )}
+                        )}
+                        <FontAwesomeIcon 
+                            className="Clickable" 
+                            icon={faRotateRight} 
+                            color='dark' 
+                            size='lg' 
+                            style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
+                            onClick={(event) => {
+                                const random_name = getRandomCombatantName();
+                                dispatch(updateSelectedCombatant({field:'name', value: random_name}));
+                                setEditing({...editing, name: undefined});
+                            }}
+                        />
+                    </div>
                     {getEditableField(
                         {
                             editing_value: combatant?.immortal ? undefined : edited_fitness,

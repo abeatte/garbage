@@ -42,11 +42,15 @@ const uniqueNamesConfig: UniqueNamesConfig = {
     length: 3,
   };
 
-export function createCombatant(args: {spawn_position: number, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+export function getRandomCombatantName(): string {
     const nameParts = uniqueNamesGenerator(uniqueNamesConfig).split("|");
+    return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
+}
+
+export function createCombatant(args: {spawn_position: number, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
     return {   
         id: uuid(),
-        name: `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`,
+        name: getRandomCombatantName(),
         state: State.Spawning, 
         kills: 0,
         fitness: 0,
