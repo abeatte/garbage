@@ -1,5 +1,5 @@
 import { Combatants, MovementLogic } from "./boardSlice";
-import CombatantModel, { createCombatant, getRandomTeam, requestMove, State } from "../models/CombatantModel";
+import CombatantModel, { createCombatant, DecisionType, getRandomTeam, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
 import Brain from "../models/Brain";
@@ -163,7 +163,12 @@ export function calcMovements(
             new_combatants[current_position] = undefined;
             new_combatants[new_position] = combatant;
             combatant.position = new_position;
-        } else if(occupant.team === combatant.team) {
+        } else if(
+            occupant.team === combatant.team &&
+            // if a Fighter is here they're not here to mate!
+            (movement_logic === MovementLogic.DecisionTree &&
+            combatant.decision_type !== DecisionType.Fighter)
+        ) {
             // space is occupied by a friendly
             if (
                 combatant.id !== occupant.id && 
@@ -175,7 +180,7 @@ export function calcMovements(
                     combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
             }
         } else {
-            // space is occupied by a enemy
+            // space is occupied by a enemy (or an ally with with a Fighter incumbent)
             new_combatants[current_position] = undefined;
             new_combatants[new_position] = compete(combatant, occupant);
             (new_combatants[new_position] as CombatantModel).position = new_position;

@@ -85,20 +85,30 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
 
 // Lovers do not fight;
 function getBestEnemyPosition(
-    {self, movement_logic, bucketed_enemy_strengths}:
-    {self: CombatantModel, movement_logic: MovementLogic, bucketed_enemy_strengths: {[key: string]: number[]}}): number 
-{
+    {self, bucketed_enemy_strengths}:
+    {self: CombatantModel, bucketed_enemy_strengths: {[key: string]: number[]}}
+): number {
     // position based on best prey (enemy) space
-
-    if (movement_logic === MovementLogic.DecisionTree && self.decision_type === DecisionType.Lover) {
-        return -1;
-    }
-
     const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
         .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
         .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
     const best_hunter_position = best_hunter_bucket?.length > 0 ?
         best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : -1;
+
+    return best_hunter_position;
+}
+
+// Allies of the given self;
+function getBestAllyPosition(
+    {self, bucketed_ally_strengths}:
+    {self: CombatantModel, bucketed_ally_strengths: {[key: string]: number[]}}
+): number {
+    // position based on best prey (enemy) space
+    const best_ally_bucket = bucketed_ally_strengths[Object.keys(bucketed_ally_strengths)
+        .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
+        .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
+    const best_hunter_position = best_ally_bucket?.length > 0 ?
+    best_ally_bucket[Math.floor(Math.random() * best_ally_bucket.length)] : -1;
 
     return best_hunter_position;
 }
@@ -119,15 +129,10 @@ function getBestOpenPosition(
 
 // Fighters do not mate; 
 function getBestMatePosition(
-    {self, movement_logic, bucketed_mate_strengths}:
-    {self: CombatantModel, movement_logic: MovementLogic, bucketed_mate_strengths: {[key: string]: number[]}}): number
+    {self, bucketed_mate_strengths}:
+    {self: CombatantModel, bucketed_mate_strengths: {[key: string]: number[]}}): number
 {
     // position based on best mate space
-
-    if (movement_logic === MovementLogic.DecisionTree && self.decision_type === DecisionType.Fighter) {
-        return -1;
-    }
-
     const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
         .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
         .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
@@ -150,6 +155,7 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
     const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
 
     const bucketed_enemy_strengths = {} as {[key: string]: number[]}; 
+    const bucketed_ally_strengths = {} as {[key: string]: number[]};
     const bucketed_mate_strengths = {} as {[key: string]: number[]};
     const bucketed_empty_tiles = {} as {[key: number]: number[]}; 
 
@@ -186,6 +192,12 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
                 bucketed_mate_strengths[strength] = [];
             }
             bucketed_mate_strengths[strength].push(surrounding.position);
+        } else if (occupant.team === self.team) {
+            const strength = occupant.strength;
+            if (bucketed_ally_strengths[strength] === undefined) {
+                bucketed_ally_strengths[strength] = [];
+            }
+            bucketed_ally_strengths[strength].push(surrounding.position);
         } else if (
             // enemy
             occupant.team !== self.team
@@ -209,19 +221,38 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
         let attepts = 3;
         do {
             // position based on best prey (enemy) space
-            const best_hunter_position = getBestEnemyPosition({self, movement_logic, bucketed_enemy_strengths});
+            let best_enemy_position =  -1;
+            if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Lover) {
+                best_enemy_position = getBestEnemyPosition({self, bucketed_enemy_strengths});
+            }
 
+            // if a fighter has no enemy to fight then they fight an ally
+            if (
+                best_enemy_position === -1 && 
+                movement_logic === MovementLogic.DecisionTree && 
+                self.decision_type === DecisionType.Fighter
+            ) {
+                best_enemy_position = getBestAllyPosition({self, bucketed_ally_strengths});
+            }
+            
             // position based on best safe space
             const best_safe_position = getBestOpenPosition({self, movement_logic, bucketed_empty_tiles});
 
             // position based on best mate space
-            const best_mate_position = getBestMatePosition({self, movement_logic, bucketed_mate_strengths});
+            let best_mate_position = -1;
+            if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Fighter) {
+                best_mate_position = getBestMatePosition({self, bucketed_mate_strengths});
+            }
 
-            
-            if (best_hunter_position !== -1 && !random_walk_enabled) {
-                position = best_hunter_position;
+            if (best_enemy_position !== -1 && !random_walk_enabled) {
+                position = best_enemy_position;
             // % chance you'll choose to mate
-            } else if (best_mate_position !== -1 && Math.random() > 0.5 && !random_walk_enabled) {
+            } else if (
+                best_mate_position !== -1 && 
+                !random_walk_enabled && 
+                self.decision_type !== DecisionType.Fighter && 
+                (self.decision_type === DecisionType.Lover || Math.random() > 0.5)
+            ) {
                 position = best_mate_position;
             } else if (best_safe_position !== -1 && !random_walk_enabled) {
                 position = best_safe_position;
