@@ -1,5 +1,5 @@
 import { Combatants, MovementLogic } from "./boardSlice";
-import CombatantModel, { createCombatant, DecisionType, getRandomTeam, requestMove, State } from "../models/CombatantModel";
+import CombatantModel, { createCombatant, DecisionType, Gender, getRandomTeam, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
 import Brain from "../models/Brain";
@@ -172,10 +172,19 @@ export function calcMovements(
         ) {
             // space is occupied by a friendly
             if (
+                // not yourself
                 combatant.id !== occupant.id && 
+                // your not too young
                 combatant.tick > MAX_YOUNGLING_TICK && 
-                occupant.tick > MAX_YOUNGLING_TICK) 
-            {
+                // they're not too young
+                occupant.tick > MAX_YOUNGLING_TICK &&
+                (
+                    // they are the correct gender (so woke! LOL)
+                    combatant.gender === Gender.Unknown ||
+                    occupant.gender === Gender.Unknown ||
+                    combatant.gender !== occupant.gender
+                )
+            ) {
                     occupant.state = State.Mating;
                     combatant.state = State.Mating;
                     combatant.spawn = createCombatant({spawn_position: -1, use_genders, global_combatant_stats});
