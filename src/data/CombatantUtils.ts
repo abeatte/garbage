@@ -112,9 +112,10 @@ export function updateCombatantsPositionsAfterResize(
 }
 
 export function calcMovements(
-    {movement_logic, combatants, global_combatant_stats, window_width, tiles}: 
+    {movement_logic, use_genders, combatants, global_combatant_stats, window_width, tiles}: 
     {
-        movement_logic: MovementLogic, 
+        movement_logic: MovementLogic,
+        use_genders: boolean, 
         combatants: Combatants, 
         global_combatant_stats: GlobalCombatantStatsModel, 
         window_width: number, 
@@ -177,7 +178,7 @@ export function calcMovements(
             {
                     occupant.state = State.Mating;
                     combatant.state = State.Mating;
-                    combatant.spawn = createCombatant({spawn_position: -1, global_combatant_stats});
+                    combatant.spawn = createCombatant({spawn_position: -1, use_genders, global_combatant_stats});
             }
         } else {
             // space is occupied by a enemy (or an ally with with a Fighter incumbent)

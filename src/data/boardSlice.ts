@@ -46,13 +46,16 @@ export function initDefaultTiles({width, height}: {width: number, height: number
     return tiles;
 };
 
-function initCombatants({tiles}: {tiles: TileModel[]}): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
+function initCombatants(
+    {tiles, use_genders}: 
+    {tiles: TileModel[], use_genders: boolean}
+): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
     const combatants = {} as Combatants;
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
     const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
         const c_pos: number = initCombatantStartingPos({tiles, combatants});
-        combatants[c_pos] = createCombatant({spawn_position: c_pos, global_combatant_stats});
+        combatants[c_pos] = createCombatant({spawn_position: c_pos, use_genders, global_combatant_stats});
 
         const c_fit = combatants[c_pos].fitness;
         global_combatant_stats.average_position += c_pos;
@@ -74,7 +77,7 @@ function initCombatants({tiles}: {tiles: TileModel[]}): {combatants: Combatants,
     return {combatants, global_combatant_stats};
 }
 
-function initState(width?: number, height?: number): {
+function initState(width?: number, height?: number, use_genders?: boolean): {
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
     width: number,
@@ -85,11 +88,13 @@ function initState(width?: number, height?: number): {
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
     movement_logic: MovementLogic,
+    use_genders: boolean,
 } {
     width = width ?? DEFAULT_WINDOW_WIDTH;
     height = height ?? DEFAULT_WINDOW_HEIGHT;
+    use_genders = use_genders ?? false;
     const tiles = initDefaultTiles({width, height});
-    const {combatants, global_combatant_stats} = initCombatants({tiles});
+    const {combatants, global_combatant_stats} = initCombatants({tiles, use_genders});
     return {
         game_count: 1,
         global_combatant_stats, 
@@ -101,6 +106,7 @@ function initState(width?: number, height?: number): {
         selected_position: undefined,
         follow_selected_combatant: false,
         movement_logic: MovementLogic.DecisionTree,
+        use_genders,
     };
   }
 
@@ -185,7 +191,7 @@ export const boardSlice = createSlice({
         state.global_combatant_stats.deaths += deaths;
     },
     reset: (state) => {
-        const new_state = initState(state.width, state.height);
+        const new_state = initState(state.width, state.height, state.use_genders);
 
         state.tiles = new_state.tiles;
         state.combatants = new_state.combatants;
@@ -201,6 +207,7 @@ export const boardSlice = createSlice({
         }
         const result = calcMovements({
             movement_logic: state.movement_logic,
+            use_genders: state.use_genders,
             combatants: state.combatants, 
             global_combatant_stats: state.global_combatant_stats,
             window_width: state.width, 
@@ -272,7 +279,11 @@ export const boardSlice = createSlice({
         if (state.selected_position) {
             state.follow_selected_combatant = true;
             state.combatants[state.selected_position] = createCombatant(
-                {spawn_position: state.selected_position, global_combatant_stats: state.global_combatant_stats}
+                {
+                    spawn_position: state.selected_position, 
+                    use_genders: state.use_genders, 
+                    global_combatant_stats: state.global_combatant_stats
+                }
             );
         }
     },
@@ -281,6 +292,9 @@ export const boardSlice = createSlice({
     },
     setMovementLogic: (state, action: {payload: MovementLogic}) => {
         state.movement_logic = action.payload;
+    },
+    setUseGenders: (state, action: {payload: boolean}) => {
+        state.use_genders = action.payload;
     }
   }
 })
@@ -299,6 +313,7 @@ export const {
     spawnAtSelected,
     toggleShowTilePotentials,
     setMovementLogic,
+    setUseGenders,
 } = boardSlice.actions
 
 export default boardSlice.reducer

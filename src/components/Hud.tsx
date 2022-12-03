@@ -21,7 +21,7 @@ import { MIN_HEALTH } from '../data/CombatantUtils';
 import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
-import { Character, DecisionType, getRandomCombatantName } from '../models/CombatantModel';
+import { Character, DecisionType, Gender, getRandomCombatantName } from '../models/CombatantModel';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 
@@ -231,6 +231,16 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             label: (<span className={'Label'}>{'Type: '}</span>),
                             display: (<span>{combatant?.decision_type ?? ""}</span>),
                             update: input => dispatch(updateSelectedCombatant({field: 'decision_type', value: input.target.value})),
+                        }
+                    )}
+                    {getEditableField(
+                        {
+                            editing_value: combatant?.gender, 
+                            options: Object.values(Gender).map(
+                                g => (<option key={`${g}`}>{g}</option>)),
+                            label: (<span className={'Label'}>{'Gender: '}</span>),
+                            display: (<span>{combatant?.gender ?? ""}</span>),
+                            update: input => dispatch(updateSelectedCombatant({field: 'gender', value: input.target.value})),
                         }
                     )}
                     {getEditableField(

@@ -18,6 +18,7 @@ export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Im
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
 export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
 export enum DecisionType {Lover = "Lover", Fighter = "Fighter", Neutral = "Neutral"};
+export enum Gender {Male = "Male", Female = "Female", Unknown = "Unknown"};
 
 export interface CombatantModel {
     id: string;
@@ -31,6 +32,7 @@ export interface CombatantModel {
     decision_type: DecisionType;
     immortal: boolean;
     team: Character;
+    gender: Gender;
     spawn: CombatantModel | undefined;
     children: number,
 }
@@ -47,7 +49,7 @@ export function getRandomCombatantName(): string {
     return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
 }
 
-export function createCombatant(args: {spawn_position: number, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+export function createCombatant(args: {spawn_position: number, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
     return {   
         id: uuid(),
         name: getRandomCombatantName(),
@@ -58,6 +60,7 @@ export function createCombatant(args: {spawn_position: number, global_combatant_
         decision_type: DecisionType.Neutral,
         immortal: false,
         team: getRandomTeam(),
+        gender: !!args.use_genders ? getRandomGender() : Gender.Unknown,
         tick: 0,
         position: args.spawn_position,
         spawn: undefined,
@@ -307,6 +310,11 @@ export function getNewPositionFromClockFace(current_position: number, clockFace:
 export function getRandomTeam(): Character  {
     const set = Object.keys(Character);
     return set[Math.round(Math.random() * (set.length - 1))] as Character;
+}
+
+export function getRandomGender(): Gender {
+    const set = [Gender.Male, Gender.Female];
+    return set[Math.round(Math.random() * (set.length - 1))] as Gender;
 }
 
 export default CombatantModel;
