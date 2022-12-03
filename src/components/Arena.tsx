@@ -7,7 +7,7 @@ import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
 import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/tickerSlice'
-import { tick as combatantTick, reset as resetBoard, select, Combatants } from '../data/boardSlice'
+import { tick as combatantTick, reset as resetBoard, select, Combatants, killSelected, spawnAtSelected } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
@@ -69,16 +69,24 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     interval: NodeJS.Timer | undefined = undefined;
 
-    spaceFunction = (event: KeyboardEvent) => {
-        if (event.key === " ") {
+    auxFunctions = (event: KeyboardEvent) => {
+        if (event.key === ' ') {
             // stops page from scrolling
             event.preventDefault();
             this.props.pauseUnpause();
+        } else if (event.key === 'k' || event.key === 'K') {
+            // stops page from scrolling
+            event.preventDefault();
+            this.props.killSelected();
+        } else if (event.key === 's' || event.key === 'S') {
+            // stops page from scrolling
+            event.preventDefault();
+            this.props.spawnAtSelected();
         }
     }
 
     componentDidMount() {
-        document.addEventListener("keydown", this.spaceFunction, false);
+        document.addEventListener("keydown", this.auxFunctions, false);
         const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
         if (tick_interval > 0) {
             this.interval = setInterval(() => this.props.performTick(), tick_interval);
@@ -104,7 +112,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
     
     componentWillUnmount() {
         clearInterval(this.interval);
-        document.removeEventListener("keydown", this.spaceFunction, false);
+        document.removeEventListener("keydown", this.auxFunctions, false);
     } 
 
     render() {
@@ -170,6 +178,8 @@ interface DispatchProps {
     reset: () => void,
     performTick: () => void,
     pauseUnpause: () => void,
+    killSelected: () => void,
+    spawnAtSelected: () => void,
     pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
 }
@@ -187,6 +197,8 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         },
         pause: () => dispatch(pause()),
         pauseUnpause: () => dispatch(pauseUnpause()),
+        killSelected: () => dispatch(killSelected()),
+        spawnAtSelected: () => dispatch(spawnAtSelected()),
         clickOnTile: (select_args) => {
             dispatch(select(select_args));
             dispatch(setIsHudActionable(true));
