@@ -3,7 +3,7 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { MAX_TICK_SPEED, speedChange } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic } from '../data/boardSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic, toggleUseGenders } from '../data/boardSlice'
 import { setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
 import CombatantModel, { Character } from "../models/CombatantModel";
@@ -143,6 +143,17 @@ const Dashboard = (args: {onReset: () => void}) => {
                     <span>{">"}</span>
                 </button>
             </div> 
+            <div className={classNames('Checkbox_container')}>
+                <input 
+                    className={classNames('Clickable', 'Checkbox')} 
+                    type="checkbox" 
+                    checked={board.use_genders}
+                    onChange={(input) => {
+                        dispatch(toggleUseGenders());
+                    }}
+                />
+                <span className={'Label'}>{'Set Genders'}</span>
+            </div>
             <div className={classNames('Checkbox_container')}>
                 <input 
                     className={classNames('Clickable', 'Checkbox')} 

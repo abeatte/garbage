@@ -7,7 +7,7 @@ import {
     MIN_HEALTH,
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
-import CombatantModel, { createCombatant } from '../models/CombatantModel';
+import CombatantModel, { createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
 export const DEFAULT_WINDOW_WIDTH = 13;
@@ -293,10 +293,19 @@ export const boardSlice = createSlice({
     setMovementLogic: (state, action: {payload: MovementLogic}) => {
         state.movement_logic = action.payload;
     },
-    setUseGenders: (state, action: {payload: boolean}) => {
-        state.use_genders = action.payload;
-    }
-  }
+    toggleUseGenders: (state) => {
+        state.use_genders = !state.use_genders;
+        if (!state.use_genders) {
+            return;
+        }
+        Object.keys(state.combatants).forEach(c_pos => {
+            const c = state.combatants[parseInt(c_pos)];
+            if (c.gender === Gender.Unknown) {
+                c.gender = getRandomGender();
+            }
+        });
+    },
+}
 })
 
 export const { 
@@ -313,7 +322,7 @@ export const {
     spawnAtSelected,
     toggleShowTilePotentials,
     setMovementLogic,
-    setUseGenders,
+    toggleUseGenders,
 } = boardSlice.actions
 
 export default boardSlice.reducer

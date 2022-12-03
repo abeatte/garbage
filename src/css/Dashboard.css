@@ -1,3 +1,10 @@
+.Dashboard {
+    max-height: 290px;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
 .Dashboard .Row {
     display: flex;
     flex-direction: row;
@@ -40,13 +47,6 @@
 .Dashboard .Fitness {
     padding-left: 5px;
     padding-right: 5px;
-}
-
-.Dashboard {
-    max-height: 256px;
-    display: flex;
-    flex-direction: row;
-    margin-bottom: 8px;
 }
 
 .Dashboard .Stat_group {
