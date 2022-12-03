@@ -11,7 +11,7 @@ const Elephant = require('../images/combatants/lil_eli.png');
 const Lizard = require('../images/combatants/lizard.png');
 
 interface CharacterType {
-    team: keyof typeof Character,
+    team: Character,
     color: string,
     sheet?: any, 
     height: string, 
@@ -98,12 +98,12 @@ const Characters: {[key in Character]: CharacterType} = {
     }
 };
 
-const getCharacter = (team: keyof typeof Character) => {
+const getCharacter = (team: Character) => {
     const character = Characters[team];
     return character;
 }
 
-const Combatant = (props: {team: keyof typeof Character, detail?: boolean}) => {
+const Combatant = (props: {team: Character, detail?: boolean}) => {
     const char = getCharacter(props.team);
     const for_detail_view = props.detail;
     if (!char.sheet) {

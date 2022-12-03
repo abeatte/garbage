@@ -21,7 +21,7 @@ const getTeamStats = (combatants: Combatants, selected_position: number | undefi
     });
 
     const counts = Object.keys(teams).map(t => {
-        const team = t as keyof typeof Character
+        const team = t as Character
         const team_array = [] as JSX.Element[];
         teams[team]
             .sort((a, b) => {

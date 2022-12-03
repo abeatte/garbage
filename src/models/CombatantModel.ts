@@ -30,7 +30,7 @@ export interface CombatantModel {
     strength: Strength;
     decision_type: DecisionType;
     immortal: boolean;
-    team: keyof typeof Character;
+    team: Character;
     spawn: CombatantModel | undefined;
     children: number,
 }
@@ -304,9 +304,9 @@ export function getNewPositionFromClockFace(current_position: number, clockFace:
     return new_position;
 };
 
-export function getRandomTeam(): keyof typeof Character  {
+export function getRandomTeam(): Character  {
     const set = Object.keys(Character);
-    return set[Math.round(Math.random() * (set.length - 1))] as keyof typeof Character;
+    return set[Math.round(Math.random() * (set.length - 1))] as Character;
 }
 
 export default CombatantModel;
