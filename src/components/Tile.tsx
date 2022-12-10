@@ -40,23 +40,24 @@ const Tile = (
 ) => {
     const image = tile?.type && getImage(tile.type);
     return (
-      <div 
-        style={{position: "relative"}}
-        id={id?.toString()} 
-        className={classNames('Tile', tile?.type ?? TileType.Void, className, {"Selected" : isSelected})} 
-        onClick={onClick}
-      >
-        {
-          showPotential && tile && !children &&
-          <span style={{position: "absolute"}} className='Tile_potential'>
-            {tile.score_potential}
-          </span>
-        }
-        {
-          image && showRealTileImages &&
-          <img style={{position: "absolute"}} className='Tile' src={image}/>
-        }
-        {children}
+      <div style={{position: "relative"}}>
+        <div
+          id={id?.toString()} 
+          className={classNames('Tile', tile?.type ?? TileType.Void, className, {"Selected" : isSelected})} 
+          onClick={onClick}
+        >
+          {
+            showPotential && tile && !children &&
+            <span style={{position: "absolute"}} className='Tile_potential'>
+              {tile.score_potential}
+            </span>
+          }
+          {
+            image && showRealTileImages &&
+            <img style={{position: "absolute"}} className={classNames('Tile', {"Selected": isSelected})} src={image}/>
+          }
+          {children}
+        </div>
       </div>
     );
  }; 
