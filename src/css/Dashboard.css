@@ -10,6 +10,7 @@
     flex-direction: row;
     flex-wrap: wrap;
     max-width: fit-content;
+    align-items: flex-start;
     padding-right: 8px;
 }
 .Dashboard .Row_group {
@@ -22,6 +23,7 @@
     margin-right: 8px;
     display: flex;
     flex-direction: column;
+    width: 190px;
 }
 
 .Dashboard .Dropdown_container {
@@ -74,4 +76,26 @@
     border: 1px solid red;
     width: 23px;
     height: 23px;
+}
+
+.Dashboard .Settings_panel {
+    background-color: peru;
+    padding: 8px 8px 8px 8px;
+}
+
+.Dashboard .Settings_panel > .Settings_panel {
+    padding: 0px 0px 8px 0px;
+}
+
+.Dashboard .Settings_panel_expanded {
+    padding: 0px 8px 0px 0px;
+}
+
+.Dashboard .Settings_panel_expanded > .Settings_panel {
+    padding: 8px 0px 8px 8px;
+}
+
+.Dashboard .Stats_panel {
+    flex-grow: 1;
+    padding-left: 4px;
 }

@@ -9,6 +9,9 @@ import { AppDispatch, AppState } from "../data/store";
 import CombatantModel, { Character } from "../models/CombatantModel";
 import { useState } from "react";
 import { useEffect } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowDown } from '@fortawesome/free-solid-svg-icons/faArrowDown'
+import { faArrowUp } from '@fortawesome/free-solid-svg-icons/faArrowUp'
 
 const getTeamStats = (combatants: Combatants, selected_position: number | undefined, dispatch: AppDispatch) => {
     const teams = Object.values(Character).reduce((teams, cha) => {
@@ -99,32 +102,57 @@ const Dashboard = (args: {onReset: () => void}) => {
         dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
     };
 
-    const speed_section = (
-        <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
-            <span  className="Label" style={{alignSelf: 'center'}}>{`Speed`}</span>
-            <div className="Slider_container">
-                <input 
-                    style={{backgroundSize: `${speed_setting/MAX_TICK_SPEED*100}% 100%`}}
-                    type="range" 
-                    className="Slider" 
-                    min="0" 
-                    max={MAX_TICK_SPEED} 
-                    value={speed_setting}
-                    // @ts-ignore
-                    onKeyUpCapture={speedChangeKeyCapture}
-                    // @ts-ignore
-                    onClickCapture={speedChangeKeyCapture}
-                    // @ts-ignore
-                    onTouchEndCapture={speedChangeKeyCapture}
-                    onChange={(input) => {
-                        setSpeedSetting(parseInt(input.target.value));
-                    }}
+    const [show_settings, setShowSettings] = useState(false);
+
+
+    const show_settings_button = (
+        <div style={{margin: "4px 8px 0px 0px"}}>
+            <button 
+                className={classNames('Clickable', 'Button', 'Restart')} 
+                onClick={() => setShowSettings(!show_settings)
+            }>
+                <FontAwesomeIcon 
+                    className="Clickable" 
+                    icon={show_settings ? faArrowUp : faArrowDown} 
+                    color='dark' 
+                    size='lg' 
+                    style={{alignSelf: 'center', margin: '4px 0px 4px 0px'}}
                 />
+            </button>
+        </div>
+    );
+    const speed_section = (
+        <div 
+            className={classNames("Row", "Settings_panel")} 
+            style={{maxHeight: "50px", width: "182px"}}
+        >
+            {show_settings_button}
+            <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
+                <span  className="Label" style={{alignSelf: 'center'}}>{`Speed`}</span>
+                <div className="Slider_container">
+                    <input 
+                        style={{backgroundSize: `${speed_setting/MAX_TICK_SPEED*100}% 100%`}}
+                        type="range" 
+                        className="Slider" 
+                        min="0" 
+                        max={MAX_TICK_SPEED} 
+                        value={speed_setting}
+                        // @ts-ignore
+                        onKeyUpCapture={speedChangeKeyCapture}
+                        // @ts-ignore
+                        onClickCapture={speedChangeKeyCapture}
+                        // @ts-ignore
+                        onTouchEndCapture={speedChangeKeyCapture}
+                        onChange={(input) => {
+                            setSpeedSetting(parseInt(input.target.value));
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );
     const resize_section = (
-        <>
+        <div style={{width: "182px"}}>
             <div className="Speed_buttons_container">
                 <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(shrinkWidth())}>
                     <span>{"<"}</span>
@@ -175,22 +203,36 @@ const Dashboard = (args: {onReset: () => void}) => {
                         {Object.values(MovementLogic).map(l => (<option key={l.toString()}>{l}</option>))}
                     </select>
             </div>
-        </>
+        </div>
+    );
+
+    const restart_button = (
+        <button 
+        style={{width: "182px"}}
+            className={classNames('Clickable', 'Button', 'Restart')} 
+            onClick={() => onReset()
+        }>
+            <span>{"Restart"}</span>
+        </button>
+    );
+    const settings_section = (
+        <div 
+            className={classNames("Control_container", "Settings_panel")} 
+            style={{position: "absolute", marginTop: "-66px", zIndex: "999", boxShadow: "2px 2px 10px 2px"}}
+        >
+            {speed_section}
+            {restart_button}
+            {resize_section}
+        </div>
     );
 
     return (
         <div className={'Dashboard'}>
-            <div className="Control_container">
-                <button 
-                    className={classNames('Clickable', 'Button', 'Restart')} 
-                    onClick={() => onReset()
-                }>
-                    <span>{"Restart"}</span>
-                </button>
+            <div className={classNames({"Settings_panel_expanded" : show_settings})}>
                 {speed_section}
-                {resize_section}
+                {show_settings && settings_section}
             </div>
-            <div style={{flexGrow: 1}}>
+            <div className="Stats_panel">
                 <div className={'Row_group'}>
                     <div className={'Row'}>
                         <span className={'Label'}>{'Game:'}</span>
