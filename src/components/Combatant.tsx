@@ -9,6 +9,7 @@ const Bunny = require('../images/combatants/bunny.png');
 const Turtle = require('../images/combatants/turtle.png');
 const Elephant = require('../images/combatants/lil_eli.png');
 const Lizard = require('../images/combatants/lizard.png');
+const DogAndCat = require('../images/combatants/dog_and_cat.png');
 
 interface CharacterType {
     team: Character,
@@ -93,6 +94,40 @@ const Characters: {[key in Character]: CharacterType} = {
             placement: "-1px -2px",
             height: "45px",
             width: "45px",
+            margin: "0px",
+        }
+    },
+    Dog: {
+        team: Character.Dog,
+        color: "brown",
+        sheet: DogAndCat,
+        height: "35px",
+        width: "35px",
+        margin: "0px -3px 0px -3px",
+        placement: "-338px -47px",
+        transformScale: 0.6,
+        detail: {
+            transformScale: 5,
+            placement: "-336px -46px",
+            height: "35px",
+            width: "35px",
+            margin: "0px",
+        }
+    },
+    Cat: {
+        team: Character.Dog,
+        color: "brown",
+        sheet: DogAndCat,
+        height: "35px",
+        width: "35px",
+        margin: "0px -3px 0px -3px",
+        placement: "-338px -334px",
+        transformScale: 0.6,
+        detail: {
+            transformScale: 4.9,
+            placement: "-336px -334px",
+            height: "35px",
+            width: "35px",
             margin: "0px",
         }
     }

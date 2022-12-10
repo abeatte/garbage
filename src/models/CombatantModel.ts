@@ -16,7 +16,7 @@ import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, 
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
-export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant"};
+export enum Character {Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant", Dog = "Dog", Cat = "Cat"};
 export enum DecisionType {Lover = "Lover", Fighter = "Fighter", Neutral = "Neutral"};
 export enum Gender {Male = "Male", Female = "Female", Unknown = "Unknown"};
 
