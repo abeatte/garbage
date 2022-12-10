@@ -13,6 +13,8 @@ import Dashboard from "./Dashboard";
 import Tile from "./Tile";
 import { HudDisplayMode, setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
+import CombatantModel from "../models/CombatantModel";
+import TeamStats from "./TeamStats";
 
 /**
  * ________________
@@ -154,13 +156,14 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
         return (
             <div className={classNames({"Arena_container": true, "With_hud" : isShownWithHud})}>
-                <Dashboard
-                    onReset={this.props.reset}
-                />
-                <div className="Arena_inner_container">
-                    <div className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
-                        {tiles}
+                <Dashboard onReset={this.props.reset} />
+                <div style={{display: "flex", overflow: "scroll"}}>
+                    <div className="Arena_inner_container">
+                        <div className="Arena" style={{gridTemplateColumns: `${"auto ".repeat(width)}`}}>
+                            {tiles}
+                        </div>
                     </div>
+                    <TeamStats/>
                 </div>
             </div>
         );

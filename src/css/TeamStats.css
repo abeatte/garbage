@@ -1,0 +1,23 @@
+.Stat_group {
+    display: flex;
+    margin: 8px;
+    flex-shrink: 1;
+    flex-grow: 0;
+}
+
+.Data_row {
+    margin-left: 5px;
+    white-space: nowrap;
+}
+
+.Team_group {
+    display: flex;
+    flex-direction: row;
+    margin-top: 5px;
+}
+
+.Team .Selected {
+    border: 1px solid red;
+    width: 23px;
+    height: 23px;
+}

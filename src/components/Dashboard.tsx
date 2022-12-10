@@ -3,94 +3,31 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { MAX_TICK_SPEED, speedChange } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic, toggleUseGenders, setInitialNumCombatants, setShowSettings, toggleShowRealTileImages } from '../data/boardSlice'
-import { setIsHudActionable } from "../data/hudSlice";
-import { AppDispatch, AppState } from "../data/store";
-import CombatantModel, { Character } from "../models/CombatantModel";
+import { 
+    shrinkWidth, 
+    growWidth, 
+    shrinkHeight, 
+    growHeight, 
+    toggleShowTilePotentials, 
+    setMovementLogic, 
+    MovementLogic, 
+    toggleUseGenders, 
+    setInitialNumCombatants, 
+    setShowSettings, 
+    toggleShowRealTileImages 
+} from '../data/boardSlice'
+import { AppState } from "../data/store";
 import { useState } from "react";
 import { useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons/faArrowDown'
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons/faArrowUp'
 
-const getTeamStats = (combatants: Combatants, selected_position: number | undefined, dispatch: AppDispatch) => {
-    const teams = Object.values(Character).reduce((teams, cha) => {
-        teams[cha] = []
-        return teams;
-    }, {} as {[key in Character]: CombatantModel[]});
-
-    Object.values(combatants).forEach(combatant => {
-        teams[combatant.team].push(combatant);
-    });
-
-    const counts = Object.keys(teams).map(t => {
-        const team = t as Character
-        const team_array = [] as JSX.Element[];
-        teams[team]
-            .sort((a, b) => {
-                if (b.immortal) {
-                    return 1;
-                } else if (a.immortal) {
-                    return -1;
-                } else {
-                    return b.fitness - a.fitness
-                }
-            })
-            .slice(0, 10)
-            .forEach((c: CombatantModel, idx: number, subset: CombatantModel[]) => {
-                if (idx === 0) {
-                    team_array.push(<span key={"["}>{"[ "}</span>);
-                }
-
-                team_array.push(
-                    <span 
-                        key={`${c.id}`}
-                        className={selected_position === c.position ? "Selected" : ""} 
-                        onClick={() => {
-                            dispatch(select({position: c.position, follow_combatant: true}));
-                            dispatch(setIsHudActionable(true));
-                        }}
-                    >
-                        {`${c.immortal ? Infinity : c.fitness}`}
-                    </span>
-                );
-
-                if (idx < teams[team].length - 1) {
-                    team_array.push(<span key={`${idx}','`}>{', '}</span>);
-                }
-
-                if (idx === teams[team].length - 1) {
-                    team_array.push(<span key={"]"}>{" ]"}</span>);
-                } else if (idx === subset.length - 1) {
-                    team_array.push(<span key={"...]"}>{ " ... ]"}</span>);
-                }
-            });
-        return (
-            <div key={team} className={'Team_group'}>
-                <span className={'Label'}>{`${team}`}</span><span>{` (${teams[team].length}):`}</span>
-                <div className={classNames("Data_row", "Team", "Clickable")}>
-                    {teams[team].length < 1 ? 
-                        (<span>{"[ ]"}</span>) : 
-                        team_array
-                    }
-                </div>
-            </div>
-        );
-    }).sort((a, b) => (a.key as string).localeCompare(b.key as string));
-
-    return (
-        <div className={'Stat_group'}>
-            <div>{counts}</div>
-        </div>
-    );
-};
-
 const Dashboard = (args: {onReset: () => void}) => {
     const {onReset} = args
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch()
-    const teamStats = getTeamStats(board.combatants, board.selected_position, dispatch);
 
     const [speed_setting, setSpeedSetting] = useState(ticker.tick_speed);
     useEffect(() => {
@@ -253,37 +190,41 @@ const Dashboard = (args: {onReset: () => void}) => {
             {settables_section}
         </div>
     );
+    const game_stats_section = (
+        <div className="Stats_panel">
+            <div className={'Row_group'}>
+                <div className={'Row'}>
+                    <span className={'Label'}>{'Game:'}</span>
+                    <span className="Data_row">{board.game_count}</span>
+                </div>
+                <div className={classNames('Row')}>
+                    <span className={'Label'}>{'Year:'}</span>
+                    <span className="Data_row">{ticker.tick}</span>
+                </div>
+                <div className={classNames('Row')}>
+                    <span className={'Label'}>{`Combatants:`}</span>
+                    <span className="Data_row">{`${board.global_combatant_stats.num_combatants}`}</span>
+                </div>
+                <div className={classNames('Row')}>
+                    <span className={'Label'}>{`Births:`}</span>
+                    <span className="Data_row">{`${board.global_combatant_stats.births}`}</span>
+                </div>
+                <div className={classNames('Row')}>
+                    <span className={'Label'}>{`Deaths:`}</span>
+                    <span className="Data_row">{`${board.global_combatant_stats.deaths}`}</span>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <div className={'Dashboard'}>
-            <div className={classNames({"Settings_panel_expanded" : show_settings})}>
-                {speed_section}
-                {show_settings && settings_section}
-            </div>
-            <div className="Stats_panel">
-                <div className={'Row_group'}>
-                    <div className={'Row'}>
-                        <span className={'Label'}>{'Game:'}</span>
-                        <span className="Data_row">{board.game_count}</span>
-                    </div>
-                    <div className={classNames('Row')}>
-                        <span className={'Label'}>{'Year:'}</span>
-                        <span className="Data_row">{ticker.tick}</span>
-                    </div>
-                    <div className={classNames('Row')}>
-                        <span className={'Label'}>{`Combatants:`}</span>
-                        <span className="Data_row">{`${board.global_combatant_stats.num_combatants}`}</span>
-                    </div>
-                    <div className={classNames('Row')}>
-                        <span className={'Label'}>{`Births:`}</span>
-                        <span className="Data_row">{`${board.global_combatant_stats.births}`}</span>
-                    </div>
-                    <div className={classNames('Row')}>
-                        <span className={'Label'}>{`Deaths:`}</span>
-                        <span className="Data_row">{`${board.global_combatant_stats.deaths}`}</span>
-                    </div>
+            <div style={{display: "flex", flexDirection: "row", flexGrow: "1", position: "unset", backgroundColor: "peru"}}>
+                <div className={classNames({"Settings_panel_expanded" : show_settings})}>
+                    {speed_section}
+                    {show_settings && settings_section}
                 </div>
-                {teamStats}
+                {game_stats_section}
             </div>
         </div>
     )

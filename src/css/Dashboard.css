@@ -2,7 +2,6 @@
     max-height: 290px;
     display: flex;
     flex-direction: row;
-    margin-bottom: 8px;
 }
 
 .Dashboard .Row {
@@ -17,6 +16,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    padding-top: 12px;
 }
 
 .Dashboard .Control_container {
@@ -51,31 +51,10 @@
     padding-right: 5px;
 }
 
-.Dashboard .Stat_group {
-    display: flex;
-    margin-top: 8px;
-}
-
-.Dashboard .Data_row {
-    margin-left: 5px;
-}
-
-.Dashboard .Team_group {
-    display: flex;
-    flex-direction: row;
-    margin-top: 5px;
-}
-
 .Dashboard .Speed_buttons_container {
     display: flex;
     justify-content: space-between;
     padding: 4px 0px 4px 0px;
-}
-
-.Dashboard .Team .Selected {
-    border: 1px solid red;
-    width: 23px;
-    height: 23px;
 }
 
 .Dashboard .Settings_panel {
@@ -98,4 +77,6 @@
 .Dashboard .Stats_panel {
     flex-grow: 1;
     padding-left: 4px;
+    display: flex;
+    justify-content: center;
 }
