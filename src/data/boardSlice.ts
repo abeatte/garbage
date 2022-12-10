@@ -281,13 +281,13 @@ export const boardSlice = createSlice({
         }
     },
     updateSelectedTile: (state, action: {payload: {field: 'type', value: TileType}}) => {
-        if (state.selected_position) {
+        if (state.selected_position !== undefined) {
             state.tiles[state.selected_position] = createTileModel({index: state.selected_position, type: action.payload.value});
             updateMapTileScorePotentials(state.tiles, state.width);
         }
     },
     killSelected: (state) => {
-        if (state.selected_position) {
+        if (state.selected_position !== undefined) {
             state.follow_selected_combatant = false;
             const selected = state.combatants[state.selected_position];
             selected.immortal = false;
@@ -300,7 +300,7 @@ export const boardSlice = createSlice({
         }
     },
     spawnAtSelected: (state) => {
-        if (state.selected_position) {
+        if (state.selected_position !== undefined) {
             state.follow_selected_combatant = true;
             state.combatants[state.selected_position] = createCombatant(
                 {
