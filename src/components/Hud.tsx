@@ -129,7 +129,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
       <div className='Hud'>
         <div style={{width: "200px"}}>
             <div className='Badge'>
-                <Tile tile={tile}>
+                <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
                 </Tile>
                 {

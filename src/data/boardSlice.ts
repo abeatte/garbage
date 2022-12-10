@@ -89,6 +89,7 @@ function initState(args?: {width: number, height: number, initial_num_combatants
     initial_num_combatants: number,
     tiles: TileModel[],
     show_settings: boolean,
+    show_real_tile_images: boolean,
     show_tile_potentials: boolean,
     combatants: Combatants,
     selected_position: number| undefined,
@@ -112,6 +113,7 @@ function initState(args?: {width: number, height: number, initial_num_combatants
         initial_num_combatants,
         tiles,
         show_settings: false,
+        show_real_tile_images: true,
         show_tile_potentials: DEFAULTS.show_tile_potentials,
         combatants,
         selected_position: undefined,
@@ -315,6 +317,9 @@ export const boardSlice = createSlice({
     toggleShowTilePotentials: (state) => {
         state.show_tile_potentials = !state.show_tile_potentials;
     },
+    toggleShowRealTileImages: (state) => {
+        state.show_real_tile_images = !state.show_real_tile_images;
+    },
     setMovementLogic: (state, action: {payload: MovementLogic}) => {
         state.movement_logic = action.payload;
     },
@@ -352,6 +357,7 @@ export const {
     killSelected,
     spawnAtSelected,
     toggleShowTilePotentials,
+    toggleShowRealTileImages,
     setMovementLogic,
     toggleUseGenders,
     setInitialNumCombatants, 
