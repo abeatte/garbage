@@ -10,13 +10,18 @@ import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotenti
 import CombatantModel, { createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 
-export const DEFAULT_WINDOW_WIDTH = 13;
-export const DEFAULT_WINDOW_HEIGHT = 15;
-const NUM_COMBATANTS = 24;
-
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
 export type Combatants = {[position: number]: CombatantModel};
+
+export const DEFAULTS = {
+    window_width: 13,
+    window_height: 15,
+    num_combatants: 24,
+    movement_logic: MovementLogic.DecisionTree,
+    use_genders: false,
+    show_tile_potentials: false,
+}
 
 export function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
     const tiles = Array(width * height) as TileModel[];
@@ -47,12 +52,11 @@ export function initDefaultTiles({width, height}: {width: number, height: number
 };
 
 function initCombatants(
-    {tiles, use_genders}: 
-    {tiles: TileModel[], use_genders: boolean}
+    {tiles, num_combatants, use_genders}: 
+    {tiles: TileModel[], num_combatants: number, use_genders: boolean}
 ): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
     const combatants = {} as Combatants;
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
-    const num_combatants = NUM_COMBATANTS;
     for (let i = 0; i < num_combatants; i++) {
         const c_pos: number = initCombatantStartingPos({tiles, combatants});
         combatants[c_pos] = createCombatant({spawn_position: c_pos, use_genders, global_combatant_stats});
@@ -68,20 +72,21 @@ function initCombatants(
         }
     }
 
-    const number_of_combatants = Object.keys(combatants).length;
-    global_combatant_stats.average_position = global_combatant_stats.average_position / number_of_combatants;
-    global_combatant_stats.average_fitness = global_combatant_stats.average_fitness / number_of_combatants;
+    global_combatant_stats.num_combatants = num_combatants;
+    global_combatant_stats.average_position = global_combatant_stats.average_position / num_combatants;
+    global_combatant_stats.average_fitness = global_combatant_stats.average_fitness / num_combatants;
     global_combatant_stats.weak_bar = (global_combatant_stats.average_fitness + global_combatant_stats.min_fitness)/2;;
     global_combatant_stats.average_bar = (global_combatant_stats.average_fitness + global_combatant_stats.max_fitness)/2;
 
     return {combatants, global_combatant_stats};
 }
 
-function initState(width?: number, height?: number, use_genders?: boolean): {
+function initState(args?: {width: number, height: number, initial_num_combatants: number, use_genders: boolean}): {
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
     width: number,
     height: number,
+    initial_num_combatants: number,
     tiles: TileModel[],
     show_tile_potentials: boolean,
     combatants: Combatants,
@@ -90,22 +95,26 @@ function initState(width?: number, height?: number, use_genders?: boolean): {
     movement_logic: MovementLogic,
     use_genders: boolean,
 } {
-    width = width ?? DEFAULT_WINDOW_WIDTH;
-    height = height ?? DEFAULT_WINDOW_HEIGHT;
-    use_genders = use_genders ?? false;
+    const {width, height, initial_num_combatants, use_genders} = args ?? {width: DEFAULTS.window_width,
+        height: DEFAULTS.window_height,
+        use_genders: DEFAULTS.use_genders,
+        initial_num_combatants: DEFAULTS.num_combatants,
+    };
     const tiles = initDefaultTiles({width, height});
-    const {combatants, global_combatant_stats} = initCombatants({tiles, use_genders});
+    const {combatants, global_combatant_stats} = 
+        initCombatants({tiles, num_combatants: initial_num_combatants, use_genders});
     return {
         game_count: 1,
         global_combatant_stats, 
         width,
         height,
+        initial_num_combatants,
         tiles,
-        show_tile_potentials: false,
+        show_tile_potentials: DEFAULTS.show_tile_potentials,
         combatants,
         selected_position: undefined,
         follow_selected_combatant: false,
-        movement_logic: MovementLogic.DecisionTree,
+        movement_logic: DEFAULTS.movement_logic,
         use_genders,
     };
   }
@@ -132,8 +141,10 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         });
-        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        const new_num_combatants = Object.values(combatants).length;
+        const deaths = Object.values(state.combatants).length - new_num_combatants;
         state.combatants = combatants;
+        state.global_combatant_stats.num_combatants = new_num_combatants;
         state.global_combatant_stats.deaths += deaths;
     },
     growWidth: (state) => {
@@ -149,8 +160,10 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         });
-        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        const new_num_combatants = Object.values(combatants).length;
+        const deaths = Object.values(state.combatants).length - new_num_combatants;
         state.combatants = combatants;
+        state.global_combatant_stats.num_combatants = new_num_combatants;
         state.global_combatant_stats.deaths += deaths;
     },
     shrinkHeight: (state) => {
@@ -169,8 +182,10 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         }); 
-        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        const new_num_combatants = Object.values(combatants).length;
+        const deaths = Object.values(state.combatants).length - new_num_combatants;
         state.combatants = combatants;
+        state.global_combatant_stats.num_combatants = new_num_combatants;
         state.global_combatant_stats.deaths += deaths;
     },
     growHeight: (state) => {
@@ -186,12 +201,19 @@ export const boardSlice = createSlice({
                 old_window_height, 
                 tiles: state.tiles,
         });
-        const deaths = Object.values(state.combatants).length - Object.values(combatants).length;
+        const new_num_combatants = Object.values(combatants).length;
+        const deaths = Object.values(state.combatants).length - new_num_combatants;
         state.combatants = combatants;
+        state.global_combatant_stats.num_combatants = new_num_combatants;
         state.global_combatant_stats.deaths += deaths;
     },
     reset: (state) => {
-        const new_state = initState(state.width, state.height, state.use_genders);
+        const new_state = initState({
+            width: state.width, 
+            height: state.height, 
+            initial_num_combatants: state.initial_num_combatants, 
+            use_genders: state.use_genders
+        });
 
         state.tiles = new_state.tiles;
         state.combatants = new_state.combatants;
@@ -285,6 +307,7 @@ export const boardSlice = createSlice({
                     global_combatant_stats: state.global_combatant_stats
                 }
             );
+            state.global_combatant_stats.num_combatants += 1;
         }
     },
     toggleShowTilePotentials: (state) => {

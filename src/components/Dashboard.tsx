@@ -202,7 +202,7 @@ const Dashboard = (args: {onReset: () => void}) => {
                     </div>
                     <div className={classNames('Row')}>
                         <span className={'Label'}>{`Combatants:`}</span>
-                        <span className="Data_row">{`${Object.keys(board.combatants).length}`}</span>
+                        <span className="Data_row">{`${board.global_combatant_stats.num_combatants}`}</span>
                     </div>
                     <div className={classNames('Row')}>
                         <span className={'Label'}>{`Births:`}</span>

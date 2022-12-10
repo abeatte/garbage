@@ -3,7 +3,7 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, initDefaultTiles, MovementLogic } from "../data/boardSlice";
+import { DEFAULTS, initDefaultTiles, MovementLogic } from "../data/boardSlice";
 import { ClockFace, DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
 import Brain from "../models/Brain";
 import { DecisionType, requestMove } from "../models/CombatantModel";
@@ -53,8 +53,8 @@ const train = (net: NeuralNetwork<Input, Output>) => {
     const training_sets = [] as TrainingSet[];
     
     for(let map = 0; map < NUM_TRAINING_MAPS; map++) {
-        const width = DEFAULT_WINDOW_WIDTH;
-        const height = DEFAULT_WINDOW_HEIGHT;
+        const width = DEFAULTS.window_width;
+        const height = DEFAULTS.window_height;
         const tiles = initDefaultTiles({width, height});
 
         for(let position = 0; position < tiles.length; position++) {

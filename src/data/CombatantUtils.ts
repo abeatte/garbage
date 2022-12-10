@@ -271,6 +271,7 @@ GlobalCombatantStatsModel {
     });
 
     const number_of_new_combatants = combatant_keys.length;
+    new_global_combatant_stats.num_combatants = number_of_new_combatants;
     new_global_combatant_stats.average_position = 
         new_global_combatant_stats.average_position/number_of_new_combatants;
     new_global_combatant_stats.average_fitness = 
