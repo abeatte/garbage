@@ -88,6 +88,7 @@ function initState(args?: {width: number, height: number, initial_num_combatants
     height: number,
     initial_num_combatants: number,
     tiles: TileModel[],
+    show_settings: boolean,
     show_tile_potentials: boolean,
     combatants: Combatants,
     selected_position: number| undefined,
@@ -110,6 +111,7 @@ function initState(args?: {width: number, height: number, initial_num_combatants
         height,
         initial_num_combatants,
         tiles,
+        show_settings: false,
         show_tile_potentials: DEFAULTS.show_tile_potentials,
         combatants,
         selected_position: undefined,
@@ -328,6 +330,12 @@ export const boardSlice = createSlice({
             }
         });
     },
+    setInitialNumCombatants: (state, action: {payload: number}) => {
+        state.initial_num_combatants = action.payload;
+    },
+    setShowSettings: (state, action: {payload: boolean}) => {
+        state.show_settings = action.payload;
+    }
 }
 })
 
@@ -346,6 +354,8 @@ export const {
     toggleShowTilePotentials,
     setMovementLogic,
     toggleUseGenders,
+    setInitialNumCombatants, 
+    setShowSettings,
 } = boardSlice.actions
 
 export default boardSlice.reducer

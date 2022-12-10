@@ -3,7 +3,7 @@ import '../css/Dashboard.css'
 import classNames from "classnames";
 import { useSelector, useDispatch } from 'react-redux'
 import { MAX_TICK_SPEED, speedChange } from '../data/tickerSlice'
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic, toggleUseGenders } from '../data/boardSlice'
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, select, Combatants, toggleShowTilePotentials, setMovementLogic, MovementLogic, toggleUseGenders, setInitialNumCombatants, setShowSettings } from '../data/boardSlice'
 import { setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
 import CombatantModel, { Character } from "../models/CombatantModel";
@@ -102,14 +102,17 @@ const Dashboard = (args: {onReset: () => void}) => {
         dispatch(speedChange(parseInt((input.target as HTMLInputElement).value)))
     };
 
-    const [show_settings, setShowSettings] = useState(false);
-
+    const [show_settings, _setShowSettings] = useState(board.show_settings);
+    useEffect(() => {
+        // this lets us handle things like "esc" from the Game
+        _setShowSettings(board.show_settings);
+    }, [board.show_settings]);
 
     const show_settings_button = (
         <div style={{margin: "4px 8px 0px 0px"}}>
             <button 
                 className={classNames('Clickable', 'Button', 'Restart')} 
-                onClick={() => setShowSettings(!show_settings)
+                onClick={() => dispatch(setShowSettings(!board.show_settings))
             }>
                 <FontAwesomeIcon 
                     className="Clickable" 
@@ -171,6 +174,11 @@ const Dashboard = (args: {onReset: () => void}) => {
                     <span>{">"}</span>
                 </button>
             </div> 
+        </div>
+    );
+
+    const settables_section = (
+        <>
             <div className={classNames('Checkbox_container')}>
                 <input 
                     className={classNames('Clickable', 'Checkbox')} 
@@ -193,17 +201,25 @@ const Dashboard = (args: {onReset: () => void}) => {
                 />
                 <span className={'Label'}>{'Show Tile Value'}</span>
             </div>
-            <div className={classNames('Dropdown_container')}>
-            <span className={'Label'}>{'Movement: '}</span>
+            <div>
+                <span className={'Label'}>{'Initial Combatant Count: '}</span>
+                <input
+                    style={{width: "48px"}} 
+                    type={"number"} 
+                    onChange={(input) => dispatch(setInitialNumCombatants(parseInt(input.target.value)))} 
+                    value={board.initial_num_combatants}/>
+            </div>
+            <div>
+                <span className={'Label'}>{'Movement: '}</span>
                 <select
                     className={classNames('Movement_selector', 'Clickable')}
                     value={board.movement_logic}
                     onChange={(input) => dispatch(setMovementLogic(input.target.value as unknown as MovementLogic))}
                     >
                         {Object.values(MovementLogic).map(l => (<option key={l.toString()}>{l}</option>))}
-                    </select>
+                </select>
             </div>
-        </div>
+        </>
     );
 
     const restart_button = (
@@ -223,6 +239,7 @@ const Dashboard = (args: {onReset: () => void}) => {
             {speed_section}
             {restart_button}
             {resize_section}
+            {settables_section}
         </div>
     );
 

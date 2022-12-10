@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import { select } from '../data/boardSlice';
+import { select, setShowSettings } from '../data/boardSlice';
 import { HudDisplayMode, setIsHudActionable, setScreenSize } from '../data/hudSlice';
 import { AppDispatch, AppState } from '../data/store';
 import Arena from './Arena';
@@ -17,8 +17,14 @@ class Game extends React.Component<AppState & DispatchProps> {
 
     escFunction =  (event: { key: string; }) => {
         if (event.key === "Escape") {
-            this.props.select();
-            this.props.setHudIsNotActionable();
+            // close settings panel first, if it is open. 
+            if (this.props.board.show_settings) {
+                this.props.setNotShowSettings();
+            } else {
+                this.props.select();
+                this.props.setHudIsNotActionable();
+                this.props.setNotShowSettings();
+            }
         }
     }
 
@@ -73,6 +79,7 @@ function mapStateToProps(state: AppState): AppState {
 interface DispatchProps {
     select: () => void,
     setHudIsNotActionable: () => void,
+    setNotShowSettings: () => void,
     setScreenSize: (dimens: {width: number, height: number}) => void,
 }
 
@@ -80,6 +87,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
         select: () => dispatch(select({})),
         setHudIsNotActionable: () => dispatch(setIsHudActionable(false)),
+        setNotShowSettings: () => dispatch(setShowSettings(false)),
         setScreenSize: (dimens: {width: number, height: number}) => 
             dispatch(setScreenSize({width: dimens.width, height: dimens.height}))
     }
