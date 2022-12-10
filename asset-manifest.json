@@ -1,19 +1,24 @@
 {
   "files": {
     "main.css": "/garbage/static/css/main.7e0400ad.css",
-    "main.js": "/garbage/static/js/main.1225098a.js",
+    "main.js": "/garbage/static/js/main.2120254e.js",
     "static/js/787.6a7af51a.chunk.js": "/garbage/static/js/787.6a7af51a.chunk.js",
+    "static/media/water.png": "/garbage/static/media/water.e707dab4b003c5ddf5e9.png",
+    "static/media/trees.png": "/garbage/static/media/trees.359c2b3c23844c4d7c2b.png",
+    "static/media/lava.png": "/garbage/static/media/lava.071798749395d7dfb96e.png",
+    "static/media/sand.png": "/garbage/static/media/sand.fd9925149498bb344ad5.png",
     "static/media/dog_and_cat.png": "/garbage/static/media/dog_and_cat.2eccaeb07bc92574ca70.png",
     "static/media/lil_eli.png": "/garbage/static/media/lil_eli.5180292def231e5c6d48.png",
     "static/media/turtle.png": "/garbage/static/media/turtle.8a65c0709a59fac3a76f.png",
+    "static/media/stone.png": "/garbage/static/media/stone.c0ffb029a15aab07d9af.png",
     "static/media/bunny.png": "/garbage/static/media/bunny.58d3a67731da7fc9c65b.png",
     "index.html": "/garbage/index.html",
     "main.7e0400ad.css.map": "/garbage/static/css/main.7e0400ad.css.map",
-    "main.1225098a.js.map": "/garbage/static/js/main.1225098a.js.map",
+    "main.2120254e.js.map": "/garbage/static/js/main.2120254e.js.map",
     "787.6a7af51a.chunk.js.map": "/garbage/static/js/787.6a7af51a.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.7e0400ad.css",
-    "static/js/main.1225098a.js"
+    "static/js/main.2120254e.js"
   ]
 }
