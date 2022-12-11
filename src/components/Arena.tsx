@@ -11,9 +11,8 @@ import { tick as combatantTick, reset as resetBoard, select, Combatants, killSel
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
-import { HudDisplayMode, setIsHudActionable } from "../data/hudSlice";
+import { setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
-import CombatantModel from "../models/CombatantModel";
 import TeamStats from "./TeamStats";
 
 /**
@@ -152,10 +151,8 @@ class Arena extends React.Component<AppState & DispatchProps> {
         //     }
         // );
 
-        const isShownWithHud = this.props.hud.hudDisplayMode === HudDisplayMode.SIDE_PANEL;
-
         return (
-            <div className={classNames({"Arena_container": true, "With_hud" : isShownWithHud})}>
+            <div className={classNames("Arena_container")}>
                 <Dashboard onReset={this.props.reset} />
                 <div style={{display: "flex", overflow: "scroll"}}>
                     <div className="Arena_inner_container">

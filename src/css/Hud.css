@@ -2,7 +2,20 @@
     display: flex;
     flex-shrink: 1;
     flex-grow: 0;
-    margin: 8px 8px 8px 8px;
+}
+
+.Hud.Hud_panel {
+    bottom: 0px;
+    right: 0px;
+    position: fixed;
+    padding: 8px 8px 8px 8px;
+    align-self: baseline;
+    border-left: 2px solid black;
+    border-top: 2px solid black;
+}
+
+.Hud.Hud_fullscreen {
+    margin: 4px;
 }
 
 .Hud .Tile {
@@ -23,8 +36,8 @@
     flex-grow: 1;
 }
 
-.Hud .Details {
-    margin-left: 8px;
+.Hud .Details {    
+    margin: 0px 8px 0px 8px;
     display: flex;
     flex-direction: column;
 }

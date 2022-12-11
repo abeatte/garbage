@@ -3,10 +3,6 @@
     overflow: scroll;
 }
 
-.Arena_container.With_hud {
-    border-right: 4px solid black;
-}
-
 .Arena_container .Arena_inner_container {
     display: flex;
     overflow-x: scroll;
