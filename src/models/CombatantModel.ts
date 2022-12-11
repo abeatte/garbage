@@ -13,6 +13,7 @@ import Brain from "./Brain";
 import { NeuralNetwork } from "brain.js/dist/src";
 import { Input, Output } from "../scripts/BrainTrainer";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
+import { EntityModel } from "./EntityModel";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
@@ -20,11 +21,9 @@ export enum Character { Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", E
 export enum DecisionType { Neutral = "Neutral", Lover = "Lover", Fighter = "Fighter", Adventurer = "Adventurer" };
 export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 
-export interface CombatantModel {
-    id: string;
+export interface CombatantModel extends EntityModel {
     name: string | undefined;
     state: State;
-    tick: number;
     position: number;
     visited_positions: {[position: number]: number};
     kills: number;
