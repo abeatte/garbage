@@ -24,7 +24,6 @@ export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
     state: State;
-    position: number;
     visited_positions: {[position: number]: number};
     kills: number;
     fitness: number;
