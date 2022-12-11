@@ -125,9 +125,26 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
         </div>
     );
 
+    const kill_spawn_button = selected_position > -1 && (
+        <div className={classNames(
+            {'Spawn_button_container': !combatant, 'Kill_button_container': !!combatant}
+        )}>
+            <button 
+            className={classNames(
+                'Clickable', 
+                'Button',  
+                {'Spawn': !combatant, 'Kill': !!combatant}
+            )}
+            onClick={() => !!combatant ? dispatch(killSelected()) : dispatch(spawnAtSelected())}
+            >
+                <span>{!combatant ? "Spawn" : "Kill"}</span>
+            </button>
+        </div>
+    );
+
     return (
       <div className='Hud'>
-        <div style={{width: "200px"}}>
+        <div style={{width: "180px"}}>
             <div className='Badge'>
                 <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
                     {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
@@ -162,6 +179,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             </div>
         </div> 
         {escape_button}
+        {kill_spawn_button}
         <div className='Info_container'>
             <div className='Details_container'>
             { !!combatant && (
@@ -277,28 +295,6 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             <span className={classNames('Label', 'Centered')}>{'Immortal'}</span>
                         </div>
                     </div>
-                </div>
-                )
-            }
-            {!!combatant && (
-                <div className='Life_buttons_container'>
-                    <button 
-                    className={classNames('Clickable', 'Button', 'Kill')}
-                    onClick={() => dispatch(killSelected())}
-                    >
-                        <span>{"Kill"}</span>
-                    </button>
-                </div>
-                )
-            }
-            {!combatant && selected_position !== undefined && (
-                <div className='Life_buttons_container'>
-                    <button 
-                    className={classNames('Clickable', 'Button',  'Spawn')}
-                    onClick={() => dispatch(spawnAtSelected())}
-                    >
-                        <span>{"Spawn"}</span>
-                    </button>
                 </div>
                 )
             }
