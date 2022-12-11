@@ -17,7 +17,7 @@ import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
 export enum Character { Bunny = "Bunny", Turtle = "Turtle", Lizard = "Lizard", Elephant = "Elephant", Dog = "Dog", Cat = "Cat" };
-export enum DecisionType { Lover = "Lover", Fighter = "Fighter", Neutral = "Neutral" };
+export enum DecisionType { Neutral = "Neutral", Lover = "Lover", Fighter = "Fighter", Adventurer = "Adventurer" };
 export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 
 export interface CombatantModel {
@@ -243,12 +243,28 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
             }
             
             // position based on best safe space
-            const best_safe_position = getBestOpenPosition({self, movement_logic, bucketed_empty_tiles});
+            let best_safe_position = getBestOpenPosition({self, movement_logic, bucketed_empty_tiles});
 
             // position based on best mate space
             let best_mate_position = -1;
             if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Fighter) {
                 best_mate_position = getBestMatePosition({self, bucketed_mate_strengths});
+            }
+
+            if (
+                // Adventurers are disinterested in places they have been before
+                movement_logic === MovementLogic.DecisionTree && 
+                self.decision_type === DecisionType.Adventurer
+            ) {
+                if (self.visited_positions[best_enemy_position] !== undefined) {
+                    best_enemy_position = -1;
+                }
+                if (self.visited_positions[best_safe_position] !== undefined) {
+                    best_safe_position = -1;
+                }
+                if (self.visited_positions[best_mate_position] !== undefined) {
+                    best_mate_position = -1;
+                }
             }
 
             if (best_enemy_position !== -1 && !random_walk_enabled) {
