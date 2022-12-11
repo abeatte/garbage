@@ -112,7 +112,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     const edited_name = editing['name'];
     const edited_fitness = editing['fitness'];
 
-    const escape_button = isFullScreen && (
+    const escape_button = (
         <div className='Escape_container'>
             <button 
                 className={classNames("Clickable", "Exit")} 
