@@ -149,7 +149,12 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
                 >
-                    {maybe_combatant && (<Combatant team={maybe_combatant.team}/>)}
+                    {maybe_combatant && (
+                        <Combatant 
+                            draggable={selected_paint !== Type.Void} 
+                            team={maybe_combatant.team}
+                        />
+                    )}
                 </Tile>
             );
         });

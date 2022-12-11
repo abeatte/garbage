@@ -138,21 +138,25 @@ const getCharacter = (team: Character) => {
     return character;
 }
 
-const Combatant = (props: {team: Character, detail?: boolean}) => {
+const Combatant = (props: {team: Character, draggable?: boolean, detail?: boolean}) => {
     const char = getCharacter(props.team);
     const for_detail_view = props.detail;
     if (!char.sheet) {
         return (<span style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</span>);
     } else {
-        return (<div className="Sprite" style={
-            {
-                background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
-                transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
-                width: for_detail_view ? char.detail.width : char.width,
-                height: for_detail_view ? char.detail.height : char.height, 
-                margin: for_detail_view ? char.detail.margin : char.margin,
+        return (<div 
+            className="Sprite" 
+            draggable={props.draggable}
+            style={
+                {
+                    background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
+                    transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
+                    width: for_detail_view ? char.detail.width : char.width,
+                    height: for_detail_view ? char.detail.height : char.height, 
+                    margin: for_detail_view ? char.detail.margin : char.margin,
+                }
             }
-        }></div>);
+        ></div>);
     }
 }
 
