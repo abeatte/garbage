@@ -17,7 +17,7 @@ export type Combatants = {[position: number]: CombatantModel};
 export const DEFAULTS = {
     window_width: 13,
     window_height: 15,
-    num_combatants: 24,
+    num_combatants: 25,
     movement_logic: MovementLogic.DecisionTree,
     use_genders: false,
     show_tile_potentials: false,
@@ -340,6 +340,8 @@ export const boardSlice = createSlice({
         });
     },
     setInitialNumCombatants: (state, action: {payload: number}) => {
+        action.payload = Math.min(action.payload, DEFAULTS.num_combatants * 40);
+        
         state.initial_num_combatants = action.payload;
 
         const {combatants, global_combatant_stats} = initCombatants({
