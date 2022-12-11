@@ -26,6 +26,7 @@ export interface CombatantModel {
     state: State;
     tick: number;
     position: number;
+    visited_positions: {[position: number]: number};
     kills: number;
     fitness: number;
     strength: Strength;
@@ -50,6 +51,8 @@ export function getRandomCombatantName(): string {
 }
 
 export function createCombatant(args: {spawn_position: number, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+    const visited_positions = {} as {[position: number]: number};
+    visited_positions[args.spawn_position] = args.spawn_position;
     return {   
         id: uuid(),
         name: getRandomCombatantName(),
@@ -63,6 +66,7 @@ export function createCombatant(args: {spawn_position: number, use_genders: bool
         gender: !!args.use_genders ? getRandomGender() : Gender.Unknown,
         tick: 0,
         position: args.spawn_position,
+        visited_positions,
         spawn: undefined,
         children: 0,
     }

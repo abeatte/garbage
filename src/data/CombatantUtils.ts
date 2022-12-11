@@ -105,6 +105,7 @@ export function updateCombatantsPositionsAfterResize(
             // tie goes to whoever got there first.
             new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[old_pos]) : combatants[old_pos];
             new_combatants[new_pos].position = new_pos;
+            new_combatants[new_pos].visited_positions[new_pos] = new_pos;
         }
 
     })
@@ -164,6 +165,7 @@ export function calcMovements(
             new_combatants[current_position] = undefined;
             new_combatants[new_position] = combatant;
             combatant.position = new_position;
+            combatant.visited_positions[new_position] = new_position;
         } else if(
             occupant.team === combatant.team &&
             // if a Fighter is here they're not here to mate!
@@ -194,6 +196,7 @@ export function calcMovements(
             new_combatants[current_position] = undefined;
             new_combatants[new_position] = compete(combatant, occupant);
             (new_combatants[new_position] as CombatantModel).position = new_position;
+            (new_combatants[new_position] as CombatantModel).visited_positions[new_position] = new_position;
             deaths++;            
         }
     });
@@ -327,6 +330,7 @@ function birthSpawn({posData, spawn, parent, arena_size}:
             -1;
         if (spawn_pos > -1) {
             spawn.position = spawn_pos;
+            spawn.visited_positions[spawn_pos] = spawn_pos;
             // too many of my kind here, let's diverge
             spawn.team = friendly_positions.length < 4 ? parent.team : getRandomTeam();
         }
