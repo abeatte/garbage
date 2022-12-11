@@ -21,8 +21,7 @@ const PaintPalette = () => {
         return (
             <Tile 
                 id={idx}
-                tile={tile} 
-                showPotential={board.show_tile_potentials}
+                tile={tile}
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {

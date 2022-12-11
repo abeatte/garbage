@@ -47,14 +47,14 @@ const Tile = (
           onClick={onClick}
         >
           {
-            showPotential && tile && !children &&
-            <span style={{position: "absolute"}} className='Tile_potential'>
-              {tile.score_potential}
-            </span>
-          }
-          {
             image && showRealTileImages &&
             <img style={{position: "absolute"}} className={classNames('Tile', {"Selected": isSelected})} src={image}/>
+          }
+          {
+            showPotential && tile && !children &&
+            <span style={{position: "absolute", color: "red"}} className='Tile_potential'>
+              {tile.score_potential}
+            </span>
           }
           {children}
         </div>
