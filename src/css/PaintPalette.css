@@ -1,0 +1,5 @@
+.Paint_palette {
+    display: flex;
+    flex-direction: row;
+    margin: 4px;
+}

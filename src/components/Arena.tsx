@@ -7,13 +7,15 @@ import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
 import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/tickerSlice'
-import { tick as combatantTick, reset as resetBoard, select, Combatants, killSelected, spawnAtSelected } from '../data/boardSlice'
+import { tick as combatantTick, reset as resetBoard, select, Combatants, killSelected, spawnAtSelected, paintTile } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
 import { setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
 import TeamStats from "./TeamStats";
+import PaintPalette from "./PaintPalette";
+import { Type } from "../models/TileModel";
 
 /**
  * ________________
@@ -118,8 +120,9 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     render() {
         const width = this.props.board.width;
+        const selected_paint = this.props.paintPalette.selected_paint;
         const selected_position = this.props.board.selected_position;
-        let tiles = [] as JSX.Element[];
+        const tiles = [] as JSX.Element[];
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = this.props.board.combatants[idx];
             const is_selected = selected_position === idx;
@@ -132,7 +135,11 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 showRealTileImages={this.props.board.show_real_tile_images}
                 className={classNames({"Clickable" : !!maybe_combatant})}
                 onClick={() => {
-                    this.props.clickOnTile(select_args);
+                    if (selected_paint !== Type.Void) {
+                        this.props.paintOnTile({position: idx, type: selected_paint});
+                    } else {
+                        this.props.clickOnTile(select_args);
+                    }
                 }} 
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
@@ -162,6 +169,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     </div>
                     <TeamStats/>
                 </div>
+                <PaintPalette/>
             </div>
         );
     }
@@ -172,6 +180,7 @@ function mapStateToProps(state: AppState): AppState {
         ticker: state.ticker,
         board: state.board,
         hud: state.hud,
+        paintPalette: state.paintPalette,
     };
 }
 
@@ -183,6 +192,7 @@ interface DispatchProps {
     spawnAtSelected: () => void,
     pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
+    paintOnTile: (paint_args: {position: number, type: Type}) => void,
 }
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
@@ -203,6 +213,9 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         clickOnTile: (select_args) => {
             dispatch(select(select_args));
             dispatch(setIsHudActionable(true));
+        },
+        paintOnTile: (paint_args) => {
+            dispatch(paintTile(paint_args));
         }
     };
 }

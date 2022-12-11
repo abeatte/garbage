@@ -9,11 +9,11 @@ import { Type as TileType } from '../models/TileModel';
 import Combatant from './Combatant';
 import { 
     updateSelectedCombatant, 
-    updateSelectedTile, 
     killSelected,
     spawnAtSelected,
     select, 
-    MovementLogic
+    MovementLogic,
+    paintTile
 } from '../data/boardSlice'
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
@@ -161,7 +161,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     label: (<span className={'Label'}>{'Tile: '}</span>),
                                     display: (<span>{tile?.type ?? ""}</span>),
                                     update: input => {
-                                        dispatch(updateSelectedTile({field: 'type', value: input.target.value as TileType}));
+                                        dispatch(paintTile({position: selected_position, type: input.target.value as TileType}))
                                     },
                                 }
                             )}

@@ -6,6 +6,11 @@
     align-items: center;
 }
 
+.Paint_palette .Tile {
+    width: 50px;
+    height: 50px;
+}
+
 .Tile .Tile_potential {
     font-size: 10px;
 }
@@ -38,4 +43,9 @@
     border: 1px solid red;
     width: 23px;
     height: 23px;
+}
+
+.Paint_palette .Tile.Selected {
+    width: 46px;
+    height: 46px;
 }

@@ -2,7 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux'
 import { select, setShowSettings } from '../data/boardSlice';
 import { HudDisplayMode, setIsHudActionable, setScreenSize } from '../data/hudSlice';
+import { setSelectedPaint } from '../data/paintPaletteSlice';
 import { AppDispatch, AppState } from '../data/store';
+import { Type } from '../models/TileModel';
 import Arena from './Arena';
 import Hud from './Hud';
 
@@ -20,6 +22,8 @@ class Game extends React.Component<AppState & DispatchProps> {
             // close settings panel first, if it is open. 
             if (this.props.board.show_settings) {
                 this.props.setNotShowSettings();
+            } else if (this.props.paintPalette.selected_paint !== Type.Void) {
+                this.props.setNoPaintSelected();
             } else {
                 this.props.select();
                 this.props.setHudIsNotActionable();
@@ -73,6 +77,7 @@ function mapStateToProps(state: AppState): AppState {
         ticker: state.ticker,
         board: state.board,
         hud: state.hud, 
+        paintPalette: state.paintPalette,
     };
 }
 
@@ -80,6 +85,7 @@ interface DispatchProps {
     select: () => void,
     setHudIsNotActionable: () => void,
     setNotShowSettings: () => void,
+    setNoPaintSelected: () => void,
     setScreenSize: (dimens: {width: number, height: number}) => void,
 }
 
@@ -88,6 +94,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         select: () => dispatch(select({})),
         setHudIsNotActionable: () => dispatch(setIsHudActionable(false)),
         setNotShowSettings: () => dispatch(setShowSettings(false)),
+        setNoPaintSelected: () => dispatch(setSelectedPaint(Type.Void)),
         setScreenSize: (dimens: {width: number, height: number}) => 
             dispatch(setScreenSize({width: dimens.width, height: dimens.height}))
     }
