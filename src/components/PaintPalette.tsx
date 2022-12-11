@@ -1,4 +1,4 @@
-import { faCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { faCrosshairs, faPaintRoller } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
@@ -46,6 +46,15 @@ const PaintPalette = () => {
 
     return (
         <div className="Paint_palette">
+            <div style={{display: 'flex', marginRight: '8px'}}>
+                <FontAwesomeIcon 
+                    id="paint_roller"
+                    icon={faPaintRoller} 
+                    color='dark' 
+                    size='lg' 
+                    style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
+                />
+            </div>
             {tiles}
         </div>
     );

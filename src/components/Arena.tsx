@@ -140,7 +140,12 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     } else {
                         this.props.clickOnTile(select_args);
                     }
-                }} 
+                }}
+                onDragEnter={() => {
+                    if (selected_paint !== Type.Void) {
+                        this.props.paintOnTile({position: idx, type: selected_paint});
+                    }
+                }}
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
                 >
