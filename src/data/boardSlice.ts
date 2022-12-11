@@ -59,6 +59,10 @@ function initCombatants(
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
     for (let i = 0; i < num_combatants; i++) {
         const c_pos: number = initCombatantStartingPos({tiles, combatants});
+        if (c_pos < 0) {
+            continue;
+        }
+
         combatants[c_pos] = createCombatant({spawn_position: c_pos, use_genders, global_combatant_stats});
 
         const c_fit = combatants[c_pos].fitness;
@@ -72,9 +76,10 @@ function initCombatants(
         }
     }
 
-    global_combatant_stats.num_combatants = num_combatants;
-    global_combatant_stats.average_position = global_combatant_stats.average_position / num_combatants;
-    global_combatant_stats.average_fitness = global_combatant_stats.average_fitness / num_combatants;
+    const real_num_combatants =  Object.keys(combatants).length;
+    global_combatant_stats.num_combatants = real_num_combatants;
+    global_combatant_stats.average_position = global_combatant_stats.average_position / real_num_combatants;
+    global_combatant_stats.average_fitness = global_combatant_stats.average_fitness / real_num_combatants;
     global_combatant_stats.weak_bar = (global_combatant_stats.average_fitness + global_combatant_stats.min_fitness)/2;;
     global_combatant_stats.average_bar = (global_combatant_stats.average_fitness + global_combatant_stats.max_fitness)/2;
 
