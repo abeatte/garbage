@@ -341,6 +341,17 @@ export const boardSlice = createSlice({
     },
     setInitialNumCombatants: (state, action: {payload: number}) => {
         state.initial_num_combatants = action.payload;
+
+        const {combatants, global_combatant_stats} = initCombatants({
+            tiles: state.tiles, 
+            num_combatants: state.initial_num_combatants, 
+            use_genders: state.use_genders
+        });
+        state.selected_position = undefined;
+        state.follow_selected_combatant = false;
+        state.game_count += 1;
+        state.combatants = combatants;
+        state.global_combatant_stats = global_combatant_stats;
     },
     setShowSettings: (state, action: {payload: boolean}) => {
         state.show_settings = action.payload;
