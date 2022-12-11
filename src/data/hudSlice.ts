@@ -6,8 +6,10 @@ const EXPANDED_MODE_HUD_WIDTH = 445;
 export enum HudDisplayMode {GONE, SIDE_PANEL, FULL_SCREEN}
 
 function getHudDisplayMode(screenWidth: number | undefined, isHudActionable: boolean) {
-  if (screenWidth !== undefined && screenWidth <= EXPANDED_MODE_ARENA_WIDTH + EXPANDED_MODE_HUD_WIDTH) {
-    return isHudActionable ? HudDisplayMode.FULL_SCREEN : HudDisplayMode.GONE;
+  if (!isHudActionable) {
+    return HudDisplayMode.GONE;
+  } else if (screenWidth !== undefined && screenWidth <= EXPANDED_MODE_ARENA_WIDTH + EXPANDED_MODE_HUD_WIDTH) {
+    return HudDisplayMode.FULL_SCREEN;
   } else {
     return HudDisplayMode.SIDE_PANEL;
   }
