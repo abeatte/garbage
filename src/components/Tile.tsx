@@ -22,7 +22,7 @@ const TileImages: {[key in TileType]: any} = {
 };
 
 const getImage = (tileType: TileType) => {
-  const tileImage = TileImages[tileType]
+  const tileImage = TileImages[tileType];
   return tileImage;
 }
 
@@ -48,7 +48,12 @@ const Tile = (
         >
           {
             image && showRealTileImages &&
-            <img style={{position: "absolute"}} className={classNames('Tile', {"Selected": isSelected})} src={image}/>
+            <img 
+              style={{position: "absolute"}} 
+              className={classNames('Tile', {"Selected": isSelected})} 
+              src={image}
+              alt={tile.type}
+            />
           }
           {
             showPotential && tile && !children &&
