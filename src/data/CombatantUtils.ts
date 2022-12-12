@@ -305,9 +305,9 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                     item.captured = [];
                     while (captives.length > 0) {
                         const captive = captives.pop();
-                        const surrounding = valid_surroundings.pop() as Surroundings;
-                        const occupant = surrounding.occupant;
-                        if (captive === undefined) {
+                        const surrounding = valid_surroundings.pop();
+                        const occupant = surrounding?.occupant;
+                        if (captive === undefined || surrounding === undefined) {
                             return;
                         }
 
@@ -323,17 +323,20 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                                 .visited_positions[surrounding.position] = surrounding.position;
                             deaths++;
                         }
-                        // remove item from board
-                        working_items[item.position] = undefined;
                     }
+                    // remove item from board
+                    working_items[item.position] = undefined;
                 } else if (item.captured.length < capacity) {
                     // can only store as many tiles as it can disgorge into
-                    const c_to_capture = working_combatants[item.position];
-                    if (c_to_capture) {
-                        item.captured.push(c_to_capture);
-                        working_combatants[c_to_capture.position] = undefined;
-                        c_to_capture.position = -1;
-                    }
+                    posData.surroundings.forEach(surrounding => {
+                        const c_to_capture = surrounding?.occupant;
+                        if (c_to_capture) {
+                            item.captured.push(c_to_capture);
+                            working_combatants[c_to_capture.position] = undefined;
+                            c_to_capture.position = -1;
+                        }
+                    });
+
                     item.captured.forEach(c => {
                         c.tick += 1;
                     });

@@ -75,7 +75,6 @@ const PaintPalette = () => {
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {
-                    console.log('clicked', item.type);
                     dispatch(setSelectedPaint(item.type));
                     dispatch(select({}));
                     dispatch(setIsHudActionable(false));
