@@ -24,6 +24,7 @@ import Tile from './Tile';
 import { Character, DecisionType, Gender, getRandomCombatantName } from '../models/CombatantModel';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
+import Item from './Item';
 
 
 function getEditableField(
@@ -96,6 +97,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
 
     const selected_position = board.selected_position ?? -1;
     const combatant = selected_position > -1 ? board.combatants[selected_position] : undefined;
+    const item = selected_position > -1 ? board.items[selected_position] : undefined;
     const tile = selected_position > -1 ? board.tiles[selected_position]: undefined;
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
@@ -147,7 +149,10 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             <div style={{width: "180px"}}>
                 <div className='Badge'>
                     <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
-                        {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
+                        <>
+                            {item ? (<Item item={item} detail={true}/>) : undefined}
+                            {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
+                        </>
                     </Tile>
                     {
                         !!tile &&

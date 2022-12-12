@@ -21,7 +21,7 @@ const getEndIcon = (type: ItemType) => {
     }
 }
 
-const Item = ({item}: {item: ItemModel}) => {
+const Item = ({item, detail}: {item: ItemModel, detail?: boolean}) => {
 
     return (
         <span style={{position: "absolute"}}>
@@ -29,7 +29,7 @@ const Item = ({item}: {item: ItemModel}) => {
                 className="Clickable" 
                 icon={item.fuse_length - item.tick > 0 ? getIcon(item.type) : getEndIcon(item.type)}
                 color='dark' 
-                size='lg' 
+                size={detail ? '10x' : 'lg'} 
                 style={{alignSelf: 'center', margin: '4px 0px 4px 0px'}}
                 
             />
