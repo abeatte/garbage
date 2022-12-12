@@ -6,6 +6,7 @@ const Turtle = require('../images/combatants/turtle.png');
 const Elephant = require('../images/combatants/lil_eli.png');
 const Lizard = require('../images/combatants/lizard.png');
 const DogAndCat = require('../images/combatants/dog_and_cat.png');
+const Unicorn = require('../images/combatants/unicorn.png');
 
 interface CharacterType {
     team: Character,
@@ -124,6 +125,23 @@ const Characters: {[key in Character]: CharacterType} = {
             placement: "-336px -334px",
             height: "35px",
             width: "35px",
+            margin: "0px",
+        }
+    },
+    Unicorn: {
+        team: Character.Unicorn,
+        color: "purple",
+        sheet: Unicorn,
+        height: "50px",
+        width: "50px",
+        margin: "-5px -15px -5px -15px",
+        placement: "-4px -48px",
+        transformScale: 0.4,
+        detail: {
+            transformScale: 3,
+            placement: "-4px -48px",
+            height: "50px",
+            width: "50px",
             margin: "0px",
         }
     }
