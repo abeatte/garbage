@@ -22,7 +22,7 @@ class Game extends React.Component<AppState & DispatchProps> {
             // close settings panel first, if it is open. 
             if (this.props.board.show_settings) {
                 this.props.setNotShowSettings();
-            } else if (this.props.paintPalette.selected_paint !== Type.Void) {
+            } else if (this.props.paintPalette.selected !== Type.Void) {
                 this.props.setNoPaintSelected();
             } else {
                 this.props.select();

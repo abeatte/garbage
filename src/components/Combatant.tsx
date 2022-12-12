@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 import React from 'react';
 import '../css/Combatant.css';
 import { Character } from '../models/CombatantModel';

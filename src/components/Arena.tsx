@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 import React from "react";
 import '../css/Arena.css';
 import classNames from 'classnames';
@@ -15,7 +11,9 @@ import { setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
 import TeamStats from "./TeamStats";
 import PaintPalette from "./PaintPalette";
-import { Type } from "../models/TileModel";
+import { Type as TileType } from "../models/TileModel";
+import { Type as ItemType } from "../models/ItemModel";
+import Item from "./Item";
 
 /**
  * ________________
@@ -123,11 +121,12 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     render() {
         const width = this.props.board.width;
-        const selected_paint = this.props.paintPalette.selected_paint;
+        const selected_paint = this.props.paintPalette.selected;
         const selected_position = this.props.board.selected_position;
         const tiles = [] as JSX.Element[];
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = this.props.board.combatants[idx];
+            const maybe_item = this.props.board.items[idx];
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
             tiles.push(
@@ -136,28 +135,35 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 tile={tile} 
                 showPotential={this.props.board.show_tile_potentials}
                 showRealTileImages={this.props.board.show_real_tile_images}
-                className={classNames({"Clickable" : !!maybe_combatant})}
+                className={classNames({"Clickable" : maybe_combatant || maybe_item})}
                 onClick={() => {
-                    if (selected_paint !== Type.Void) {
+                    if (selected_paint !== TileType.Void) {
                         this.props.paintOnTile({position: idx, type: selected_paint});
                     } else {
                         this.props.clickOnTile(select_args);
                     }
                 }}
                 onDragEnter={() => {
-                    if (selected_paint !== Type.Void) {
+                    if (selected_paint !== TileType.Void) {
                         this.props.paintOnTile({position: idx, type: selected_paint});
                     }
                 }}
                 isSelected={is_selected}
-                key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}`}
+                key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_item?.id ?? 0}`}
                 >
-                    {maybe_combatant && (
-                        <Combatant 
-                            draggable={selected_paint !== Type.Void} 
-                            team={maybe_combatant.team}
-                        />
-                    )}
+                    <>
+                        {maybe_combatant && (
+                            <Combatant 
+                                draggable={selected_paint !== TileType.Void} 
+                                team={maybe_combatant.team}
+                            />
+                        )}
+                        {maybe_item && (
+                            <Item
+                                item={maybe_item}
+                            />
+                        )}
+                    </>
                 </Tile>
             );
         });
@@ -205,7 +211,7 @@ interface DispatchProps {
     spawnAtSelected: () => void,
     pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
-    paintOnTile: (paint_args: {position: number, type: Type}) => void,
+    paintOnTile: (paint_args: {position: number, type: TileType | ItemType}) => void,
 }
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {

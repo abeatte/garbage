@@ -7,9 +7,9 @@ import {
     MIN_HEALTH,
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
+import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
 import CombatantModel, { createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
-import { ItemModel } from '../models/ItemModel';
 import { updateItemsAfterResize } from './ItemUtils';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
@@ -271,10 +271,15 @@ export const boardSlice = createSlice({
             }
         }
     },
-    paintTile: (state, action: {payload: {position: number, type: TileType}}) => {
-        state.tiles[action.payload.position] = 
-            createTileModel({index: action.payload.position, type: action.payload.type});
-        updateMapTileScorePotentials(state.tiles, state.width);
+    paintTile: (state, action: {payload: {position: number, type: TileType | ItemType}}) => {
+        if (Object.keys(TileType).includes(action.payload.type)) {
+            state.tiles[action.payload.position] = 
+                createTileModel({index: action.payload.position, type: action.payload.type as TileType});
+            updateMapTileScorePotentials(state.tiles, state.width);
+        } else if (Object.keys(ItemType).includes(action.payload.type)) {
+            state.items[action.payload.position] = 
+                createItemModel({position: action.payload.position, type: action.payload.type as ItemType});
+        }
     },
     killSelected: (state) => {
         if (state.selected_position !== undefined) {
