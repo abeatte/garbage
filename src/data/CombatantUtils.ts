@@ -288,15 +288,56 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                 }
             break;
             case ItemType.PokemonBall:
-                const c_to_capture = working_combatants[item.position];
-                if (c_to_capture) {
-                    item.captured.push(c_to_capture);
-                    working_combatants[c_to_capture.position] = undefined;
-                    c_to_capture.position = -1;
+                const posData = getSurroundingPos(
+                    {
+                        position: item.position,
+                        window_width, 
+                        tiles, 
+                        combatants: working_combatants,
+                    }
+                );
+                const valid_surroundings = posData.surroundings.filter(sur => sur !== undefined);
+                const capacity = valid_surroundings.length;
+
+                if (item.fuse_length > 0 && item.tick === item.fuse_length) {
+                    // time to blow
+                    const captives = item.captured;
+                    item.captured = [];
+                    while (captives.length > 0) {
+                        const captive = captives.pop();
+                        const surrounding = valid_surroundings.pop() as Surroundings;
+                        const occupant = surrounding.occupant;
+                        if (captive === undefined) {
+                            return;
+                        }
+
+                        if (occupant === undefined) {
+                            working_combatants[surrounding.position] = captive
+                            captive.position = surrounding.position;
+                            captive.visited_positions[surrounding.position] = surrounding.position;
+                        } else {
+                            working_combatants[surrounding.position] = compete(occupant, captive);
+                            (working_combatants[surrounding.position] as CombatantModel)
+                                .position = surrounding.position;
+                            (working_combatants[surrounding.position] as CombatantModel)
+                                .visited_positions[surrounding.position] = surrounding.position;
+                            deaths++;
+                        }
+                        // remove item from board
+                        working_items[item.position] = undefined;
+                    }
+                } else if (item.captured.length < capacity) {
+                    // can only store as many tiles as it can disgorge into
+                    const c_to_capture = working_combatants[item.position];
+                    if (c_to_capture) {
+                        item.captured.push(c_to_capture);
+                        working_combatants[c_to_capture.position] = undefined;
+                        c_to_capture.position = -1;
+                    }
+                    item.captured.forEach(c => {
+                        c.tick += 1;
+                    });
                 }
-                item.captured.forEach(c => {
-                    c.tick += 1;
-                });
             break;
         }
 

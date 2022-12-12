@@ -16,7 +16,7 @@ function getFuseLength(type: Type): number {
         case Type.Bomb:
             return 3;
         case Type.PokemonBall:
-            return 0;
+            return 25;
     }
 }
 

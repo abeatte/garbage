@@ -17,7 +17,7 @@ const getEndIcon = (type: ItemType) => {
         case ItemType.Bomb:
             return faExplosion;
         case ItemType.PokemonBall:
-            return faBasketball;
+            return faExplosion;
     }
 }
 
