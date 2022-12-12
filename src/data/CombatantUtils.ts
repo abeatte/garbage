@@ -342,6 +342,13 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                     });
                 }
             break;
+            case ItemType.MedPack:
+                const occupant = working_combatants[position];
+                if (occupant) {
+                    occupant.fitness += -MIN_HEALTH;
+                    working_items[item.position] = undefined;
+                }
+            break;
         }
 
         item.tick +=1;
