@@ -2,17 +2,20 @@ import { createSlice } from '@reduxjs/toolkit'
 import { 
     initCombatantStartingPos, 
     updateCombatantsPositionsAfterResize, 
-    calcMovements,
-    updateCombatants,
+    calculateCombatantMovements,
+    updateEntities,
     MIN_HEALTH,
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import CombatantModel, { createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
+import { ItemModel } from '../models/ItemModel';
+import { updateItemsAfterResize } from './ItemUtils';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
 export type Combatants = {[position: number]: CombatantModel};
+export type Items = {[position: number]: ItemModel};
 
 export const DEFAULTS = {
     window_width: 13,
@@ -34,6 +37,7 @@ interface BoardState {
     show_real_tile_images: boolean,
     show_tile_potentials: boolean,
     combatants: Combatants,
+    items: Items,
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
     movement_logic: MovementLogic,
@@ -116,9 +120,16 @@ function handleResize(
             old_window_height, 
             tiles: state.tiles,
     }); 
+    const items = updateItemsAfterResize(
+        {items: state.items, 
+            window_width: state.width, 
+            window_height: state.height, 
+            old_window_width,
+    });
     const new_num_combatants = Object.values(combatants).length;
     const deaths = Object.values(state.combatants).length - new_num_combatants;
     state.combatants = combatants;
+    state.items = items;
     state.global_combatant_stats.num_combatants = new_num_combatants;
     state.global_combatant_stats.deaths += deaths;
 }
@@ -143,12 +154,13 @@ function initState(args?: {width: number, height: number, initial_num_combatants
         show_real_tile_images: true,
         show_tile_potentials: DEFAULTS.show_tile_potentials,
         combatants,
+        items: {},
         selected_position: undefined,
         follow_selected_combatant: false,
         movement_logic: DEFAULTS.movement_logic,
         use_genders,
     };
-  }
+}
 
 export const boardSlice = createSlice({
   name: 'board',
@@ -196,6 +208,7 @@ export const boardSlice = createSlice({
 
         state.tiles = new_state.tiles;
         state.combatants = new_state.combatants;
+        state.items = {};
         state.selected_position = undefined;
         state.follow_selected_combatant = false;
         state.game_count += 1;
@@ -206,31 +219,32 @@ export const boardSlice = createSlice({
         if (state.follow_selected_combatant) {
             combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
         }
-        const result = calcMovements({
+        const movement_result = calculateCombatantMovements({
             movement_logic: state.movement_logic,
             use_genders: state.use_genders,
-            combatants: state.combatants, 
+            combatants: state.combatants,
             global_combatant_stats: state.global_combatant_stats,
             window_width: state.width, 
             tiles: state.tiles
         });
-        const new_combatants = result.combatants;
         const old_global_combatant_stats = state.global_combatant_stats;
-        old_global_combatant_stats.births += result.births;
-        old_global_combatant_stats.deaths += result.deaths;
+        old_global_combatant_stats.births += movement_result.births;
+        old_global_combatant_stats.deaths += movement_result.deaths;
         
-        const new_global_combatant_stats = updateCombatants({
-            combatants: new_combatants, 
+        const entity_result = updateEntities({
+            combatants: movement_result.combatants, 
+            items: state.items,
             global_combatant_stats: old_global_combatant_stats, 
             window_width: state.width, 
             tiles: state.tiles
         });
 
-        state.combatants = new_combatants;
-        state.global_combatant_stats = new_global_combatant_stats;
+        state.combatants = entity_result.combatants;
+        state.items = entity_result.items;
+        state.global_combatant_stats = entity_result.globalCombatantStats;
 
         if (!!combatant_id_to_follow) {
-            const followed = Object.values(new_combatants).find(c => c.id === combatant_id_to_follow);
+            const followed = Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
             if (!!followed && followed.fitness > MIN_HEALTH) {
                 state.selected_position = followed.position;
             }
@@ -245,7 +259,7 @@ export const boardSlice = createSlice({
         action: {payload: {field: any, value: string | boolean | number | undefined}}
     ) => {
         const selected = state.combatants[state.selected_position ?? -1];
-        if (!!selected) {
+        if (selected) {
             // @ts-ignore
             selected[action.payload.field] = action.payload.value;
             if (action.payload.field === "immortal") {
@@ -266,13 +280,15 @@ export const boardSlice = createSlice({
         if (state.selected_position !== undefined) {
             state.follow_selected_combatant = false;
             const selected = state.combatants[state.selected_position];
-            selected.immortal = false;
-            selected.strength = getStrengthRating({
-                global_combatant_stats: state.global_combatant_stats, 
-                fitness: selected.fitness, 
-                immortal: selected.immortal
-            })
-            selected.fitness = MIN_HEALTH
+            if (selected) {
+                selected.immortal = false;
+                selected.strength = getStrengthRating({
+                    global_combatant_stats: state.global_combatant_stats, 
+                    fitness: selected.fitness, 
+                    immortal: selected.immortal
+                })
+                selected.fitness = MIN_HEALTH
+            }
         }
     },
     spawnAtSelected: (state) => {
