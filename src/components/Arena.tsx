@@ -231,7 +231,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         spawnAtSelected: () => dispatch(spawnAtSelected()),
         clickOnTile: (select_args) => {
             dispatch(select(select_args));
-            dispatch(setIsHudActionable(true));
+            dispatch(setIsHudActionable(select_args !== undefined));
         },
         paintOnTile: (paint_args) => {
             dispatch(paintTile(paint_args));
