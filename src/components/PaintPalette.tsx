@@ -1,4 +1,4 @@
-import { faCrosshairs, faPaintRoller } from "@fortawesome/free-solid-svg-icons";
+import { faCrosshairs, faPaintRoller, faSkullCrossbones } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
@@ -10,6 +10,7 @@ import { setSelectedPaint } from "../data/paintPaletteSlice";
 import { AppState } from "../data/store";
 import { Character } from "../models/CombatantModel";
 import { createItemModel, Type as ItemType } from "../models/ItemModel";
+import { Pointer } from "../models/PointerModel";
 import { createTileModel, Type as TileType } from "../models/TileModel";
 import Combatant, { Purpose } from "./Combatant";
 import Item from "./Item";
@@ -26,11 +27,11 @@ const PaintPalette = () => {
             showRealTileImages={board.show_real_tile_images}
             className={classNames("Clickable")}
             onClick={() => {
-                dispatch(setSelectedPaint(TileType.Void));
+                dispatch(setSelectedPaint(Pointer.Target));
                 dispatch(select({}));
                 dispatch(setIsHudActionable(false));
             }} 
-            isSelected={paintPalette.selected === TileType.Void}
+            isSelected={paintPalette.selected === Pointer.Target}
             key={`paint_target`}
         >
             <FontAwesomeIcon 
@@ -42,6 +43,30 @@ const PaintPalette = () => {
             />
         </Tile>
     );
+
+    const kill = (
+        <Tile
+            tile={createTileModel({index: -1, type: TileType.Void})}
+            showRealTileImages={board.show_real_tile_images}
+            className={classNames("Clickable")}
+            onClick={() => {
+                dispatch(setSelectedPaint(Pointer.Kill));
+                dispatch(select({}));
+                dispatch(setIsHudActionable(false));
+            }} 
+            isSelected={paintPalette.selected === Pointer.Kill}
+            key={`paint_target`}
+        >
+            <FontAwesomeIcon 
+                className="Clickable" 
+                icon={faSkullCrossbones} 
+                color='red' 
+                size='lg' 
+                style={{alignSelf: 'center'}}
+            />
+        </Tile>
+    );
+
 
     const tiles = Object.keys(TileType).map((k, idx) => {
         const tile = createTileModel({index: -1, type: TileType[k as keyof typeof TileType]});
@@ -130,7 +155,7 @@ const PaintPalette = () => {
                     {tiles}
                 </div>
                 <div className="Items_row">
-                    {characters}
+                    {[kill, ...characters]}
                 </div>
                 <div className="Items_row">
                     {items}

@@ -245,6 +245,19 @@ export function calculateCombatantMovements(
     return {combatants: ret_combatants, births, deaths};
 }
 
+/**
+ * Handles the removing of Combatants from the Combatants object without creating undefined spaces. 
+ * @returns a copy of the Combatants without the killed positions (and no undefined spaces)
+ */
+export function killAndCopy({positions, combatants}: {positions: number[], combatants: Combatants}): Combatants {
+    return Object.values(combatants).reduce((ret_combatants, combatant, _idx, _working_combatants) => {
+        if (!positions.includes(combatant.position)) {
+            ret_combatants[combatant.position] = combatant;
+        }
+        return ret_combatants;
+    }, {} as Combatants);
+}
+
 export function updateEntities({combatants, items, global_combatant_stats, window_width, tiles}: 
     {combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
 : {combatants: Combatants, items: Items, globalCombatantStats: GlobalCombatantStatsModel} {

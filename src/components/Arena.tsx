@@ -14,6 +14,7 @@ import PaintPalette from "./PaintPalette";
 import { Type as TileType } from "../models/TileModel";
 import Item from "./Item";
 import { PaintEntity } from "../data/paintPaletteSlice";
+import { Pointer } from "../models/PointerModel";
 
 /**
  * ________________
@@ -137,14 +138,14 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 showRealTileImages={this.props.board.show_real_tile_images}
                 className={classNames({"Clickable" : maybe_combatant || maybe_item})}
                 onClick={() => {
-                    if (selected_paint !== TileType.Void) {
+                    if (selected_paint !== Pointer.Target) {
                         this.props.paintOnTile({position: idx, type: selected_paint});
                     } else {
                         this.props.clickOnTile(select_args);
                     }
                 }}
                 onDragEnter={() => {
-                    if (selected_paint !== TileType.Void) {
+                    if (Object.keys(TileType).includes(selected_paint)) {
                         this.props.paintOnTile({position: idx, type: selected_paint});
                     }
                 }}
@@ -154,7 +155,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     <>
                         {maybe_combatant && (
                             <Combatant 
-                                draggable={selected_paint !== TileType.Void} 
+                                draggable={Object.keys(TileType).includes(selected_paint)} 
                                 team={maybe_combatant.team}
                             />
                         )}

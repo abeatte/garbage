@@ -5,6 +5,7 @@ import {
     calculateCombatantMovements,
     updateEntities,
     MIN_HEALTH,
+    killAndCopy,
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
@@ -12,6 +13,7 @@ import CombatantModel, { Character, createCombatant, Gender, getRandomGender } f
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from './ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
+import { Pointer } from '../models/PointerModel';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
@@ -273,6 +275,7 @@ export const boardSlice = createSlice({
         }
     },
     paintTile: (state, action: {payload: {position: number, type: PaintEntity}}) => {
+        const current_occupant = state.combatants[action.payload.position]
         if (Object.keys(TileType).includes(action.payload.type)) {
             state.tiles[action.payload.position] = 
                 createTileModel({index: action.payload.position, type: action.payload.type as TileType});
@@ -287,7 +290,16 @@ export const boardSlice = createSlice({
                     team: action.payload.type as Character,
                     use_genders: state.use_genders, 
                     global_combatant_stats: state.global_combatant_stats
-                });
+                });            
+            if (!current_occupant) {
+                state.global_combatant_stats.num_combatants += 1;
+            }
+        } else if (Object.keys(Pointer).includes(action.payload.type)) {
+            if (current_occupant) {
+                state.combatants = killAndCopy({positions: [action.payload.position], combatants: state.combatants});
+                state.global_combatant_stats.num_combatants -= 1;
+                state.global_combatant_stats.deaths += 1;
+            }
         }
     },
     killSelected: (state) => {
