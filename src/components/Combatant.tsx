@@ -23,6 +23,12 @@ interface CharacterType {
         height: string,
         width: string,
         margin: string,
+    },
+    paint: {
+        transformScale: number,
+        height: string,
+        width: string,
+        margin: string,
     }
 }
 const Characters: {[key in Character]: CharacterType} = {
@@ -32,7 +38,7 @@ const Characters: {[key in Character]: CharacterType} = {
         sheet: Bunny,
         height: "25px",
         width: "25px",
-        margin: "2px 0px 0px 1px",
+        margin: "0px -5px -5px 0px",
         placement: "-70px -10px",
         transformScale: 0.9,
         detail: {
@@ -41,6 +47,12 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "25px",
             width: "25px",
             margin: "0px",
+        },
+        paint: {
+            transformScale: 1.35,
+            width: '25px',
+            height: '25px',
+            margin: '0px -5px -5px 0px',
         }
     },
     Turtle: {
@@ -58,7 +70,13 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "30px",
             width: "24px",
             margin: "0px",
-        }
+        },
+        paint: {
+            transformScale: 1.05,
+            width: '50px',
+            height: '50px',
+            margin: '0px -15px 0px 0px',
+        },
     },
     Lizard: {
         team: Character.Lizard,
@@ -75,7 +93,13 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "20px",
             width: "20px",
             margin: "0px",
-        }
+        },
+        paint: {
+            transformScale: 1.65,
+            width: '20px',
+            height: '20px',
+            margin: '0px',
+        },
     },
     Elephant: {
         team: Character.Elephant,
@@ -92,6 +116,12 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "45px",
             width: "45px",
             margin: "0px",
+        },
+        paint: {
+            transformScale: 0.75,
+            width: '45px',
+            height: '45px',
+            margin: '0px -5px 0px 0px',
         }
     },
     Dog: {
@@ -109,7 +139,13 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "35px",
             width: "35px",
             margin: "0px",
-        }
+        },
+        paint: {
+            transformScale: 0.9,
+            width: '35px',
+            height: '35px',
+            margin: '0px -4px -4px -0px',
+        },
     },
     Cat: {
         team: Character.Dog,
@@ -126,6 +162,12 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "35px",
             width: "35px",
             margin: "0px",
+        },
+        paint: {
+            transformScale: 0.9,
+            width: '35px',
+            height: '35px',
+            margin: '0px -3px 0px -3px',
         }
     },
     Unicorn: {
@@ -143,7 +185,13 @@ const Characters: {[key in Character]: CharacterType} = {
             height: "50px",
             width: "50px",
             margin: "0px",
-        }
+        },
+        paint: {
+            transformScale: 0.6,
+            width: '50px',
+            height: '50px',
+            margin: '-5px -15px -5px -15px',
+        },
     }
 };
 
@@ -152,9 +200,12 @@ const getCharacter = (team: Character) => {
     return character;
 }
 
-const Combatant = (props: {team: Character, draggable?: boolean, detail?: boolean}) => {
+export enum Purpose { Tile, Detail, Paint };
+
+const Combatant = (props: {team: Character, purpose?: Purpose, draggable?: boolean}) => {
     const char = getCharacter(props.team);
-    const for_detail_view = props.detail;
+    const for_detail_view = props.purpose === Purpose.Detail;
+    const for_paint_view = props.purpose === Purpose.Paint;
     if (!char.sheet) {
         return (<span style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</span>);
     } else {
@@ -164,10 +215,10 @@ const Combatant = (props: {team: Character, draggable?: boolean, detail?: boolea
             style={
                 {
                     background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
-                    transform: `scale(${for_detail_view ? char.detail.transformScale : char.transformScale})`,
-                    width: for_detail_view ? char.detail.width : char.width,
-                    height: for_detail_view ? char.detail.height : char.height, 
-                    margin: for_detail_view ? char.detail.margin : char.margin,
+                    transform: `scale(${for_detail_view ? char.detail.transformScale : for_paint_view ? char.paint.transformScale : char.transformScale})`,
+                    width: for_detail_view ? char.detail.width : for_paint_view ? char.paint.width : char.width,
+                    height: for_detail_view ? char.detail.height : for_paint_view ? char.paint.height : char.height, 
+                    margin: for_detail_view ? char.detail.margin : for_paint_view ? char.paint.margin : char.margin,
                 }
             }
         ></div>);

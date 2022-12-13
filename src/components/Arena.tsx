@@ -12,8 +12,8 @@ import { AppDispatch, AppState } from "../data/store";
 import TeamStats from "./TeamStats";
 import PaintPalette from "./PaintPalette";
 import { Type as TileType } from "../models/TileModel";
-import { Type as ItemType } from "../models/ItemModel";
 import Item from "./Item";
+import { PaintEntity } from "../data/paintPaletteSlice";
 
 /**
  * ________________
@@ -211,7 +211,7 @@ interface DispatchProps {
     spawnAtSelected: () => void,
     pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
-    paintOnTile: (paint_args: {position: number, type: TileType | ItemType}) => void,
+    paintOnTile: (paint_args: {position: number, type: PaintEntity}) => void,
 }
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {

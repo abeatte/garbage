@@ -8,8 +8,10 @@ import { select } from "../data/boardSlice";
 import { setIsHudActionable } from "../data/hudSlice";
 import { setSelectedPaint } from "../data/paintPaletteSlice";
 import { AppState } from "../data/store";
+import { Character } from "../models/CombatantModel";
 import { createItemModel, Type as ItemType } from "../models/ItemModel";
 import { createTileModel, Type as TileType } from "../models/TileModel";
+import Combatant, { Purpose } from "./Combatant";
 import Item from "./Item";
 import Tile from "./Tile";
 
@@ -66,6 +68,7 @@ const PaintPalette = () => {
     })
 
     const background_tile = createTileModel({index: -1, type: TileType.Sand});
+    
     const items = Object.keys(ItemType).map((k, idx) => {
         const item = createItemModel({position: -1, type: ItemType[k as keyof typeof ItemType]});
         return (
@@ -87,6 +90,27 @@ const PaintPalette = () => {
         )
     })
 
+    const characters = Object.keys(Character).map((k, idx) => {
+        const character = Character[k as keyof typeof Character];
+        return (
+            <Tile 
+                id={idx}
+                tile={background_tile}
+                showRealTileImages={board.show_real_tile_images}
+                className={classNames("Clickable")}
+                onClick={() => {
+                    dispatch(setSelectedPaint(character));
+                    dispatch(select({}));
+                    dispatch(setIsHudActionable(false));
+                }} 
+                isSelected={paintPalette.selected === character}
+                key={`paint_item_${idx}`}
+            >
+                <Combatant team={character} purpose={Purpose.Paint}/>
+            </Tile>
+        )
+    })
+
     return (
         <div className="Paint_palette">
             <div style={{display: 'flex', marginRight: '8px'}}>
@@ -104,6 +128,9 @@ const PaintPalette = () => {
                 </div>
                 <div className="Items_row">
                     {tiles}
+                </div>
+                <div className="Items_row">
+                    {characters}
                 </div>
                 <div className="Items_row">
                     {items}

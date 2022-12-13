@@ -8,9 +8,10 @@ import {
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
-import CombatantModel, { createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
+import CombatantModel, { Character, createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from './ItemUtils';
+import { PaintEntity } from './paintPaletteSlice';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
@@ -271,7 +272,7 @@ export const boardSlice = createSlice({
             }
         }
     },
-    paintTile: (state, action: {payload: {position: number, type: TileType | ItemType}}) => {
+    paintTile: (state, action: {payload: {position: number, type: PaintEntity}}) => {
         if (Object.keys(TileType).includes(action.payload.type)) {
             state.tiles[action.payload.position] = 
                 createTileModel({index: action.payload.position, type: action.payload.type as TileType});
@@ -279,6 +280,14 @@ export const boardSlice = createSlice({
         } else if (Object.keys(ItemType).includes(action.payload.type)) {
             state.items[action.payload.position] = 
                 createItemModel({position: action.payload.position, type: action.payload.type as ItemType});
+        } else if (Object.keys(Character).includes(action.payload.type)) {
+            state.combatants[action.payload.position] = 
+                createCombatant({
+                    spawn_position: action.payload.position, 
+                    team: action.payload.type as Character,
+                    use_genders: state.use_genders, 
+                    global_combatant_stats: state.global_combatant_stats
+                });
         }
     },
     killSelected: (state) => {

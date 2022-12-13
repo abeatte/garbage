@@ -6,7 +6,7 @@
 import '../css/Hud.css';
 import { useSelector, useDispatch } from 'react-redux'
 import { Type as TileType } from '../models/TileModel';
-import Combatant from './Combatant';
+import Combatant, { Purpose } from './Combatant';
 import { 
     updateSelectedCombatant, 
     killSelected,
@@ -151,7 +151,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
                         <>
                             {item ? (<Item item={item} detail={true}/>) : undefined}
-                            {combatant ? (<Combatant detail={true} team={combatant.team}/>) : undefined}
+                            {combatant ? (<Combatant purpose={Purpose.Detail} team={combatant.team}/>) : undefined}
                         </>
                     </Tile>
                     {

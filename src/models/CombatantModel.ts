@@ -56,7 +56,7 @@ export function getRandomCombatantName(): string {
     return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
 }
 
-export function createCombatant(args: {spawn_position: number, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+export function createCombatant(args: {spawn_position: number, team?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
     const visited_positions = {} as {[position: number]: number};
     visited_positions[args.spawn_position] = args.spawn_position;
     return {   
@@ -68,7 +68,7 @@ export function createCombatant(args: {spawn_position: number, use_genders: bool
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
         decision_type: DecisionType.Neutral,
         immortal: false,
-        team: getRandomTeam(),
+        team: args.team ?? getRandomTeam(),
         gender: !!args.use_genders ? getRandomGender() : Gender.Unknown,
         tick: 0,
         position: args.spawn_position,
