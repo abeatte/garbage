@@ -154,8 +154,12 @@ const PaintPalette = () => {
                 <div className="Items_row">
                     {tiles}
                 </div>
+                {/* TODO: fix this with styling, not a slice */}
                 <div className="Items_row">
-                    {[kill, ...characters]}
+                    {[kill, ...characters.slice(0, 4)]}
+                </div>
+                <div className="Items_row">
+                    {characters.slice(4)}
                 </div>
                 <div className="Items_row">
                     {items}
