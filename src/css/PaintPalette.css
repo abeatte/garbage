@@ -12,4 +12,5 @@
 .Paint_palette .Items_container .Items_row {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
