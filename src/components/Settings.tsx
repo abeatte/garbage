@@ -141,7 +141,7 @@ const Settings = ({onReset}: {onReset: () => void}) => {
         >
             {show_settings_button}
             <div style={{flexDirection: 'column'}} className="Speed_buttons_container">
-                <span  className="Label" style={{alignSelf: 'center'}}>{`Speed`}</span>
+                <span  className="Label" style={{display: 'flex', alignSelf: 'center'}}>{`Speed`}</span>
                 <div className="Slider_container">
                     <input 
                         style={{backgroundSize: `${speed_setting/MAX_TICK_SPEED*100}% 100%`}}
