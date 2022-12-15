@@ -21,8 +21,8 @@ export type Combatants = {[position: number]: CombatantModel};
 export type Items = {[position: number]: ItemModel};
 
 export const DEFAULTS = {
-    window_width: 13,
-    window_height: 15,
+    window_width: 26,
+    window_height: 30,
     num_combatants: 25,
     movement_logic: MovementLogic.DecisionTree,
     use_genders: false,
