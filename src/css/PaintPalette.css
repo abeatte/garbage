@@ -1,7 +1,6 @@
 .Paint_palette {    
     display: flex;
     flex-direction: row;
-    margin: 4px;
     padding: 4px 4px 0px 4px;
     position: fixed;
     bottom: 0;
@@ -10,9 +9,15 @@
     border-top: 2px solid black;
 }
 
+.Paint_palette .Exit_button_container {
+    margin-left: -4px;
+    margin-top: 6px;
+}
+
 .Paint_palette .Items_container {
     display: flex;
     flex-direction: column;
+    margin: 4px;
 }
 
 .Paint_palette .Items_container .Items_row {
