@@ -115,7 +115,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     const edited_fitness = editing['fitness'];
 
     const escape_button = (
-        <div className='Escape_container'>
+        <div className='Exit_button_container'>
             <button 
                 className={classNames("Clickable", "Exit")} 
                 onClick={() => {

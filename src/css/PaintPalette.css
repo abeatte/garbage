@@ -1,7 +1,13 @@
-.Paint_palette {
+.Paint_palette {    
     display: flex;
     flex-direction: row;
     margin: 4px;
+    padding: 4px;
+    position: fixed;
+    bottom: 0;
+    background: tan;
+    border-right: 2px solid black;
+    border-top: 2px solid black;
 }
 
 .Paint_palette .Items_container {

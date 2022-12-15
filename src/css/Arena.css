@@ -1,6 +1,7 @@
 .Arena_container {
-    flex-grow: 1;
     overflow: scroll;
+    display: flex;
+    flex-direction: column;
 }
 
 .Arena_container .Arena_inner_container {
@@ -11,7 +12,4 @@
 
 .Arena {
     display: grid;
-    background-color: black;
-    padding: 5px;
-    align-self: center;
 }

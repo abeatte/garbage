@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import '../css/PaintPalette.css';
 import { select } from "../data/boardSlice";
 import { setIsHudActionable } from "../data/hudSlice";
-import { setSelectedPaint } from "../data/paintPaletteSlice";
+import { setSelectedPaint, togglePalettsDisplayed } from "../data/paintPaletteSlice";
 import { AppState } from "../data/store";
 import { Character } from "../models/CombatantModel";
 import { createItemModel, Type as ItemType } from "../models/ItemModel";
@@ -138,29 +138,48 @@ const PaintPalette = () => {
 
     return (
         <div className="Paint_palette">
-            <div style={{display: 'flex', marginRight: '8px'}}>
+            <div style={{display: 'flex', marginRight: '8px', marginTop: '8px'}}>
                 <FontAwesomeIcon 
                     id="paint_roller"
+                    onClick={() => dispatch(togglePalettsDisplayed())}
                     icon={faPaintRoller} 
                     color='dark' 
                     size='lg' 
                     style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
                 />
             </div>
-            <div className="Items_container">
-                <div className="Items_row">
-                    {target}
-                </div>
-                <div className="Items_row">
-                    {tiles}
-                </div>
-                <div className="Items_row">
-                    {[kill, ...characters]}
-                </div>
-                <div className="Items_row">
-                    {items}
-                </div>
-            </div>
+            {
+                paintPalette.palette_displayed && (
+                    <div className='Exit_button_container'>
+                        <button 
+                            className={classNames("Clickable", "Exit")} 
+                            onClick={() => {
+                                dispatch(togglePalettsDisplayed());
+                            }}
+                        >
+                        <span>{"X"}</span>
+                        </button>
+                    </div>
+                )
+            }
+            {
+                paintPalette.palette_displayed && (
+                    <div className="Items_container">
+                        <div className="Items_row">
+                            {target}
+                        </div>
+                        <div className="Items_row">
+                            {tiles}
+                        </div>
+                        <div className="Items_row">
+                            {[kill, ...characters]}
+                        </div>
+                        <div className="Items_row">
+                            {items}
+                        </div>
+                    </div>
+                )
+            }
         </div>
     );
 };
