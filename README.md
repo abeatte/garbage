@@ -7,6 +7,24 @@ To publish this to gh pages use `npm run deploy` (but you still should `git push
 
 ![Alt text](repo_resources/ScreenShot.png?raw=true "Screen Shot")
 
+# New Feature List
+1. Hide Eng aspects in a debug pannel and keep the happy-path app more basic/easy/fun
+    a. move Stats into its own flyout (top right) (and handle clicking it on mobile device)
+    b. Change speed slider to a simple Play/Pause
+    c. Make dropdown Settings into a debug/eng drawer that is visible yet hidden. 
+    e. Add flyout for hotkeys (probabky in debug drawer)
+3. Introduce Speciation
+    a. Change 'Team' to 'Species'
+    b. Introduce variable speed for species
+    c. Make decision on how to handle variable speed and [potential] variable thinking speed
+3. More Complex Map interactions
+    a. Lazer
+    b. Earchquake
+    c. Lava Ants
+    d. Ghosts
+    e. etc.
+4. Create Splash screen (or other affordance) to handle choosing between playing game and training Neural Network. 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
