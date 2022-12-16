@@ -61,7 +61,7 @@ const Tile = (
           }
           {
             showPotential && tile && !children &&
-            <span style={{position: "absolute", color: "red"}} className='Tile_potential'>
+            <span style={{position: "absolute", color: !showRealTileImages ? "black" : "red"}} className='Tile_potential'>
               {tile.score_potential}
             </span>
           }

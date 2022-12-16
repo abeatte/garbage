@@ -130,6 +130,24 @@ class Arena extends React.Component<AppState & DispatchProps> {
             const maybe_item = this.props.board.items[idx];
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
+
+            const children = []
+            if (maybe_combatant) {
+                children.push(
+                    (<Combatant 
+                        draggable={Object.keys(TileType).includes(selected_paint)} 
+                        team={maybe_combatant.team}
+                    />)
+                );
+            }
+            if (maybe_item) {
+                children.push(
+                    (<Item
+                        item={maybe_item}
+                    />)
+                );
+            }
+
             tiles.push(
                 <Tile 
                 id={idx}
@@ -152,19 +170,12 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 isSelected={is_selected}
                 key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_item?.id ?? 0}`}
                 >
-                    <>
-                        {maybe_combatant && (
-                            <Combatant 
-                                draggable={Object.keys(TileType).includes(selected_paint)} 
-                                team={maybe_combatant.team}
-                            />
-                        )}
-                        {maybe_item && (
-                            <Item
-                                item={maybe_item}
-                            />
-                        )}
-                    </>
+                   {
+                    children.length > 0 ? (
+                        <>
+                            {children}
+                        </>) : undefined
+                   }
                 </Tile>
             );
         });
