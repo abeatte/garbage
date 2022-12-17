@@ -134,6 +134,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
             if (maybe_combatant) {
                 children.push(
                     (<Combatant 
+                        key={'combatant'}
                         draggable={Object.keys(TileType).includes(selected_paint)} 
                         team={maybe_combatant.team}
                     />)
@@ -142,6 +143,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
             if (maybe_item) {
                 children.push(
                     (<Item
+                        key={'item'}
                         item={maybe_item}
                     />)
                 );
