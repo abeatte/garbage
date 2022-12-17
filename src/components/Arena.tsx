@@ -7,14 +7,13 @@ import { tick as combatantTick, reset as resetBoard, select, Combatants, killSel
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
-import { setIsHudActionable } from "../data/hudSlice";
 import { AppDispatch, AppState } from "../data/store";
-import TeamStats from "./TeamStats";
 import PaintPalette from "./PaintPalette";
 import { Type as TileType } from "../models/TileModel";
 import Item from "./Item";
 import { PaintEntity } from "../data/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
+import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 
 /**
  * ________________
@@ -198,7 +197,6 @@ class Arena extends React.Component<AppState & DispatchProps> {
                             {tiles}
                         </div>
                     </div>
-                    <TeamStats/>
                 </div>
                 <PaintPalette/>
             </div>
@@ -231,7 +229,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         reset: () => {
             dispatch(resetBoard());
             dispatch(resetTicker());
-            dispatch(setIsHudActionable(false))
+            dispatch(setActiveHudPanel(HudPanel.NONE))
         },
         performTick: () => {
             dispatch(tick());
@@ -243,7 +241,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         spawnAtSelected: () => dispatch(spawnAtSelected()),
         clickOnTile: (select_args) => {
             dispatch(select(select_args));
-            dispatch(setIsHudActionable(select_args !== undefined));
+            dispatch(setActiveHudPanel(select_args ? HudPanel.DETAILS : HudPanel.NONE));
         },
         paintOnTile: (paint_args) => {
             dispatch(paintTile(paint_args));

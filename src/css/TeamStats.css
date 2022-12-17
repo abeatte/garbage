@@ -1,3 +1,32 @@
+.Team_stats {
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+    top: 66px;
+    position: absolute;
+    z-index: 999; 
+    top: 66px; 
+    border-bottom: 4px solid black;
+    background-color: peru;
+}
+
+.Team_stats_fullscreen {
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+    width: 100vw;
+}
+
+.Team_stat_group_panel_container {
+    margin: -8px;
+}
+
+.Team_stats_button_container {
+    margin-right: 8px;
+    display: flex;
+    align-self: center;
+}
+
 .Stat_group {
     display: flex;
     margin: 8px;

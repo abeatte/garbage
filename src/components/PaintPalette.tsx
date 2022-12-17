@@ -5,7 +5,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import '../css/PaintPalette.css';
 import { select } from "../data/boardSlice";
-import { setIsHudActionable } from "../data/hudSlice";
+import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { setSelectedPaint, togglePalettsDisplayed } from "../data/paintPaletteSlice";
 import { AppState } from "../data/store";
 import { Character } from "../models/CombatantModel";
@@ -19,7 +19,7 @@ import Tile from "./Tile";
 const PaintPalette = () => {
     const board = useSelector((state: AppState) => state.board);
     const paintPalette = useSelector((state: AppState) => state.paintPalette);
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
     const target = (
         <Tile
@@ -29,7 +29,7 @@ const PaintPalette = () => {
             onClick={() => {
                 dispatch(setSelectedPaint(Pointer.Target));
                 dispatch(select({}));
-                dispatch(setIsHudActionable(false));
+                dispatch(setActiveHudPanel(HudPanel.NONE));
             }} 
             isSelected={paintPalette.selected === Pointer.Target}
             key={`paint_target`}
@@ -52,7 +52,7 @@ const PaintPalette = () => {
             onClick={() => {
                 dispatch(setSelectedPaint(Pointer.Kill));
                 dispatch(select({}));
-                dispatch(setIsHudActionable(false));
+                dispatch(setActiveHudPanel(HudPanel.NONE));
             }} 
             isSelected={paintPalette.selected === Pointer.Kill}
             key={`paint_target`}
@@ -84,7 +84,7 @@ const PaintPalette = () => {
                 onClick={() => {
                     dispatch(setSelectedPaint(tile.type));
                     dispatch(select({}));
-                    dispatch(setIsHudActionable(false));
+                    dispatch(setActiveHudPanel(HudPanel.NONE));
                 }} 
                 isSelected={paintPalette.selected === tile.type}
                 key={`paint_tile_${idx}`}
@@ -105,7 +105,7 @@ const PaintPalette = () => {
                 onClick={() => {
                     dispatch(setSelectedPaint(item.type));
                     dispatch(select({}));
-                    dispatch(setIsHudActionable(false));
+                    dispatch(setActiveHudPanel(HudPanel.NONE));
                 }} 
                 isSelected={paintPalette.selected === item.type}
                 key={`paint_item_${idx}`}
@@ -126,7 +126,7 @@ const PaintPalette = () => {
                 onClick={() => {
                     dispatch(setSelectedPaint(character));
                     dispatch(select({}));
-                    dispatch(setIsHudActionable(false));
+                    dispatch(setActiveHudPanel(HudPanel.NONE));
                 }} 
                 isSelected={paintPalette.selected === character}
                 key={`paint_item_${idx}`}
@@ -137,7 +137,12 @@ const PaintPalette = () => {
     })
 
     return (
-        <div className="Paint_palette">
+        <div className={classNames({
+            "Paint_palette": true,
+            "Flyout_panel": true,
+            "Left": true,
+            "Bottom": true,
+        })}>
             <div style={{display: 'flex', marginRight: '8px', marginTop: '8px'}}>
                 <FontAwesomeIcon 
                     id="paint_roller"

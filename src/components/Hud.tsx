@@ -4,6 +4,7 @@
 
  import React, { ReactElement, useEffect, useState } from 'react';
 import '../css/Hud.css';
+import '../css/Panel.css'
 import { useSelector, useDispatch } from 'react-redux'
 import { Type as TileType } from '../models/TileModel';
 import Combatant, { Purpose } from './Combatant';
@@ -18,7 +19,7 @@ import {
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/CombatantUtils';
-import { HudDisplayMode, setIsHudActionable } from '../data/hudSlice';
+import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
 import { Character, DecisionType, Gender, getRandomCombatantName } from '../models/CombatantModel';
@@ -119,7 +120,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             <button 
                 className={classNames("Clickable", "Exit")} 
                 onClick={() => {
-                    dispatch(setIsHudActionable(false));
+                    dispatch(setActiveHudPanel(HudPanel.NONE));
                 }}
             >
             <span>{"X"}</span>
@@ -145,7 +146,13 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     );
 
     return (
-        <div className={classNames({'Hud': true, 'Hud_panel': !isFullScreen, 'Hud_fullscreen': isFullScreen})}>
+        <div className={classNames({
+            'Hud': true, 
+            'Flyout_panel': !isFullScreen, 
+            'Right': !isFullScreen, 
+            'Bottom': !isFullScreen, 
+            'Hud_fullscreen': isFullScreen
+        })}>
             <div style={{width: "180px"}}>
                 <div className='Badge'>
                     <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>

@@ -1,21 +1,5 @@
-.Hud {
-    display: flex;
-    flex-shrink: 1;
-    flex-grow: 0;
-    background-color: tan;
-}
-
-.Hud.Hud_panel {
-    bottom: 0px;
-    right: 0px;
-    position: fixed;
-    padding: 8px 8px 8px 8px;
-    align-self: baseline;
-    border-left: 2px solid black;
-    border-top: 2px solid black;
-}
-
 .Hud.Hud_fullscreen {
+    display: flex;
     margin: 4px;
 }
 

@@ -1,14 +1,16 @@
 import classNames from "classnames";
 import '../css/TeamStats.css'
+import '../css/Panel.css'
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { select } from "../data/boardSlice";
-import { setIsHudActionable } from "../data/hudSlice";
+import { HudDisplayMode, HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { AppState } from "../data/store";
 import CombatantModel, { Character } from "../models/CombatantModel";
 
 const TeamStats = () => {
     const board = useSelector((state: AppState) => state.board);
+    const hud = useSelector((state: AppState) => state.hud);
     const dispatch = useDispatch()
 
     const selected_position = board.selected_position;
@@ -47,7 +49,7 @@ const TeamStats = () => {
                         className={selected_position === c.position ? "Selected" : ""} 
                         onClick={() => {                            
                             dispatch(select({position: c.position, follow_combatant: true}));
-                            dispatch(setIsHudActionable(true));
+                            dispatch(setActiveHudPanel(HudPanel.DETAILS));
 
                         }}
                     >
@@ -78,9 +80,36 @@ const TeamStats = () => {
         );
     }).sort((a, b) => (a.key as string).localeCompare(b.key as string));
 
+    const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
+
+    const escape_button = (
+        <div style={{marginTop: '7px'}}>
+            <button 
+                className={classNames("Clickable", "Exit")} 
+                onClick={() => {
+                    dispatch(setActiveHudPanel(HudPanel.NONE));
+                }}
+            >
+            <span>{"X"}</span>
+            </button>
+        </div>
+    );
+
     return (
-        <div className={'Stat_group'}>
-            <div>{counts}</div>
+        <div className={classNames({
+            'Team_stats_fullscreen': isFullScreen,
+            'Team_stats': !isFullScreen,
+            'Flyout_panel': !isFullScreen, 
+            'Right': !isFullScreen,
+        })}>
+            {isFullScreen && escape_button}
+            <div className={classNames({
+                'Team_stat_group_panel_container': !isFullScreen
+            })}>
+                <div className={'Stat_group'}>
+                    <div>{counts}</div>
+                </div>
+            </div>
         </div>
     );
 };

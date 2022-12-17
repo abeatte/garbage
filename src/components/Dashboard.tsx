@@ -2,12 +2,17 @@ import React from "react";
 import '../css/Dashboard.css'
 import classNames from "classnames";
 import Settings from "./Settings";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../data/store";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
+import { faChartBar } from "@fortawesome/free-solid-svg-icons";
 
 const Dashboard = ({onReset}: {onReset: () => void}) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
+    const hud = useSelector((state: AppState) => state.hud);
+    const dispatch = useDispatch()
 
     const game_stats_section = (
         <div className="Stats_panel">
@@ -36,11 +41,29 @@ const Dashboard = ({onReset}: {onReset: () => void}) => {
         </div>
     );
 
+    const show_stats_button = (
+        <div className="Team_stats_button_container">
+            <button 
+                className={classNames('Clickable', 'Button', 'Restart')} 
+                onClick={() => dispatch(setActiveHudPanel(hud.activeHudPanel === HudPanel.STATS ? HudPanel.NONE : HudPanel.STATS))
+            }>
+                <FontAwesomeIcon 
+                    className="Clickable" 
+                    icon={faChartBar} 
+                    color='dark' 
+                    size='lg' 
+                    style={{alignSelf: 'center', margin: '10px 0px 4px 0px'}}
+                />
+            </button>
+        </div>
+    );
+
     return (
         <div className={'Dashboard'}>
             <div style={{display: "flex", flexDirection: "row", flexGrow: "1", position: "unset", backgroundColor: "peru"}}>
                 <Settings onReset={onReset}/>
                 {game_stats_section}
+                {show_stats_button}
             </div>
         </div>
     )

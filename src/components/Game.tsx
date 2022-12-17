@@ -1,12 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import { select, setShowSettings } from '../data/boardSlice';
-import { HudDisplayMode, setIsHudActionable, setScreenSize } from '../data/hudSlice';
+import { HudDisplayMode, HudPanel, setActiveHudPanel, setScreenSize } from '../data/hudSlice';
 import { setSelectedPaint } from '../data/paintPaletteSlice';
 import { AppDispatch, AppState } from '../data/store';
 import { Pointer } from '../models/PointerModel';
 import Arena from './Arena';
 import Hud from './Hud';
+import TeamStats from './TeamStats';
 
 class Game extends React.Component<AppState & DispatchProps> {
     
@@ -26,7 +27,7 @@ class Game extends React.Component<AppState & DispatchProps> {
                 this.props.setNoPaintSelected();
             } else {
                 this.props.select();
-                this.props.setHudIsNotActionable();
+                this.props.setNoActiveHudPanel();
                 this.props.setNotShowSettings();
             }
         }
@@ -47,11 +48,14 @@ class Game extends React.Component<AppState & DispatchProps> {
     } 
 
     render() {
+        const activeHudPanel = this.props.hud.activeHudPanel === HudPanel.DETAILS ? 
+            (<Hud/>) : (<TeamStats/>);
+            
         switch(this.props.hud.hudDisplayMode) {
             case HudDisplayMode.FULL_SCREEN:
                 return (
                     <>
-                        <Hud/>
+                        {activeHudPanel}
                     </>
                 );
             case HudDisplayMode.GONE:
@@ -65,7 +69,7 @@ class Game extends React.Component<AppState & DispatchProps> {
                 return (
                     <>
                         <Arena/>
-                        <Hud/>
+                        {activeHudPanel}
                     </>
                 );
         }
@@ -83,7 +87,7 @@ function mapStateToProps(state: AppState): AppState {
 
 interface DispatchProps {
     select: () => void,
-    setHudIsNotActionable: () => void,
+    setNoActiveHudPanel: () => void,
     setNotShowSettings: () => void,
     setNoPaintSelected: () => void,
     setScreenSize: (dimens: {width: number, height: number}) => void,
@@ -92,7 +96,7 @@ interface DispatchProps {
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
         select: () => dispatch(select({})),
-        setHudIsNotActionable: () => dispatch(setIsHudActionable(false)),
+        setNoActiveHudPanel: () => dispatch(setActiveHudPanel(HudPanel.NONE)),
         setNotShowSettings: () => dispatch(setShowSettings(false)),
         setNoPaintSelected: () => dispatch(setSelectedPaint(Pointer.Target)),
         setScreenSize: (dimens: {width: number, height: number}) => 

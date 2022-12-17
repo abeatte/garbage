@@ -9,7 +9,7 @@ To publish this to gh pages use `npm run deploy` (but you still should `git push
 
 # New Feature List
 1. [ ] Hide Eng aspects in a debug pannel and keep the happy-path app more basic/easy/fun
-    [ ] move Stats into its own flyout (top right) (and handle clicking it on mobile device)
+    [X] move Stats into its own flyout (top right) (and handle clicking it on mobile device)
     [ ] Change speed slider to a simple Play/Pause
     [ ] Make dropdown Settings into a debug/eng drawer that is visible yet hidden. 
     [ ] Add flyout for hotkeys (probabky in debug drawer)

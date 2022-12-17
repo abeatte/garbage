@@ -1,0 +1,28 @@
+.Flyout_panel {
+    display: flex;
+    position: fixed;
+    flex-shrink: 1;
+    flex-grow: 0;
+    background-color: tan;
+    padding: 8px 8px 8px 8px;
+}
+ 
+.Flyout_panel.Right {
+    right: 0px;
+    border-left: 2px solid black;
+}
+
+.Flyout_panel.Left {
+    left: 0px;
+    border-right: 2px solid black;
+}
+
+.Flyout_panel.Bottom {
+    bottom: 0px;
+    border-top: 2px solid black;
+}
+
+.Flyout_panel.Top {
+    top: 0px;
+    border-bottom: 2px solid black;
+}
