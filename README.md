@@ -12,7 +12,7 @@ To publish this to gh pages use `npm run deploy` (but you still should `git push
     [X] move Stats into its own flyout (top right) (and handle clicking it on mobile device)
     [X] Change speed slider to a simple Play/Pause
     [ ] Make dropdown Settings into a debug/eng drawer that is visible yet hidden. 
-    [ ] Add flyout for hotkeys (probabky in debug drawer)
+    [ ] Add flyout for hotkeys (probably in debug drawer)
 2. [ ] Introduce Speciation
     [ ] Change 'Team' to 'Species'
     [ ] Introduce variable speed for species
