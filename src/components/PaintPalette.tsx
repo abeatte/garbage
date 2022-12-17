@@ -18,6 +18,7 @@ import Tile from "./Tile";
 
 const PaintPalette = () => {
     const board = useSelector((state: AppState) => state.board);
+    const hud = useSelector((state: AppState) => state.hud);
     const paintPalette = useSelector((state: AppState) => state.paintPalette);
     const dispatch = useDispatch();
 
@@ -126,7 +127,9 @@ const PaintPalette = () => {
                 onClick={() => {
                     dispatch(setSelectedPaint(character));
                     dispatch(select({}));
-                    dispatch(setActiveHudPanel(HudPanel.NONE));
+                    if (hud.activeHudPanel === HudPanel.DETAILS) {
+                        dispatch(setActiveHudPanel(HudPanel.NONE));
+                    }
                 }} 
                 isSelected={paintPalette.selected === character}
                 key={`paint_item_${idx}`}
