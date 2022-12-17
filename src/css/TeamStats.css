@@ -2,10 +2,9 @@
     display: flex;
     flex-direction: column;
     z-index: 999;
-    top: 66px;
     position: absolute;
     z-index: 999; 
-    top: 66px; 
+    top: 57px; 
     border-bottom: 4px solid black;
     background-color: peru;
 }
