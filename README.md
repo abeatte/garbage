@@ -14,7 +14,7 @@ To publish this to gh pages use `npm run deploy` (but you still should `git push
     [ ] Make dropdown Settings into a debug/eng drawer that is visible yet hidden. 
     [ ] Add flyout for hotkeys (probably in debug drawer)
 2. [ ] Introduce Speciation
-    [ ] Change 'Team' to 'Species'
+    [X] Change 'Team' to 'Species'
     [ ] Introduce variable speed for species
     [ ] Make decision on how to handle variable speed and [potential] variable thinking speed
 3. [ ] More Complex Map interactions

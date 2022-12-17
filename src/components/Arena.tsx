@@ -3,7 +3,7 @@ import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
 import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/tickerSlice'
-import { tick as combatantTick, reset as resetBoard, select, Combatants, killSelected, spawnAtSelected, paintTile } from '../data/boardSlice'
+import { tick as combatantTick, reset as resetBoard, select, killSelected, spawnAtSelected, paintTile } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
@@ -14,48 +14,6 @@ import Item from "./Item";
 import { PaintEntity } from "../data/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
-
-/**
- * ________________
- * |  0|  1|  2|  3|
- * |  4|  5| X |  7|
- * |  8|  9| 10| 11|
- * -----------------
- */
-// eslint-disable-next-line
-const printCombatants = (args: {tick: number, combatants: Combatants, height: number, width: number}) => { 
-    const {tick, combatants, height, width} = args;
-    let print = `tick: ${tick} | combatants: ${Object.keys(combatants).length}\n`;
-
-    let bar = '-';
-    for (let i = 0; i < width; i++) {
-        bar += '----';
-    }
-    bar += '\n';
-
-    print += bar;
-    for (let i = 0; i < width * height; i++) {
-        if (i % width === 0) {
-            print += '|';
-        }
-        if (combatants[i]) {
-            print += ` ${combatants[i].team.charAt(0) } |`;
-        } else {
-            if (i < 10) {
-                print += '  ';
-            } else if (i < 100) {
-                print += ' ';
-            }
-            print += `${i}|`;
-        }
-        if (i % width === width - 1) {
-            print += '\n';
-        }
-    }
-    print += `${bar}\n`;
-
-    console.log(print);
-}
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -136,7 +94,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     (<Combatant 
                         key={'combatant'}
                         draggable={Object.keys(TileType).includes(selected_paint)} 
-                        team={maybe_combatant.team}
+                        species={maybe_combatant.species}
                     />)
                 );
             }
@@ -180,15 +138,6 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 </Tile>
             );
         });
-
-        // printCombatants(
-        //     {
-        //         tick: this.props.ticker.tick, 
-        //         combatants: this.props.board.combatants, 
-        //         height: this.props.board.height, 
-        //         width,
-        //     }
-        // );
 
         return (
             <div className={classNames("Arena_container")}>

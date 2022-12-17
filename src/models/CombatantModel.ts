@@ -38,7 +38,7 @@ export interface CombatantModel extends EntityModel {
     strength: Strength;
     decision_type: DecisionType;
     immortal: boolean;
-    team: Character;
+    species: Character;
     gender: Gender;
     spawn: CombatantModel | undefined;
     children: number,
@@ -56,7 +56,7 @@ export function getRandomCombatantName(): string {
     return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
 }
 
-export function createCombatant(args: {spawn_position: number, team?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+export function createCombatant(args: {spawn_position: number, species?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
     const visited_positions = {} as {[position: number]: number};
     visited_positions[args.spawn_position] = args.spawn_position;
     return {   
@@ -68,7 +68,7 @@ export function createCombatant(args: {spawn_position: number, team?: Character,
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
         decision_type: DecisionType.Neutral,
         immortal: false,
-        team: args.team ?? getRandomTeam(),
+        species: args.species ?? getRandomSpecies(),
         gender: !!args.use_genders ? getRandomGender() : Gender.Unknown,
         tick: 0,
         position: args.spawn_position,
@@ -191,8 +191,8 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
                 bucketed_empty_tiles[surrounding.tile.score_potential].push(surrounding.position);
             }
         } else if (
-            // same team
-            occupant.team === self.team && 
+            // same species
+            occupant.species === self.species && 
             // not already 'engaged'
             occupant.state !== State.Mating && 
             // not too young
@@ -205,7 +205,7 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
                 bucketed_mate_strengths[strength] = [];
             }
             bucketed_mate_strengths[strength].push(surrounding.position);
-        } else if (occupant.team === self.team) {
+        } else if (occupant.species === self.species) {
             const strength = occupant.strength;
             if (bucketed_ally_strengths[strength] === undefined) {
                 bucketed_ally_strengths[strength] = [];
@@ -213,7 +213,7 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
             bucketed_ally_strengths[strength].push(surrounding.position);
         } else if (
             // enemy
-            occupant.team !== self.team
+            occupant.species !== self.species
         ) {
             const strength = occupant.strength;
             if (bucketed_enemy_strengths[strength] === undefined) {
@@ -333,7 +333,7 @@ export function getNewPositionFromClockFace(current_position: number, clockFace:
     return new_position;
 };
 
-export function getRandomTeam(): Character  {
+export function getRandomSpecies(): Character  {
     const set = Object.keys(Character);
     return set[Math.round(Math.random() * (set.length - 1))] as Character;
 }

@@ -134,7 +134,7 @@ const PaintPalette = () => {
                 isSelected={paintPalette.selected === character}
                 key={`paint_item_${idx}`}
             >
-                <Combatant team={character} purpose={Purpose.Paint}/>
+                <Combatant species={character} purpose={Purpose.Paint}/>
             </Tile>
         )
     })

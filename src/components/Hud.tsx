@@ -158,7 +158,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                     <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
                         <>
                             {item ? (<Item item={item} detail={true}/>) : undefined}
-                            {combatant ? (<Combatant purpose={Purpose.Detail} team={combatant.team}/>) : undefined}
+                            {combatant ? (<Combatant purpose={Purpose.Detail} species={combatant.species}/>) : undefined}
                         </>
                     </Tile>
                     {
@@ -275,12 +275,12 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                             )}
                             {getEditableField(
                                 {
-                                    editing_value: combatant?.team, 
+                                    editing_value: combatant?.species, 
                                     options: Object.values(Character).map(
                                         c => (<option key={`${c}`}>{c}</option>)),
-                                    label: (<span className={'Label'}>{'Team: '}</span>),
-                                    display: (<span>{combatant?.team ?? ""}</span>),
-                                    update: input => dispatch(updateSelectedCombatant({field: 'team', value: input.target.value})),
+                                    label: (<span className={'Label'}>{'Species: '}</span>),
+                                    display: (<span>{combatant?.species ?? ""}</span>),
+                                    update: input => dispatch(updateSelectedCombatant({field: 'species', value: input.target.value})),
                                 }
                             )}
                             <div className='Non_editable_row'>

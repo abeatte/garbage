@@ -9,7 +9,7 @@ const DogAndCat = require('../images/combatants/dog_and_cat.png');
 const Unicorn = require('../images/combatants/unicorn.png');
 
 interface CharacterType {
-    team: Character,
+    species: Character,
     color: string,
     sheet?: any, 
     height: string, 
@@ -33,7 +33,7 @@ interface CharacterType {
 }
 const Characters: {[key in Character]: CharacterType} = {
     Bunny: {
-        team: Character.Bunny,
+        species: Character.Bunny,
         color: "magenta",
         sheet: Bunny,
         height: "25px",
@@ -56,7 +56,7 @@ const Characters: {[key in Character]: CharacterType} = {
         }
     },
     Turtle: {
-        team: Character.Turtle,
+        species: Character.Turtle,
         color: "olive",
         sheet: Turtle,
         height: "50px",
@@ -79,7 +79,7 @@ const Characters: {[key in Character]: CharacterType} = {
         },
     },
     Lizard: {
-        team: Character.Lizard,
+        species: Character.Lizard,
         color: "lime",
         sheet: Lizard,
         height: "20px",
@@ -102,7 +102,7 @@ const Characters: {[key in Character]: CharacterType} = {
         },
     },
     Elephant: {
-        team: Character.Elephant,
+        species: Character.Elephant,
         color: "crimson",
         sheet: Elephant,
         height: "45px",
@@ -125,7 +125,7 @@ const Characters: {[key in Character]: CharacterType} = {
         }
     },
     Dog: {
-        team: Character.Dog,
+        species: Character.Dog,
         color: "brown",
         sheet: DogAndCat,
         height: "35px",
@@ -148,7 +148,7 @@ const Characters: {[key in Character]: CharacterType} = {
         },
     },
     Cat: {
-        team: Character.Dog,
+        species: Character.Dog,
         color: "brown",
         sheet: DogAndCat,
         height: "35px",
@@ -171,7 +171,7 @@ const Characters: {[key in Character]: CharacterType} = {
         }
     },
     Unicorn: {
-        team: Character.Unicorn,
+        species: Character.Unicorn,
         color: "purple",
         sheet: Unicorn,
         height: "50px",
@@ -195,15 +195,15 @@ const Characters: {[key in Character]: CharacterType} = {
     }
 };
 
-const getCharacter = (team: Character) => {
-    const character = Characters[team];
+const getCharacter = (species: Character) => {
+    const character = Characters[species];
     return character;
 }
 
 export enum Purpose { Tile, Detail, Paint };
 
-const Combatant = (props: {team: Character, purpose?: Purpose, draggable?: boolean}) => {
-    const char = getCharacter(props.team);
+const Combatant = (props: {species: Character, purpose?: Purpose, draggable?: boolean}) => {
+    const char = getCharacter(props.species);
     const for_detail_view = props.purpose === Purpose.Detail;
     const for_paint_view = props.purpose === Purpose.Paint;
     if (!char.sheet) {

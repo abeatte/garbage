@@ -7,7 +7,7 @@ import { AppDispatch, AppState } from '../data/store';
 import { Pointer } from '../models/PointerModel';
 import Arena from './Arena';
 import Hud from './Hud';
-import TeamStats from './TeamStats';
+import SpeciesStats from './SpeciesStats';
 
 class Game extends React.Component<AppState & DispatchProps> {
     
@@ -49,7 +49,7 @@ class Game extends React.Component<AppState & DispatchProps> {
 
     render() {
         const activeHudPanel = this.props.hud.activeHudPanel === HudPanel.DETAILS ? 
-            (<Hud/>) : (<TeamStats/>);
+            (<Hud/>) : (<SpeciesStats/>);
             
         switch(this.props.hud.hudDisplayMode) {
             case HudDisplayMode.FULL_SCREEN:

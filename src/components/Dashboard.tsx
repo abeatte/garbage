@@ -42,7 +42,7 @@ const Dashboard = ({onReset}: {onReset: () => void}) => {
     );
 
     const show_stats_button = (
-        <div className="Team_stats_button_container">
+        <div className="Species_stats_button_container">
             <button 
                 className={classNames('Clickable', 'Button', 'Restart')} 
                 onClick={() => dispatch(setActiveHudPanel(hud.activeHudPanel === HudPanel.STATS ? HudPanel.NONE : HudPanel.STATS))

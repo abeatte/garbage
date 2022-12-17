@@ -287,7 +287,7 @@ export const boardSlice = createSlice({
             state.combatants[action.payload.position] = 
                 createCombatant({
                     spawn_position: action.payload.position, 
-                    team: action.payload.type as Character,
+                    species: action.payload.type as Character,
                     use_genders: state.use_genders, 
                     global_combatant_stats: state.global_combatant_stats
                 });            

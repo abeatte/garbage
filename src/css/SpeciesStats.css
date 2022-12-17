@@ -1,4 +1,4 @@
-.Team_stats {
+.Species_stats {
     display: flex;
     flex-direction: column;
     z-index: 999;
@@ -9,18 +9,18 @@
     background-color: peru;
 }
 
-.Team_stats_fullscreen {
+.Species_stats_fullscreen {
     display: flex;
     flex-direction: column;
     overflow: scroll;
     width: 100vw;
 }
 
-.Team_stat_group_panel_container {
+.Species_stat_group_panel_container {
     margin: -8px;
 }
 
-.Team_stats_button_container {
+.Species_stats_button_container {
     margin-right: 8px;
     display: flex;
     align-self: center;
@@ -38,13 +38,13 @@
     white-space: nowrap;
 }
 
-.Team_group {
+.Species_group {
     display: flex;
     flex-direction: row;
     margin-top: 5px;
 }
 
-.Team .Selected {
+.Species .Selected {
     border: 1px solid red;
     width: 23px;
     height: 23px;

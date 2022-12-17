@@ -1,5 +1,5 @@
 import { Combatants, Items, MovementLogic } from "./boardSlice";
-import CombatantModel, { createCombatant, DecisionType, Gender, getRandomTeam, requestMove, State } from "../models/CombatantModel";
+import CombatantModel, { createCombatant, DecisionType, Gender, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel } from "../models/TileModel";
 import Brain from "../models/Brain";
@@ -169,7 +169,7 @@ export function calculateCombatantMovements(
             combatant.position = new_position;
             combatant.visited_positions[new_position] = new_position;
         } else if(
-            occupant.team === combatant.team &&
+            occupant.species === combatant.species &&
             // if a Fighter is here they're not here to mate!
             (movement_logic === MovementLogic.DecisionTree &&
             combatant.decision_type !== DecisionType.Fighter)
@@ -459,7 +459,7 @@ function birthSpawn({posData, spawn, parent, arena_size}:
             if (position > -1 && position < arena_size) {
                 empty_positions.push(position)
             }
-        } else if (c.team === parent.team) {
+        } else if (c.species === parent.species) {
             friendly_positions.push(c);
         } else {
             enemy_positions.push(c);
@@ -477,7 +477,7 @@ function birthSpawn({posData, spawn, parent, arena_size}:
             spawn.position = spawn_pos;
             spawn.visited_positions[spawn_pos] = spawn_pos;
             // too many of my kind here, let's diverge
-            spawn.team = friendly_positions.length < 4 ? parent.team : getRandomTeam();
+            spawn.species = friendly_positions.length < 4 ? parent.species : getRandomSpecies();
         }
     }
 }
