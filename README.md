@@ -18,9 +18,11 @@ To publish this to gh pages use `npm run deploy` (but you still should `git push
     [ ] Introduce variable speed for species
     [ ] Make decision on how to handle variable speed and [potential] variable thinking speed
 3. [ ] More Complex Map interactions
-    [ ] Lazer
-    [ ] Earchquake
     [ ] Lava Ants
+    [ ] Water Ants
+    [ ] Grass Fairies
+    [ ] Lazer
+    [ ] Earthquake
     [ ] Ghosts
     [ ] etc.
 4. [ ] Create Splash screen (or other affordance) to handle choosing between playing game and training Neural Network. 
