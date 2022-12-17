@@ -63,15 +63,15 @@
 }
 
 .Dashboard .Settings_panel > .Settings_panel {
-    padding: 0px 0px 8px 0px;
+    padding: 9px 0px 8px 0px;
 }
 
 .Dashboard .Settings_panel_expanded {
-    padding: 0px 8px 0px 0px;
+    padding: 8px 8px 0px 0px;
 }
 
 .Dashboard .Settings_panel_expanded > .Settings_panel {
-    padding: 8px 0px 8px 8px;
+    padding: 0px 0px 8px 8px;
 }
 
 .Dashboard .Stats_panel {
