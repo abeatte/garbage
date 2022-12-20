@@ -1,10 +1,10 @@
 import { Combatants, Items, MovementLogic } from "./boardSlice";
 import CombatantModel, { createCombatant, DecisionType, Gender, getNewPositionFromClockFace, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
-import { createTileModel, TileModel, updateMapTileScorePotentials } from "../models/TileModel";
+import { TileModel, updateMapTileScorePotentials } from "../models/TileModel";
 import Brain from "../models/Brain";
 import { ItemModel, Type as ItemType } from "../models/ItemModel";
-import { SpiderModel } from "../models/SpiderModel";
+import { paintTileForSpider, SpiderModel } from "../models/SpiderModel";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -373,8 +373,6 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                 }
             break;
             case ItemType.Spider:
-                tiles[item.position] = 
-                    createTileModel({index: item.position, type: (item as SpiderModel).tile_action});
                 const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
                 const new_position = getNewPositionFromClockFace(
                     item.position,
@@ -386,6 +384,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                 if (item.fuse_length > 0 && item.tick < item.fuse_length) {
                     working_items[new_position] = item;
                     item.position = new_position;
+                    paintTileForSpider(item as SpiderModel, tiles, false);
                 }
             break;
         }
