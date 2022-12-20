@@ -289,12 +289,20 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                         }
                     );
                     posData.surroundings.forEach(surrounding => {
-                        const c_to_die = surrounding?.occupant;
+                        if (surrounding === undefined) {
+                            return;
+                        }
+
+                        const c_to_die = surrounding.occupant;
                         if (c_to_die !== undefined) {
                             c_to_die.state = State.Dead;
                             working_combatants[c_to_die.position] = undefined;
                             deaths++;
                             item.kills +=1;
+                        }
+                        const item_to_die = working_items[surrounding.position];
+                        if (item_to_die !== undefined) {
+                            working_items[surrounding.position] = undefined;
                         }
                     });
                     // remove item from board
