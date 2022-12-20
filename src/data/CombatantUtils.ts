@@ -17,9 +17,10 @@ export enum ClockFace {
     l = 8, 
 };
 
-export const LegalMoves = [ClockFace.c, ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l]
-export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFace.bl]
-export const IllegalMoves = [...DiagonalMoves]
+export const DirectionalMoves = [ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l];
+export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFace.bl];
+export const LegalMoves = [ClockFace.c, ...DirectionalMoves];
+export const IllegalMoves = [...DiagonalMoves];
 
 export interface Surroundings {
     position: number,
@@ -374,8 +375,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
             case ItemType.Spider:
                 tiles[item.position] = 
                     createTileModel({index: item.position, type: (item as SpiderModel).tile_action});
-
-                const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
+                const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
                 const new_position = getNewPositionFromClockFace(
                     item.position,
                     clockFace,
