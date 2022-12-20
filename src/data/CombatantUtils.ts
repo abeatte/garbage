@@ -1,9 +1,10 @@
 import { Combatants, Items, MovementLogic } from "./boardSlice";
-import CombatantModel, { createCombatant, DecisionType, Gender, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
+import CombatantModel, { createCombatant, DecisionType, Gender, getNewPositionFromClockFace, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
-import { TileModel } from "../models/TileModel";
+import { createTileModel, TileModel, updateMapTileScorePotentials } from "../models/TileModel";
 import Brain from "../models/Brain";
 import { ItemModel, Type as ItemType } from "../models/ItemModel";
+import { SpiderModel } from "../models/SpiderModel";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -260,7 +261,7 @@ export function killAndCopy({positions, combatants}: {positions: number[], comba
 
 export function updateEntities({combatants, items, global_combatant_stats, window_width, tiles}: 
     {combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
-: {combatants: Combatants, items: Items, globalCombatantStats: GlobalCombatantStatsModel} {
+: {combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel} {
     const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
     const working_items = items as {[position: number]: ItemModel | undefined};
@@ -362,6 +363,23 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                     working_items[item.position] = undefined;
                 }
             break;
+            case ItemType.Spider:
+                tiles[item.position] = 
+                    createTileModel({index: item.position, type: (item as SpiderModel).tile_action});
+
+                const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
+                const new_position = getNewPositionFromClockFace(
+                    item.position,
+                    clockFace,
+                    window_width,
+                    tiles.length,
+                );
+                working_items[item.position] = undefined;
+                if (item.fuse_length > 0 && item.tick < item.fuse_length) {
+                    working_items[new_position] = item;
+                    item.position = new_position;
+                }
+            break;
         }
 
         item.tick +=1;
@@ -429,7 +447,8 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
         }
     })
 
-    return {combatants: ret_combatants, items: ret_items, globalCombatantStats: working_global_combatant_stats};
+    updateMapTileScorePotentials(tiles, window_width);
+    return {combatants: ret_combatants, items: ret_items, tiles: tiles, globalCombatantStats: working_global_combatant_stats};
 }
 
 /**

@@ -14,6 +14,7 @@ import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantSta
 import { updateItemsAfterResize } from './ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
+import { createSpiderModel, Type as SpiderType } from '../models/SpiderModel';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
@@ -244,6 +245,7 @@ export const boardSlice = createSlice({
 
         state.combatants = entity_result.combatants;
         state.items = entity_result.items;
+        state.tiles = entity_result.tiles;
         state.global_combatant_stats = entity_result.globalCombatantStats;
 
         if (!!combatant_id_to_follow) {
@@ -283,6 +285,9 @@ export const boardSlice = createSlice({
         } else if (Object.keys(ItemType).includes(action.payload.type)) {
             state.items[action.payload.position] = 
                 createItemModel({position: action.payload.position, type: action.payload.type as ItemType});
+        } else if (Object.keys(SpiderType).includes(action.payload.type)) {
+            state.items[action.payload.position] = 
+                createSpiderModel({position: action.payload.position, type: action.payload.type as SpiderType});
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] = 
                 createCombatant({

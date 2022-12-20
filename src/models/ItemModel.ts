@@ -2,7 +2,7 @@ import uuid from "react-uuid";
 import CombatantModel from "./CombatantModel";
 import { EntityModel } from "./EntityModel";
 
-export enum Type { Bomb = "Bomb", PokemonBall = "PokemonBall", MedPack = "MedPack" };
+export enum Type { Bomb = "Bomb", PokemonBall = "PokemonBall", MedPack = "MedPack", Spider = "Spider" };
 
 export interface ItemModel extends EntityModel {
     type: Type;
@@ -19,6 +19,8 @@ function getFuseLength(type: Type): number {
             return 25;
         case Type.MedPack:
             return -1;
+        case Type.Spider:
+            return 25;
     }
 }
 

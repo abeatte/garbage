@@ -11,6 +11,7 @@ import { AppState } from "../data/store";
 import { Character } from "../models/CombatantModel";
 import { createItemModel, Type as ItemType } from "../models/ItemModel";
 import { Pointer } from "../models/PointerModel";
+import { createSpiderModel, Type as SpiderType } from "../models/SpiderModel";
 import { createTileModel, Type as TileType } from "../models/TileModel";
 import Combatant, { Purpose } from "./Combatant";
 import Item from "./Item";
@@ -97,6 +98,11 @@ const PaintPalette = () => {
     
     const items = Object.keys(ItemType).map((k, idx) => {
         const item = createItemModel({position: -1, type: ItemType[k as keyof typeof ItemType]});
+
+        if (item.type === ItemType.Spider) {
+            return undefined;
+        }
+
         return (
             <Tile 
                 id={idx}
@@ -112,6 +118,28 @@ const PaintPalette = () => {
                 key={`paint_item_${idx}`}
             >
                 <Item item={item}/>
+            </Tile>
+        )
+    });
+
+    const spiders = Object.keys(SpiderType).map((k, idx) => {
+        const spider = createSpiderModel({position: -1, type: SpiderType[k as keyof typeof SpiderType]});
+        const tile = createTileModel({index: -1, type: spider.tile_action});
+        return (
+            <Tile 
+                id={idx}
+                tile={tile}
+                showRealTileImages={board.show_real_tile_images}
+                className={classNames("Clickable")}
+                onClick={() => {
+                    dispatch(setSelectedPaint(spider.spider_type));
+                    dispatch(select({}));
+                    dispatch(setActiveHudPanel(HudPanel.NONE));
+                }} 
+                isSelected={paintPalette.selected === spider.spider_type}
+                key={`paint_item_${idx}`}
+            >
+                <Item item={spider}/>
             </Tile>
         )
     })
@@ -137,7 +165,7 @@ const PaintPalette = () => {
                 <Combatant species={character} purpose={Purpose.Paint}/>
             </Tile>
         )
-    })
+    });
 
     return (
         <div className={classNames({
@@ -184,6 +212,9 @@ const PaintPalette = () => {
                         </div>
                         <div className="Items_row">
                             {items}
+                        </div>
+                        <div className="Items_row">
+                            {spiders}
                         </div>
                     </div>
                 )

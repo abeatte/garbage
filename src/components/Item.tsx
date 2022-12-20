@@ -1,4 +1,4 @@
-import { faBasketball, faBomb, faExplosion, faMedkit } from "@fortawesome/free-solid-svg-icons";
+import { faBasketball, faBomb, faExplosion, faMedkit, faSpider } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { ItemModel, Type as ItemType } from "../models/ItemModel";
@@ -11,6 +11,8 @@ const getIcon = (type: ItemType) => {
             return faBasketball;
         case ItemType.MedPack:
             return faMedkit;
+        case ItemType.Spider:
+            return faSpider;
     }
 }
 
@@ -22,6 +24,8 @@ const getEndIcon = (type: ItemType) => {
             return faExplosion;
         case ItemType.MedPack:
             return faMedkit;
+        case ItemType.Spider:
+            return faSpider;
     }
 }
 
