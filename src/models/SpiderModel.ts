@@ -2,7 +2,7 @@ import { createItemModel, ItemModel } from "./ItemModel";
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "./TileModel";
 import { Type as ItemType } from "./ItemModel";
 
-export enum Type { WaterSpider = "WaterSpider", FireSpider = "FireSpider", RockSpider = "RockSpider", SandSpider = "SandSpider" };
+export enum Type { WaterSpider = "WaterSpider", FireSpider = "FireSpider", RockSpider = "RockSpider", SandSpider = "SandSpider", GrassSpider = "GrassSpider" };
 
 export interface SpiderModel extends ItemModel {
     spider_type: Type;
@@ -19,6 +19,8 @@ function getTileType(type: Type): TileType {
             return TileType.Rock;
         case Type.SandSpider:
             return TileType.Sand;
+        case Type.GrassSpider:
+            return TileType.Grass;
     }
 }
 
