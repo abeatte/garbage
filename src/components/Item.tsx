@@ -32,12 +32,15 @@ const getEndIcon = (type: ItemType) => {
 const Item = ({item, detail}: {item: ItemModel, detail?: boolean}) => {
 
     return (
-        <span style={{position: "absolute"}}>
+        <span style={{
+            position: detail ? 'unset' : 'absolute',
+            margin: '0px 4px',
+        }}>
             <FontAwesomeIcon 
                 className="Clickable" 
                 icon={item.fuse_length - item.tick > 0 ? getIcon(item.type) : getEndIcon(item.type)}
                 color='dark' 
-                size={detail ? '10x' : 'lg'} 
+                size={detail ? '2x' : 'lg'} 
                 style={{alignSelf: 'center', margin: '4px 0px 4px 0px'}}
                 
             />

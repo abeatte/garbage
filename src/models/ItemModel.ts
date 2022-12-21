@@ -4,6 +4,8 @@ import { EntityModel } from "./EntityModel";
 
 export enum Type { Bomb = "Bomb", PokemonBall = "PokemonBall", MedPack = "MedPack", Spider = "Spider" };
 
+export const MAX_TILE_ITEM_COUNT = 4;
+
 export interface ItemModel extends EntityModel {
     type: Type;
     fuse_length: number;

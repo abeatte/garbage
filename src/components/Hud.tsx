@@ -27,7 +27,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
 
-
 function getEditableField(
     args: {
         editing_value: string | undefined, 
@@ -98,7 +97,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
 
     const selected_position = board.selected_position ?? -1;
     const combatant = selected_position > -1 ? board.combatants[selected_position] : undefined;
-    const item = selected_position > -1 ? board.items[selected_position] : undefined;
+    const items = selected_position > -1 ? board.items[selected_position] : undefined;
     const tile = selected_position > -1 ? board.tiles[selected_position]: undefined;
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
@@ -145,6 +144,11 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
         </div>
     );
 
+    const items_views: JSX.Element[] = [];
+    items?.forEach((item, idx) => {
+        items_views.push(<Item item={item} key={`item_${idx}`} detail={true}/>);
+    })
+
     return (
         <div className={classNames({
             'Hud': true, 
@@ -155,12 +159,26 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
         })}>
             <div style={{width: "180px"}}>
                 <div className='Badge'>
-                    <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
-                        <>
-                            {item ? (<Item item={item} detail={true}/>) : undefined}
-                            {combatant ? (<Combatant purpose={Purpose.Detail} species={combatant.species}/>) : undefined}
-                        </>
-                    </Tile>
+                    <div style={{display: 'flex'}}>
+                        <Tile tile={tile} showRealTileImages={board.show_real_tile_images}>
+                            <>
+                                <div>
+                                    {
+                                        combatant ? (
+                                            <Combatant purpose={Purpose.Detail} species={combatant.species}/>
+                                        ) : undefined
+                                    }
+                                    
+                                </div>
+                                
+                            </>
+                        </Tile>
+                        {items_views.length > 0 && (
+                                        <div className='Items_container'>
+                                            {items_views}
+                                        </div>
+                                )}
+                    </div>
                     {
                         !!tile &&
                         <div className='Below_image'>

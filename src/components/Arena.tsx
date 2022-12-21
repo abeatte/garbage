@@ -84,11 +84,11 @@ class Arena extends React.Component<AppState & DispatchProps> {
         const tiles = [] as JSX.Element[];
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = this.props.board.combatants[idx];
-            const maybe_item = this.props.board.items[idx];
+            const maybe_items = this.props.board.items[idx];
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
 
-            const children = []
+            const children: JSX.Element[] = [];
             if (maybe_combatant) {
                 children.push(
                     (<Combatant 
@@ -98,44 +98,47 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     />)
                 );
             }
-            if (maybe_item) {
+            maybe_items?.forEach((item, idx) => {
                 children.push(
                     (<Item
-                        key={'item'}
-                        item={maybe_item}
+                        key={`item_${idx}`}
+                        item={item}
                     />)
                 );
-            }
+            });
 
             tiles.push(
-                <Tile 
-                id={idx}
-                tile={tile} 
-                showPotential={this.props.board.show_tile_potentials}
-                showRealTileImages={this.props.board.show_real_tile_images}
-                className={classNames({"Clickable" : maybe_combatant || maybe_item})}
-                onClick={() => {
-                    if (selected_paint !== Pointer.Target) {
-                        this.props.paintOnTile({position: idx, type: selected_paint});
-                    } else {
-                        this.props.clickOnTile(select_args);
-                    }
-                }}
-                onDragEnter={() => {
-                    if (Object.keys(TileType).includes(selected_paint)) {
-                        this.props.paintOnTile({position: idx, type: selected_paint});
-                    }
-                }}
-                isSelected={is_selected}
-                key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_item?.id ?? 0}`}
-                >
-                   {
-                    children.length > 0 ? (
-                        <>
-                            {children}
-                        </>) : undefined
-                   }
-                </Tile>
+                <div style={{display: 'flex'}}>
+                    <Tile 
+                    id={idx}
+                    tile={tile} 
+                    showPotential={this.props.board.show_tile_potentials}
+                    showRealTileImages={this.props.board.show_real_tile_images}
+                    className={classNames({"Clickable" : maybe_combatant || (maybe_items?.length ?? 0) > 0})}
+                    onClick={() => {
+                        if (selected_paint !== Pointer.Target) {
+                            this.props.paintOnTile({position: idx, type: selected_paint});
+                        } else {
+                            this.props.clickOnTile(select_args);
+                        }
+                    }}
+                    onDragEnter={() => {
+                        if (Object.keys(TileType).includes(selected_paint)) {
+                            this.props.paintOnTile({position: idx, type: selected_paint});
+                        }
+                    }}
+                    isSelected={is_selected}
+                    key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
+                    >
+                        {
+                            children.length > 0 ? (
+                                <>
+                                    {children}
+                                </>) : undefined
+                        }
+
+                    </Tile>
+                </div>
             );
         });
 

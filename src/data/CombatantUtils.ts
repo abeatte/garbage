@@ -3,7 +3,7 @@ import CombatantModel, { createCombatant, DecisionType, Gender, getNewPositionFr
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel, updateMapTileScorePotentials } from "../models/TileModel";
 import Brain from "../models/Brain";
-import { ItemModel, Type as ItemType } from "../models/ItemModel";
+import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../models/ItemModel";
 import { paintTileForSpider, SpiderModel } from "../models/SpiderModel";
 
 export const MAX_YOUNGLING_TICK = 5;
@@ -265,22 +265,56 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
 : {combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel} {
     const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
-    const working_items = items as {[position: number]: ItemModel | undefined};
+    const working_items = items as {[position: number]: ItemModel[] | undefined};
     let deaths = 0;
 
     const item_keys = Object.keys(items);
     item_keys.forEach(key => {
         const position = key as unknown as number;
-        const item = working_items[position];
+        const items = working_items[position];
 
-        if (item === undefined) {
+        if (items === undefined || items.length < 1) {
             return;
         }
 
-        switch(item.type) {
-            case ItemType.Bomb:
-                if (item.fuse_length > 0 && item.tick === item.fuse_length) {
-                    // time to blow
+        items.forEach(item => {
+            if (item === undefined) {
+                return;
+            }
+
+            switch(item.type) {
+                case ItemType.Bomb:
+                    if (item.fuse_length > 0 && item.tick === item.fuse_length) {
+                        // time to blow
+                        const posData = getSurroundingPos(
+                            {
+                                position: item.position,
+                                window_width, 
+                                tiles, 
+                                combatants: working_combatants,
+                            }
+                        );
+                        posData.surroundings.forEach(surrounding => {
+                            if (surrounding === undefined) {
+                                return;
+                            }
+
+                            const c_to_die = surrounding.occupant;
+                            if (c_to_die !== undefined) {
+                                c_to_die.state = State.Dead;
+                                working_combatants[c_to_die.position] = undefined;
+                                deaths++;
+                                item.kills +=1;
+                            }
+                            const items_to_die = working_items[surrounding.position];
+                            if ((items_to_die?.length ?? 0) > 0) {
+                                working_items[surrounding.position] = undefined;
+                            }
+                        });
+                        removeItemFromBoard(item, working_items);
+                    }
+                break;
+                case ItemType.PokemonBall:
                     const posData = getSurroundingPos(
                         {
                             position: item.position,
@@ -289,107 +323,76 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                             combatants: working_combatants,
                         }
                     );
-                    posData.surroundings.forEach(surrounding => {
-                        if (surrounding === undefined) {
-                            return;
-                        }
+                    const valid_surroundings = posData.surroundings.filter(sur => sur !== undefined);
+                    const capacity = valid_surroundings.length;
 
-                        const c_to_die = surrounding.occupant;
-                        if (c_to_die !== undefined) {
-                            c_to_die.state = State.Dead;
-                            working_combatants[c_to_die.position] = undefined;
-                            deaths++;
-                            item.kills +=1;
+                    if (item.fuse_length > 0 && item.tick === item.fuse_length) {
+                        // time to blow
+                        const captives = item.captured;
+                        item.captured = [];
+                        while (captives.length > 0) {
+                            const captive = captives.pop();
+                            const surrounding = valid_surroundings.pop();
+                            const occupant = surrounding?.occupant;
+                            if (captive === undefined || surrounding === undefined) {
+                                return;
+                            }
+
+                            if (occupant === undefined) {
+                                working_combatants[surrounding.position] = captive
+                                captive.position = surrounding.position;
+                                captive.visited_positions[surrounding.position] = surrounding.position;
+                            } else {
+                                working_combatants[surrounding.position] = compete(occupant, captive);
+                                (working_combatants[surrounding.position] as CombatantModel)
+                                    .position = surrounding.position;
+                                (working_combatants[surrounding.position] as CombatantModel)
+                                    .visited_positions[surrounding.position] = surrounding.position;
+                                deaths++;
+                            }
                         }
-                        const item_to_die = working_items[surrounding.position];
-                        if (item_to_die !== undefined) {
-                            working_items[surrounding.position] = undefined;
-                        }
-                    });
-                    // remove item from board
-                    working_items[item.position] = undefined;
-                }
-            break;
-            case ItemType.PokemonBall:
-                const posData = getSurroundingPos(
-                    {
-                        position: item.position,
-                        window_width, 
-                        tiles, 
-                        combatants: working_combatants,
+                        removeItemFromBoard(item, working_items);
+                    } else if (item.captured.length < capacity) {
+                        // can only store as many tiles as it can disgorge into
+                        posData.surroundings.forEach(surrounding => {
+                            const c_to_capture = surrounding?.occupant;
+                            if (c_to_capture) {
+                                item.captured.push(c_to_capture);
+                                working_combatants[c_to_capture.position] = undefined;
+                                c_to_capture.position = -1;
+                            }
+                        });
+
+                        item.captured.forEach(c => {
+                            c.tick += 1;
+                        });
                     }
-                );
-                const valid_surroundings = posData.surroundings.filter(sur => sur !== undefined);
-                const capacity = valid_surroundings.length;
-
-                if (item.fuse_length > 0 && item.tick === item.fuse_length) {
-                    // time to blow
-                    const captives = item.captured;
-                    item.captured = [];
-                    while (captives.length > 0) {
-                        const captive = captives.pop();
-                        const surrounding = valid_surroundings.pop();
-                        const occupant = surrounding?.occupant;
-                        if (captive === undefined || surrounding === undefined) {
-                            return;
-                        }
-
-                        if (occupant === undefined) {
-                            working_combatants[surrounding.position] = captive
-                            captive.position = surrounding.position;
-                            captive.visited_positions[surrounding.position] = surrounding.position;
-                        } else {
-                            working_combatants[surrounding.position] = compete(occupant, captive);
-                            (working_combatants[surrounding.position] as CombatantModel)
-                                .position = surrounding.position;
-                            (working_combatants[surrounding.position] as CombatantModel)
-                                .visited_positions[surrounding.position] = surrounding.position;
-                            deaths++;
-                        }
+                break;
+                case ItemType.MedPack:
+                    const occupant = working_combatants[position];
+                    if (occupant) {
+                        occupant.fitness += -MIN_HEALTH;
+                        removeItemFromBoard(item, working_items);
                     }
-                    // remove item from board
-                    working_items[item.position] = undefined;
-                } else if (item.captured.length < capacity) {
-                    // can only store as many tiles as it can disgorge into
-                    posData.surroundings.forEach(surrounding => {
-                        const c_to_capture = surrounding?.occupant;
-                        if (c_to_capture) {
-                            item.captured.push(c_to_capture);
-                            working_combatants[c_to_capture.position] = undefined;
-                            c_to_capture.position = -1;
-                        }
-                    });
-
-                    item.captured.forEach(c => {
-                        c.tick += 1;
-                    });
-                }
-            break;
-            case ItemType.MedPack:
-                const occupant = working_combatants[position];
-                if (occupant) {
-                    occupant.fitness += -MIN_HEALTH;
-                    working_items[item.position] = undefined;
-                }
-            break;
-            case ItemType.Spider:
-                const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
-                const new_position = getNewPositionFromClockFace(
-                    item.position,
-                    clockFace,
-                    window_width,
-                    tiles.length,
-                );
-                working_items[item.position] = undefined;
-                if (item.fuse_length > 0 && item.tick < item.fuse_length) {
-                    working_items[new_position] = item;
-                    item.position = new_position;
-                    paintTileForSpider(item as SpiderModel, tiles, false);
-                }
-            break;
-        }
-
-        item.tick +=1;
+                break;
+                case ItemType.Spider:
+                    const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
+                    const new_position = getNewPositionFromClockFace(
+                        item.position,
+                        clockFace,
+                        window_width,
+                        tiles.length,
+                    );
+                    removeItemFromBoard(item, working_items);
+                    if (item.fuse_length > 0 && item.tick < item.fuse_length) {
+                        item.position = new_position;
+                        addItemToBoard(item, working_items);
+                        paintTileForSpider(item as SpiderModel, tiles, false); 
+                    }
+                break;
+            }
+            item.tick +=1;
+        });
     })
 
     const combatant_keys = Object.keys(working_combatants);
@@ -448,14 +451,38 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
     // This step is crucial as without copying the Redux store will 
     // duplicate the now undefined items 
     const ret_items = {} as Items;
-    Object.values(working_items).forEach(i => {
-        if (i !== undefined) {
-            ret_items[i.position] = i;
+    Object.values(working_items).forEach(is => {
+        if (is !== undefined && is.length > 0) {
+            const ret_is = [] as ItemModel[];
+            is.forEach(i => ret_is.push(i));
+            ret_items[ret_is[0].position] = ret_is;
         }
     })
 
     updateMapTileScorePotentials(tiles, window_width);
     return {combatants: ret_combatants, items: ret_items, tiles: tiles, globalCombatantStats: working_global_combatant_stats};
+}
+
+function removeItemFromBoard(item: ItemModel, working_items: {[position: number]: ItemModel[] | undefined}) {
+    const items = working_items[item.position];
+    if (items !== undefined && items.length > 1) {
+        const idx_to_remove = items.indexOf(item);
+        working_items[item.position]?.splice(idx_to_remove, 1);
+    } else {
+        working_items[item.position] = undefined;
+    }
+}
+
+export function addItemToBoard(item: ItemModel, working_items: {[position: number]: ItemModel[] | undefined}) {
+    if (working_items[item.position] === undefined) {
+        working_items[item.position] = [];
+    }
+
+    const items = working_items[item.position] as ItemModel[];
+    if (items.length === MAX_TILE_ITEM_COUNT) {
+        items.shift();
+    }
+    items.push(item);
 }
 
 /**

@@ -6,6 +6,7 @@ import {
     updateEntities,
     MIN_HEALTH,
     killAndCopy,
+    addItemToBoard, 
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
@@ -14,12 +15,12 @@ import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantSta
 import { updateItemsAfterResize } from './ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
-import { createSpiderModel, paintTileForSpider, SpiderModel, Type as SpiderType } from '../models/SpiderModel';
+import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../models/SpiderModel';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
 
 export type Combatants = {[position: number]: CombatantModel};
-export type Items = {[position: number]: ItemModel};
+export type Items = {[position: number]: ItemModel[]};
 
 export const DEFAULTS = {
     window_width: 26,
@@ -283,12 +284,14 @@ export const boardSlice = createSlice({
                 createTileModel({index: action.payload.position, type: action.payload.type as TileType});
             updateMapTileScorePotentials(state.tiles, state.width);
         } else if (Object.keys(ItemType).includes(action.payload.type)) {
-            state.items[action.payload.position] = 
+            const new_item = 
                 createItemModel({position: action.payload.position, type: action.payload.type as ItemType});
+            addItemToBoard(new_item, state.items);
         } else if (Object.keys(SpiderType).includes(action.payload.type)) {
-            state.items[action.payload.position] = 
+            const new_spider = 
                 createSpiderModel({position: action.payload.position, type: action.payload.type as SpiderType});
-                paintTileForSpider(state.items[action.payload.position] as SpiderModel, state.tiles, true, state.width);
+            addItemToBoard(new_spider, state.items);
+            paintTileForSpider(new_spider, state.tiles, true, state.width);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] = 
                 createCombatant({
