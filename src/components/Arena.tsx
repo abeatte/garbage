@@ -14,6 +14,7 @@ import Item from "./Item";
 import { PaintEntity } from "../data/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
+import { Purpose } from "../models/EntityModel";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -88,56 +89,61 @@ class Arena extends React.Component<AppState & DispatchProps> {
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
 
-            const children: JSX.Element[] = [];
-            if (maybe_combatant) {
-                children.push(
-                    (<Combatant 
-                        key={'combatant'}
-                        draggable={Object.keys(TileType).includes(selected_paint)} 
-                        species={maybe_combatant.species}
-                    />)
-                );
-            }
+            const maybe_combatant_view = maybe_combatant ? (<Combatant 
+                key={'combatant'}
+                draggable={Object.keys(TileType).includes(selected_paint)} 
+                species={maybe_combatant.species}
+            />) : undefined;
+            const maybe_items_view: JSX.Element[] = [];           
+            const maybe_items_view_2: JSX.Element[] = [];
             maybe_items?.forEach((item, idx) => {
-                children.push(
-                    (<Item
+                const view = (<Item
                         key={`item_${idx}`}
                         item={item}
-                    />)
-                );
+                        purpose={Purpose.Tile}
+                    />);
+                if (idx < 2) {
+                    maybe_items_view.push(view);
+                } else {
+                    maybe_items_view_2.push(view);
+                }
             });
 
             tiles.push(
-                <div style={{display: 'flex'}}>
+                <div className="Tile_container"
+                onClick={() => {
+                    if (selected_paint !== Pointer.Target) {
+                        this.props.paintOnTile({position: idx, type: selected_paint});
+                    } else {
+                        this.props.clickOnTile(select_args);
+                    }
+                }}
+                onDragEnter={() => {
+                    if (Object.keys(TileType).includes(selected_paint)) {
+                        this.props.paintOnTile({position: idx, type: selected_paint});
+                    }
+                }}
+                >
                     <Tile 
                     id={idx}
                     tile={tile} 
                     showPotential={this.props.board.show_tile_potentials}
                     showRealTileImages={this.props.board.show_real_tile_images}
                     className={classNames({"Clickable" : maybe_combatant || (maybe_items?.length ?? 0) > 0})}
-                    onClick={() => {
-                        if (selected_paint !== Pointer.Target) {
-                            this.props.paintOnTile({position: idx, type: selected_paint});
-                        } else {
-                            this.props.clickOnTile(select_args);
-                        }
-                    }}
-                    onDragEnter={() => {
-                        if (Object.keys(TileType).includes(selected_paint)) {
-                            this.props.paintOnTile({position: idx, type: selected_paint});
-                        }
-                    }}
                     isSelected={is_selected}
-                    key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
-                    >
-                        {
-                            children.length > 0 ? (
-                                <>
-                                    {children}
-                                </>) : undefined
-                        }
-
+                    key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}>
+                        {maybe_combatant_view}
                     </Tile>
+                    { maybe_items_view.length > 0 &&
+                        (<div className="Items_container_container">
+                            {maybe_items_view.length < 1 ? undefined : (
+                                <div className="Items_container">{maybe_items_view}</div>
+                            )}
+                            {maybe_items_view_2.length < 1 ? undefined : (
+                                <div className="Items_container">{maybe_items_view_2}</div>
+                            )}
+                        </div>)
+                    }
                 </div>
             );
         });

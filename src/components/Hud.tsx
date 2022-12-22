@@ -7,7 +7,7 @@ import '../css/Hud.css';
 import '../css/Panel.css'
 import { useSelector, useDispatch } from 'react-redux'
 import { Type as TileType } from '../models/TileModel';
-import Combatant, { Purpose } from './Combatant';
+import Combatant from './Combatant';
 import { 
     updateSelectedCombatant, 
     killSelected,
@@ -26,6 +26,7 @@ import { Character, DecisionType, Gender, getRandomCombatantName } from '../mode
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
+import { Purpose } from '../models/EntityModel';
 
 function getEditableField(
     args: {
@@ -146,7 +147,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
 
     const items_views: JSX.Element[] = [];
     items?.forEach((item, idx) => {
-        items_views.push(<Item item={item} key={`item_${idx}`} detail={true}/>);
+        items_views.push(<Item item={item} key={`item_${idx}`} purpose={Purpose.Detail}/>);
     })
 
     return (

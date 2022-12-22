@@ -10,6 +10,27 @@
     flex-shrink: 0;
 }
 
+.Arena .Items_container_container {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    margin: 7px 1px;
+}
+
+.Arena .Items_container {
+    display: flex;
+    flex-direction: column;
+    align-self: end;
+}
+
 .Arena {
     display: grid;
+}
+
+.Arena .Tile_container {
+    display: flex;
+    width: 25px;
+    height: 25px;
+    justify-content: end;
+    flex-direction: column;
 }

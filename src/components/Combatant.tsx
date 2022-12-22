@@ -1,6 +1,7 @@
 import React from 'react';
 import '../css/Combatant.css';
 import { Character } from '../models/CombatantModel';
+import { Purpose } from '../models/EntityModel';
 const Bunny = require('../images/combatants/bunny.png');
 const Turtle = require('../images/combatants/turtle.png');
 const Elephant = require('../images/combatants/lil_eli.png');
@@ -199,8 +200,6 @@ const getCharacter = (species: Character) => {
     const character = Characters[species];
     return character;
 }
-
-export enum Purpose { Tile, Detail, Paint };
 
 const Combatant = (props: {species: Character, purpose?: Purpose, draggable?: boolean}) => {
     const char = getCharacter(props.species);

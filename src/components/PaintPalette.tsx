@@ -9,11 +9,12 @@ import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { setSelectedPaint, togglePalettsDisplayed } from "../data/paintPaletteSlice";
 import { AppState } from "../data/store";
 import { Character } from "../models/CombatantModel";
+import { Purpose } from "../models/EntityModel";
 import { createItemModel, Type as ItemType } from "../models/ItemModel";
 import { Pointer } from "../models/PointerModel";
 import { createSpiderModel, Type as SpiderType } from "../models/SpiderModel";
 import { createTileModel, Type as TileType } from "../models/TileModel";
-import Combatant, { Purpose } from "./Combatant";
+import Combatant from "./Combatant";
 import Item from "./Item";
 import Tile from "./Tile";
 
@@ -117,7 +118,7 @@ const PaintPalette = () => {
                 isSelected={paintPalette.selected === item.type}
                 key={`paint_item_${idx}`}
             >
-                <Item item={item}/>
+                <Item item={item} purpose={Purpose.Paint}/>
             </Tile>
         )
     });
@@ -139,7 +140,7 @@ const PaintPalette = () => {
                 isSelected={paintPalette.selected === spider.spider_type}
                 key={`paint_item_${idx}`}
             >
-                <Item item={spider}/>
+                <Item item={spider} purpose={Purpose.Paint} />
             </Tile>
         )
     })
