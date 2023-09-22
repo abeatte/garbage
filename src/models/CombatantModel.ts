@@ -31,6 +31,7 @@ export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
+    taken_turn: boolean;
     state: State;
     visited_positions: {[position: number]: number};
     kills: number;
@@ -62,6 +63,7 @@ export function createCombatant(args: {spawn_position: number, species?: Charact
     return {   
         id: uuid(),
         name: getRandomCombatantName(),
+        taken_turn: false,
         state: State.Spawning, 
         kills: 0,
         fitness: 0,

@@ -1,5 +1,5 @@
 import { Combatants, Items, MovementLogic } from "./boardSlice";
-import CombatantModel, { createCombatant, DecisionType, Gender, getNewPositionFromClockFace, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
+import CombatantModel, { createCombatant, DecisionType, Gender, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel, updateMapTileScorePotentials } from "../models/TileModel";
 import Brain from "../models/Brain";
@@ -133,9 +133,25 @@ export function calculateCombatantMovements(
     Object.keys(working_combatants).forEach((p) => {
         const current_position = parseInt(p);
         const combatant = working_combatants[current_position];
-        if (combatant === undefined) {
+        if (combatant === undefined || combatant.taken_turn) {
             return;
         }
+        
+        combatant.taken_turn = true;
+
+        if (!evalHealth(combatant) || combatant.state === State.Dead) {
+            // you die
+            combatant.state = State.Dead;
+            working_combatants[current_position] = undefined;
+            deaths++;
+            return;
+        }
+        
+        if (combatant.state === State.Mating) {
+            // do nothing; their turn is taken up by mating
+            return;
+        }
+
         const posData = getSurroundingPos(
             {
                 position: current_position,
@@ -156,21 +172,13 @@ export function calculateCombatantMovements(
             });
 
         const occupant = working_combatants[new_position];
-
-        if (!evalHealth(combatant) || combatant.state === State.Dead) {
-            // you die
-            combatant.state = State.Dead;
-            working_combatants[current_position] = undefined;
-            deaths++;
-        } else if (combatant.state === State.Mating) {
-            // do nothing; their turn is taken up by mating
-        } else if (!occupant) {
+        if (!occupant) {
             // space is empty; OK to move
             working_combatants[current_position] = undefined;
             working_combatants[new_position] = combatant;
             combatant.position = new_position;
             combatant.visited_positions[new_position] = new_position;
-        } else if(
+        } else if (
             occupant.species === combatant.species &&
             // if a Fighter is here they're not here to mate!
             (movement_logic === MovementLogic.DecisionTree &&
@@ -178,8 +186,6 @@ export function calculateCombatantMovements(
         ) {
             // space is occupied by a friendly
             if (
-                // not yourself
-                combatant.id !== occupant.id && 
                 // your not too young
                 combatant.tick > MAX_YOUNGLING_TICK && 
                 // they're not too young
@@ -196,7 +202,7 @@ export function calculateCombatantMovements(
                     combatant.spawn = createCombatant({spawn_position: -1, use_genders, global_combatant_stats});
             }
         } else {
-            // space is occupied by a enemy (or an ally with with a Fighter incumbent)
+            // space is occupied by a enemy (or an ally but with a Fighter incumbent)
             working_combatants[current_position] = undefined;
             working_combatants[new_position] = compete(combatant, occupant);
             (working_combatants[new_position] as CombatantModel).position = new_position;
@@ -230,6 +236,8 @@ export function calculateCombatantMovements(
                 arena_size: tiles.length});
             if (spawn.position > -1) {
                 working_combatants[spawn.position] = spawn;
+                spawn.state = State.Alive;
+                spawn.taken_turn = true;
                 parent.children += 1;
                 births++
             }
@@ -240,6 +248,7 @@ export function calculateCombatantMovements(
     const ret_combatants = {} as Combatants;
     Object.values(working_combatants).forEach(c => {
         if (c !== undefined) {
+            c.taken_turn = false;
             ret_combatants[c.position] = c;
         }
     })
