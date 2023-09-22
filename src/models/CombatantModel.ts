@@ -345,4 +345,9 @@ export function getRandomGender(): Gender {
     return set[Math.round(Math.random() * (set.length - 1))] as Gender;
 }
 
+export function getRandomDecisionType(): DecisionType {
+    const set = Object.keys(DecisionType);
+    return set[Math.round(Math.random() * (set.length-1))] as DecisionType;
+}
+
 export default CombatantModel;

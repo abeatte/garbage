@@ -540,6 +540,8 @@ function birthSpawn({posData, spawn, parent, arena_size}:
             spawn.visited_positions[spawn_pos] = spawn_pos;
             // too many of my kind here, let's diverge
             spawn.species = friendly_positions.length < 4 ? parent.species : getRandomSpecies();
+            // 1:4 chance of a different decision_type from the parent
+            spawn.decision_type = Math.random() > 0.25 ? parent.decision_type : getRandomDecisionType();
         }
     }
 }
