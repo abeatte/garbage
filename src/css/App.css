@@ -11,6 +11,16 @@
     font-size: 14px;
     font-weight: bold;
     text-transform: capitalize;
+    margin-top: 2px;
+}
+
+.Group_label {
+    font-size:  16px;
+    font-weight: bold;
+    text-transform: capitalize;
+    margin: 2px 0px 2px 0px;
+    border-bottom: solid 1px black;
+    width: fit-content;
 }
 
 .Label.Centered {

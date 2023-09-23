@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { select } from "../data/boardSlice";
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { AppState } from "../data/store";
-import CombatantModel, { Character } from "../models/CombatantModel";
+import CombatantModel, { Character, DecisionType } from "../models/CombatantModel";
 
 const SpeciesStats = () => {
     const board = useSelector((state: AppState) => state.board);
@@ -16,15 +16,21 @@ const SpeciesStats = () => {
     const selected_position = board.selected_position;
 
     const species = Object.values(Character).reduce((species, cha) => {
-        species[cha] = []
+        species[cha] = [];
         return species;
     }, {} as {[key in Character]: CombatantModel[]});
 
+    const decision_types = Object.values(DecisionType).reduce((decision_types, type) => {
+        decision_types[type] = 0;
+        return decision_types;
+    }, {} as {[key in DecisionType]: number});
+
     Object.values(board.combatants).forEach(combatant => {
         species[combatant.species].push(combatant);
+        decision_types[combatant.decision_type] += 1;
     });
 
-    const counts = Object.keys(species).map(t => {
+    const species_counts = Object.keys(species).map(t => {
         const spec = t as Character
         const species_array = [] as JSX.Element[];
         species[spec]
@@ -80,6 +86,15 @@ const SpeciesStats = () => {
         );
     }).sort((a, b) => (a.key as string).localeCompare(b.key as string));
 
+    const decision_type_counts = Object.keys(decision_types).map(t => {
+        const type = t as DecisionType;
+        return (
+            <div key={type} className={'Decision_type_group'}>
+                <span className={'Label'}>{`${type}`}</span><span>{`: ${decision_types[type]}`}</span>
+            </div>
+        );
+    });
+
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
     const escape_button = (
@@ -107,7 +122,12 @@ const SpeciesStats = () => {
                 'Species_stat_group_panel_container': !isFullScreen
             })}>
                 <div className={'Stat_group'}>
-                    <div>{counts}</div>
+                    <span className={'Group_label'}>Species</span>
+                    <div>{species_counts}</div>
+                </div>
+                <div className={classNames("Stat_group", "Decision_type_stat_group")}>
+                    <span className={'Group_label'}>Type</span>
+                    <div>{decision_type_counts}</div>
                 </div>
             </div>
         </div>
