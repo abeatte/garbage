@@ -20,7 +20,7 @@ import {
     toggleUseGenders 
 } from "../data/boardSlice";
 import { faListDots, faPause, faPlay } from "@fortawesome/free-solid-svg-icons";
-import Maps, { MapType } from "../data/Map";
+import Maps from "../data/Map";
 
 const Settings = ({onReset}: {onReset: () => void}) => {
     const ticker = useSelector((state: AppState) => state.ticker);
