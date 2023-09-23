@@ -16,8 +16,9 @@ import { updateItemsAfterResize } from './ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../models/SpiderModel';
+import Maps, { MapType } from './Map';
 
-export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" }
+export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 
 export type Combatants = {[position: number]: CombatantModel};
 export type Items = {[position: number]: ItemModel[]};
@@ -27,6 +28,7 @@ export const DEFAULTS = {
     window_height: 30,
     num_combatants: 25,
     movement_logic: MovementLogic.DecisionTree,
+    map: Maps['World'],
     use_genders: false,
     show_tile_potentials: false,
 }
@@ -46,36 +48,9 @@ interface BoardState {
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
     movement_logic: MovementLogic,
+    map: MapType,
     use_genders: boolean,
 }
-
-export function initDefaultTiles({width, height}: {width: number, height: number}): TileModel[] {
-    const tiles = Array(width * height) as TileModel[];
-    let idx = 0;
-    for (let h = 0; h < height; h++) {
-        for (let w = 0; w < width; w++) {
-            if (h === 0 || h === height-1 || w === 0 || w === width-1) {
-                tiles[idx] = createTileModel({index: idx, type: TileType.Fire});
-            } else if (h > height/5 && h < height/5*4 && w > width/5 && w < width/5*4) {
-                tiles[idx] = createTileModel({
-                    index: idx, 
-                    type: Math.random() < 0.1 ?
-                        TileType.Grass : 
-                        Math.random() < 0.1 ? 
-                        TileType.Water : 
-                        TileType.Rock,
-                });
-            } else {
-                tiles[idx] = createTileModel({index: idx, type: TileType.Sand});
-            }
-            idx++;
-        }
-    }
-
-    updateMapTileScorePotentials(tiles, width);
-
-    return tiles;
-};
 
 function initCombatants(
     {tiles, num_combatants, use_genders}: 
@@ -116,7 +91,7 @@ function handleResize(
     {state, old_window_width, old_window_height}: 
     {state: BoardState, old_window_width: number, old_window_height: number}
 ) {
-    state.tiles = initDefaultTiles({width: state.width, height: state.height});
+    state.tiles = state.map.generate({width: state.width, height: state.height});
     const combatants = updateCombatantsPositionsAfterResize(
         {combatants: state.combatants, 
             window_width: state.width, 
@@ -145,7 +120,7 @@ function initState(args?: {width: number, height: number, initial_num_combatants
         use_genders: DEFAULTS.use_genders,
         initial_num_combatants: DEFAULTS.num_combatants,
     };
-    const tiles = initDefaultTiles({width, height});
+    const tiles = DEFAULTS.map.generate({width, height});
     const {combatants, global_combatant_stats} = 
         initCombatants({tiles, num_combatants: initial_num_combatants, use_genders});
     return {
@@ -163,6 +138,7 @@ function initState(args?: {width: number, height: number, initial_num_combatants
         selected_position: undefined,
         follow_selected_combatant: false,
         movement_logic: DEFAULTS.movement_logic,
+        map: DEFAULTS.map,
         use_genders,
     };
 }
@@ -348,6 +324,10 @@ export const boardSlice = createSlice({
     setMovementLogic: (state, action: {payload: MovementLogic}) => {
         state.movement_logic = action.payload;
     },
+    setMap: (state, action: {payload: MapType}) => {
+        state.map = action.payload;
+        state.tiles = state.map.generate({width: state.width, height: state.height});
+    },
     toggleUseGenders: (state) => {
         state.use_genders = !state.use_genders;
         if (!state.use_genders) {
@@ -397,6 +377,7 @@ export const {
     toggleShowTilePotentials,
     toggleShowRealTileImages,
     setMovementLogic,
+    setMap,
     toggleUseGenders,
     setInitialNumCombatants, 
     setShowSettings,

@@ -5,8 +5,22 @@ import { useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useSelector, useDispatch } from 'react-redux'
 import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, pauseUnpause, speedChange } from '../data/tickerSlice'
-import { growHeight, growWidth, MovementLogic, setInitialNumCombatants, setMovementLogic, setShowSettings, shrinkHeight, shrinkWidth, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders } from "../data/boardSlice";
+import { 
+    growHeight, 
+    growWidth, 
+    MovementLogic, 
+    setInitialNumCombatants, 
+    setMovementLogic, 
+    setMap,
+    setShowSettings, 
+    shrinkHeight, 
+    shrinkWidth, 
+    toggleShowRealTileImages, 
+    toggleShowTilePotentials, 
+    toggleUseGenders 
+} from "../data/boardSlice";
 import { faListDots, faPause, faPlay } from "@fortawesome/free-solid-svg-icons";
+import Maps, { MapType } from "../data/Map";
 
 const Settings = ({onReset}: {onReset: () => void}) => {
     const ticker = useSelector((state: AppState) => state.ticker);
@@ -104,11 +118,21 @@ const Settings = ({onReset}: {onReset: () => void}) => {
             <div>
                 <span className={'Label'}>{'Movement: '}</span>
                 <select
-                    className={classNames('Movement_selector', 'Clickable')}
+                    className={classNames('Dropdown_selector', 'Clickable')}
                     value={board.movement_logic}
                     onChange={(input) => dispatch(setMovementLogic(input.target.value as unknown as MovementLogic))}
                     >
                         {Object.values(MovementLogic).map(l => (<option key={l.toString()}>{l}</option>))}
+                </select>
+            </div>
+            <div style={{marginTop: "4px"}}>
+                <span className={'Label'}>{'Map: '}</span>
+                <select
+                    className={classNames('Dropdown_selector', 'Clickable')}
+                    value={board.map.name}
+                    onChange={(input) => dispatch(setMap(Maps[input.target.value]))}
+                    >
+                        {Object.values(Maps).map(m => (<option key={m.name.toString()}>{m.name}</option>))}
                 </select>
             </div>
         </>
