@@ -10,13 +10,13 @@ import {
 } from './CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
-import CombatantModel, { Character, createCombatant, Gender, getRandomGender } from '../models/CombatantModel';
+import CombatantModel, { Character, createCombatant, Gender, getRandomGender, getRandomSpecies } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from './ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../models/SpiderModel';
-import Maps, { MapType } from './Map';
+import Maps from './Map';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 
@@ -28,7 +28,7 @@ export const DEFAULTS = {
     window_height: 30,
     num_combatants: 25,
     movement_logic: MovementLogic.DecisionTree,
-    map: Maps['World'],
+    map: Maps['World'].name,
     use_genders: false,
     show_tile_potentials: false,
 }
@@ -48,7 +48,7 @@ interface BoardState {
     selected_position: number| undefined,
     follow_selected_combatant: boolean,
     movement_logic: MovementLogic,
-    map: MapType,
+    map: string,
     use_genders: boolean,
 }
 
@@ -59,12 +59,15 @@ function initCombatants(
     const combatants = {} as Combatants;
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
     for (let i = 0; i < num_combatants; i++) {
-        const c_pos: number = initCombatantStartingPos({tiles, combatants});
+
+        const species = getRandomSpecies();
+
+        const c_pos: number = initCombatantStartingPos({species, tiles, combatants});
         if (c_pos < 0) {
             continue;
         }
 
-        combatants[c_pos] = createCombatant({spawn_position: c_pos, use_genders, global_combatant_stats});
+        combatants[c_pos] = createCombatant({species, spawn_position: c_pos, use_genders, global_combatant_stats});
 
         const c_fit = combatants[c_pos].fitness;
         global_combatant_stats.average_position += c_pos;
@@ -91,7 +94,7 @@ function handleResize(
     {state, old_window_width, old_window_height}: 
     {state: BoardState, old_window_width: number, old_window_height: number}
 ) {
-    state.tiles = state.map.generate({width: state.width, height: state.height});
+    state.tiles = Maps[state.map].generate({width: state.width, height: state.height});
     const combatants = updateCombatantsPositionsAfterResize(
         {combatants: state.combatants, 
             window_width: state.width, 
@@ -114,13 +117,13 @@ function handleResize(
     state.global_combatant_stats.deaths += deaths;
 }
 
-function initState(args?: {width: number, height: number, initial_num_combatants: number, use_genders: boolean}): BoardState {
-    const {width, height, initial_num_combatants, use_genders} = args ?? {width: DEFAULTS.window_width,
+function initState(args?: {map: string, width: number, height: number, initial_num_combatants: number, use_genders: boolean}): BoardState {
+    const {map, width, height, initial_num_combatants, use_genders} = args ?? {map: Maps['World'].name, width: DEFAULTS.window_width,
         height: DEFAULTS.window_height,
         use_genders: DEFAULTS.use_genders,
         initial_num_combatants: DEFAULTS.num_combatants,
     };
-    const tiles = DEFAULTS.map.generate({width, height});
+    const tiles = Maps[map].generate({width, height});
     const {combatants, global_combatant_stats} = 
         initCombatants({tiles, num_combatants: initial_num_combatants, use_genders});
     return {
@@ -181,6 +184,7 @@ export const boardSlice = createSlice({
     },
     reset: (state) => {
         const new_state = initState({
+            map: state.map,
             width: state.width, 
             height: state.height, 
             initial_num_combatants: state.initial_num_combatants, 
@@ -324,9 +328,9 @@ export const boardSlice = createSlice({
     setMovementLogic: (state, action: {payload: MovementLogic}) => {
         state.movement_logic = action.payload;
     },
-    setMap: (state, action: {payload: MapType}) => {
+    setMap: (state, action: {payload: string}) => {
         state.map = action.payload;
-        state.tiles = state.map.generate({width: state.width, height: state.height});
+        state.tiles = Maps[state.map].generate({width: state.width, height: state.height});
     },
     toggleUseGenders: (state) => {
         state.use_genders = !state.use_genders;

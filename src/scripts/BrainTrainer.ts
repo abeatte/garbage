@@ -5,8 +5,9 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { DEFAULTS, MovementLogic } from "../data/boardSlice";
 import { ClockFace, DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
+import Maps from "../data/Map";
 import Brain from "../models/Brain";
-import { DecisionType, requestMove } from "../models/CombatantModel";
+import CombatantModel, { DecisionType, requestMove } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 
 const brain = require('brain.js');
@@ -22,10 +23,11 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/NeuralNetwork.json');
 const NUM_TRAINING_MAPS = 10;
 
 const getTrainingSet = (current_position: number, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
+    const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = posData.surroundings[clockFace];
         if (sur !== undefined) {
-            const positive_shifted_potential = sur.tile.score_potential + Math.abs(posData.min_potential);
+            const positive_shifted_potential = sur.tile.score_potential[self.species] + Math.abs(posData.min_potential);
             let range = Math.abs(posData.min_potential) + posData.max_potential;
             move_potentials[clockFace] = positive_shifted_potential * 1.0/range;
         }
@@ -35,7 +37,6 @@ const getTrainingSet = (current_position: number, posData: PosData, tiles: TileM
     const requested_position = requestMove(
         {
             movement_logic: MovementLogic.DecisionTree, 
-            decision_type: DecisionType.Neutral, 
             brain, posData, 
             current_position, 
             tiles, 
@@ -55,10 +56,11 @@ const train = (net: NeuralNetwork<Input, Output>) => {
     for(let map = 0; map < NUM_TRAINING_MAPS; map++) {
         const width = DEFAULTS.window_width;
         const height = DEFAULTS.window_height;
-        const tiles = DEFAULTS.map.generate({width, height});
+        const tiles = Maps[DEFAULTS.map].generate({width, height});
 
         for(let position = 0; position < tiles.length; position++) {
-            const posData = getSurroundingPos({position, window_width: width, tiles, combatants: {}})
+            // TODO: need to pipe in species to properly train them on different maps. 
+            const posData = getSurroundingPos({species: undefined, position, window_width: width, tiles, combatants: {}})
             training_sets.push(getTrainingSet(position, posData, tiles, width));
         }
 

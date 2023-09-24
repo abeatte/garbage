@@ -1,7 +1,7 @@
 import { NeuralNetwork } from "brain.js/dist/src";
 import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
 import { Input, Output } from "../scripts/BrainTrainer";
-import CombatantModel, { getNewPositionFromClockFace } from "./CombatantModel";
+import CombatantModel, { Character, getNewPositionFromClockFace } from "./CombatantModel";
 
 const neuralNetworkJSON = require('../data/NeuralNetwork.json');
 const brain = require('brain.js');
@@ -30,7 +30,7 @@ const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, po
     // keys are ClockFace values (b, t, l, r); values are potentials (53, -2, ...)
     const move_potentials = LegalMoves.reduce((move_potentials, direction) => {
         move_potentials[Object.keys(ClockFace)[direction]] = 
-            posData.surroundings[direction]?.tile?.score_potential ?? MIN_HEALTH
+            posData.surroundings[direction]?.tile?.score_potential[Character.Bunny] ?? MIN_HEALTH
         return move_potentials;
     }, {} as {[direction: string]: number});
 

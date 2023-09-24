@@ -31,6 +31,6 @@
     display: flex;
     width: 25px;
     height: 25px;
-    justify-content: end;
+    justify-content: flex-end;
     flex-direction: column;
 }

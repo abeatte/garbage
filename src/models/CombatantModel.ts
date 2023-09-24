@@ -6,7 +6,7 @@ import {
     IllegalMoves,
     LegalMoves, 
 } from "../data/CombatantUtils";
-import { TileModel } from "./TileModel";
+import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 import { MovementLogic } from "../data/boardSlice";
 import Brain from "./Brain";
@@ -77,6 +77,45 @@ export function createCombatant(args: {spawn_position: number, species?: Charact
         visited_positions,
         spawn: undefined,
         children: 0,
+    }
+}
+
+export function getMapTileEffect({species, tileType}: {species: Character | undefined, tileType: TileType}) {
+    let species_buff = 0;
+
+    switch (species) {
+        case Character.Turtle:
+            if (tileType === TileType.Fire) {
+                // fire hurts a bit more
+                species_buff = -5;
+            } else if (tileType === TileType.Water) {
+                // water becomes neutral
+                species_buff = +5;
+            }
+            break;
+        case Character.Lizard:
+            if (tileType === TileType.Fire) {
+                // fire hurts a bit less
+                species_buff = +5;
+            } else if (tileType === TileType.Sand) {
+                // water becomes slightly positive
+                species_buff = +5;
+            }
+            break;
+    }
+
+    if (tileType === TileType.Fire) {
+        // fire hurts bad
+        return -50 + species_buff;
+    } else if (tileType === TileType.Water) {
+        // water hurts a bit
+        return -5 + species_buff;
+    } else if (tileType === TileType.Grass) {
+        // grass is very good
+        return 50 + species_buff;       
+    } else {
+        // lame, you get nothing
+        return 0 + species_buff;
     }
 }
 
@@ -157,10 +196,9 @@ function getBestMatePosition(
     return best_mate_position;
 }
 
-export function requestMove({movement_logic, decision_type, brain, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, brain, posData, current_position, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
-        decision_type: DecisionType,
         brain: NeuralNetwork<Input, Output>,
         posData: PosData,
         current_position: number, 
@@ -187,10 +225,10 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
         const occupant = surrounding.occupant;
         if (!occupant) {
             if (surrounding.tile !== undefined) {
-                if (bucketed_empty_tiles[surrounding.tile.score_potential] === undefined) {
-                    bucketed_empty_tiles[surrounding.tile.score_potential] = [];
+                if (bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] === undefined) {
+                    bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] = [];
                 }
-                bucketed_empty_tiles[surrounding.tile.score_potential].push(surrounding.position);
+                bucketed_empty_tiles[surrounding.tile.score_potential[self.species]].push(surrounding.position);
             }
         } else if (
             // same species
@@ -200,7 +238,7 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
             // not too young
             occupant.tick > MAX_YOUNGLING_TICK && 
             // not on hurtful tile
-            (surrounding.tile?.tile_effect ?? -1) > -1
+            (getMapTileEffect({species: self.species, tileType: surrounding.tile.type}) ?? -1) > -1
         ) {
             const strength = occupant.strength;
             if (bucketed_mate_strengths[strength] === undefined) {
@@ -233,7 +271,7 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
     } else {
         const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;
 
-        let attepts = 3;
+        let attempts = 3;
         do {
             // position based on best prey (enemy) space
             let best_enemy_position =  -1;
@@ -295,9 +333,9 @@ export function requestMove({movement_logic, decision_type, brain, posData, curr
                     window_width, 
                     tiles.length);
             }
-            attepts--;
+            attempts--;
             // avoid fire if you can
-        } while (tiles[position].tile_effect < 0 && attepts > 0);
+        } while (getMapTileEffect({species: self.species, tileType: tiles[position].type}) < 0 && attempts > 0);
     }
     
     return position;

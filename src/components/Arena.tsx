@@ -111,19 +111,19 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
             tiles.push(
                 <div className="Tile_container"
-                onClick={() => {
-                    if (selected_paint !== Pointer.Target) {
-                        this.props.paintOnTile({position: idx, type: selected_paint});
-                    } else {
-                        this.props.clickOnTile(select_args);
-                    }
-                }}
-                onDragEnter={() => {
-                    if (Object.keys(TileType).includes(selected_paint)) {
-                        this.props.paintOnTile({position: idx, type: selected_paint});
-                    }
-                }}
-                >
+                    key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
+                    onClick={() => {
+                        if (selected_paint !== Pointer.Target) {
+                            this.props.paintOnTile({position: idx, type: selected_paint});
+                        } else {
+                            this.props.clickOnTile(select_args);
+                        }
+                    }}
+                    onDragEnter={() => {
+                        if (Object.keys(TileType).includes(selected_paint)) {
+                            this.props.paintOnTile({position: idx, type: selected_paint});
+                        }
+                }}>
                     <Tile 
                     id={idx}
                     tile={tile} 
@@ -131,7 +131,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     showRealTileImages={this.props.board.show_real_tile_images}
                     className={classNames({"Clickable" : maybe_combatant || (maybe_items?.length ?? 0) > 0})}
                     isSelected={is_selected}
-                    key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}>
+                    >
                         {maybe_combatant_view}
                     </Tile>
                     { maybe_items_view.length > 0 &&

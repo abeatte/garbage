@@ -6,6 +6,7 @@ import React from 'react';
 import '../css/Tile.css';
 import classNames from 'classnames';
 import { TileModel, Type as TileType } from '../models/TileModel';
+import { getMapTileEffect } from '../models/CombatantModel';
 const Water = require('../images/terrain/water.png');
 const Trees = require('../images/terrain/trees.png');
 const Sand = require('../images/terrain/sand.png');
@@ -59,10 +60,11 @@ const Tile = (
               alt={tile.type}
             />
           }
+          {/* TODO: show tile potential for each species (since they are different now.) */}
           {
             showPotential && tile && !children &&
             <span style={{position: "absolute", color: !showRealTileImages ? "black" : "red"}} className='Tile_potential'>
-              {tile.score_potential}
+              {getMapTileEffect({species: undefined, tileType: tile.type})}
             </span>
           }
           {children}

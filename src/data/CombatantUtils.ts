@@ -1,5 +1,5 @@
 import { Combatants, Items, MovementLogic } from "./boardSlice";
-import CombatantModel, { createCombatant, DecisionType, Gender, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
+import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
 import { TileModel, updateMapTileScorePotentials } from "../models/TileModel";
 import Brain from "../models/Brain";
@@ -41,12 +41,12 @@ export interface PosData {
     surroundings: (Surroundings | undefined)[],
 }
 
-export function initCombatantStartingPos(args: {tiles: TileModel[], combatants: Combatants}): number {
+export function initCombatantStartingPos(args: {species: Character, tiles: TileModel[], combatants: Combatants}): number {
     let starting_pos = -1;
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
         const potential_tile = args.tiles[potential_pos];
-        if (!args.combatants[potential_pos] && potential_tile.tile_effect > -1) {
+        if (!args.combatants[potential_pos] && getMapTileEffect({species: args.species, tileType: potential_tile.type}) > -1) {
             starting_pos = potential_pos;
         }
     }
@@ -77,7 +77,7 @@ export function updateCombatantsPositionsAfterResize(
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const posData = 
-                getSurroundingPos({position: old_pos, window_width: old_window_width, tiles, combatants});
+                getSurroundingPos({species: undefined, position: old_pos, window_width: old_window_width, tiles, combatants});
             const up_position = posData.surroundings[ClockFace.t];
             const up_left_position = posData.surroundings[ClockFace.tl];
             const left_position = posData.surroundings[ClockFace.l];
@@ -154,6 +154,7 @@ export function calculateCombatantMovements(
 
         const posData = getSurroundingPos(
             {
+                species: combatant.species,
                 position: current_position,
                 window_width, 
                 tiles, 
@@ -164,7 +165,6 @@ export function calculateCombatantMovements(
             {
                 posData,
                 movement_logic, 
-                decision_type: combatant.decision_type,
                 brain, 
                 current_position, 
                 tiles, 
@@ -226,6 +226,7 @@ export function calculateCombatantMovements(
             birthSpawn({
                 posData:
                     getSurroundingPos({
+                        species: spawn.species,
                         position: parent.position,
                         window_width, 
                         tiles, 
@@ -297,6 +298,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                         // time to blow
                         const posData = getSurroundingPos(
                             {
+                                species: undefined,
                                 position: item.position,
                                 window_width, 
                                 tiles, 
@@ -326,6 +328,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
                 case ItemType.PokemonBall:
                     const posData = getSurroundingPos(
                         {
+                            species: undefined,
                             position: item.position,
                             window_width, 
                             tiles, 
@@ -414,7 +417,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
         }
 
         if (!combatant.immortal) {
-            combatant.fitness += tiles[position].tile_effect;
+            combatant.fitness += getMapTileEffect({species: combatant.species, tileType: tiles[position].type});
         }
         combatant.strength = getStrengthRating({
             global_combatant_stats, 
@@ -567,8 +570,9 @@ function compete(a: CombatantModel, b: CombatantModel) {
 }
 
 export function getSurroundingPos(
-    {position, window_width, tiles, combatants}: 
+    {species, position, window_width, tiles, combatants}: 
     {
+        species: Character | undefined,
         position: number, 
         window_width: number, 
         tiles: TileModel[], 
@@ -588,12 +592,13 @@ export function getSurroundingPos(
     ret.max_potential = Number.MIN_VALUE;
     
     const setSurrounding = (position: number) => {
-        if (tiles[position]?.score_potential < ret.min_potential) {
-            ret.min_potential = tiles[position].score_potential;
+        const score_potential = getMapTileEffect({species, tileType: tiles[position]?.type});
+        if (score_potential < ret.min_potential) {
+            ret.min_potential = score_potential;
         }
 
-        if (tiles[position]?.score_potential > ret.max_potential) {
-            ret.max_potential = tiles[position].score_potential;
+        if (score_potential > ret.max_potential) {
+            ret.max_potential = score_potential;
         }
 
         return {

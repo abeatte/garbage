@@ -36,8 +36,8 @@ const Maps: {[name: string]: MapType} = {
             return tiles;
         }
     },
-    Fishbowl: {
-        name: "Fishbowl",
+    Ocean: {
+        name: "Ocean",
         generate: ({width, height}) => {
             const tiles = Array(width * height) as TileModel[];
             for (let idx = 0; idx < tiles.length; idx++) {
@@ -88,6 +88,19 @@ const Maps: {[name: string]: MapType} = {
             return tiles;
         }
     },
+    "The Sun": {
+         name: "The Sun",
+         generate: ({width, height}) => {
+             const tiles = Array(width * height) as TileModel[];
+             for (let idx = 0; idx < tiles.length; idx++) {
+                 tiles[idx] = createTileModel({index: idx, type: TileType.Fire});
+             }
+         
+             updateMapTileScorePotentials(tiles, width);
+         
+             return tiles;
+         }
+     },
 };
 
 export default Maps;

@@ -129,8 +129,8 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                 <span className={'Label'}>{'Map: '}</span>
                 <select
                     className={classNames('Dropdown_selector', 'Clickable')}
-                    value={board.map.name}
-                    onChange={(input) => dispatch(setMap(Maps[input.target.value]))}
+                    value={board.map}
+                    onChange={(input) => dispatch(setMap(input.target.value))}
                     >
                         {Object.values(Maps).map(m => (<option key={m.name.toString()}>{m.name}</option>))}
                 </select>
