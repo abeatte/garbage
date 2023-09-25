@@ -27,6 +27,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
 import { Purpose } from '../models/EntityModel';
+import Analytics from '../analytics';
 
 function getEditableField(
     args: {
@@ -120,6 +121,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
             <button 
                 className={classNames("Clickable", "Exit")} 
                 onClick={() => {
+                    Analytics.logEvent('button_click: Hud\'s "X"');
                     dispatch(setActiveHudPanel(HudPanel.NONE));
                 }}
             >
@@ -138,7 +140,15 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                 'Button',  
                 {'Spawn': !combatant, 'Kill': !!combatant}
             )}
-            onClick={() => !!combatant ? dispatch(killSelected()) : dispatch(spawnAtSelected())}
+            onClick={() => {
+                if (!!combatant) {
+                    Analytics.logEvent('button_click: Hud Kill Selected');
+                    dispatch(killSelected())
+                } else {
+                    Analytics.logEvent('button_click: Hud Spawn at Selected');
+                    dispatch(spawnAtSelected())
+                }
+            }}
             >
                 <span>{!combatant ? "Spawn" : "Kill"}</span>
             </button>
@@ -192,6 +202,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     label: (<span className={'Label'}>{'Tile: '}</span>),
                                     display: (<span>{tile?.type ?? ""}</span>),
                                     update: input => {
+                                        Analytics.logEvent(`button_clicked: Hud paint tile -> ${input.target.value}`);
                                         dispatch(paintTile({position: selected_position, type: input.target.value as TileType}))
                                     },
                                 }
@@ -222,6 +233,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     disabled={combatant.fitness <= MIN_HEALTH} 
                                     checked={board.follow_selected_combatant}
                                     onChange={(input) => {
+                                        Analytics.logEvent(`button_clicked: Hud follow combatant ${input.target.value ? 'checked' : 'uncheckd'}`);
                                         dispatch(select({position: selected_position, follow_combatant: input.target.checked}));
                                     }}
                                 />
@@ -237,6 +249,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                         edit: () => setEditing({...editing, name: combatant?.name}),
                                         update: input => setEditing({...editing, name: input.target.value}),
                                         done: () => {
+                                            Analytics.logEvent('button_clicked: Hud name edited');
                                             dispatch(updateSelectedCombatant({field: 'name', value: edited_name}));
                                             setEditing({...editing, name: undefined})
                                         }
@@ -249,6 +262,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     size='lg' 
                                     style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
                                     onClick={() => {
+                                        Analytics.logEvent('button_clicked: Hud randomize name');
                                         const random_name = getRandomCombatantName();
                                         dispatch(updateSelectedCombatant({field:'name', value: random_name}));
                                         setEditing({...editing, name: undefined});
@@ -264,6 +278,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                     edit: () => setEditing({...editing, fitness: combatant?.fitness?.toString()}),
                                     update: input => setEditing({...editing, fitness: input.target.value}),
                                     done: () => {
+                                        Analytics.logEvent('button_clicked: Hud fitness edited');
                                         dispatch(updateSelectedCombatant({field: 'fitness', value: parseInt(edited_fitness as string)}));
                                         setEditing({...editing, fitness: undefined})
                                     }
@@ -279,7 +294,10 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                         c => (<option key={`${c}`}>{c}</option>)),
                                     label: (<span className={'Label'}>{'Type: '}</span>),
                                     display: (<span>{combatant?.decision_type ?? ""}</span>),
-                                    update: input => dispatch(updateSelectedCombatant({field: 'decision_type', value: input.target.value})),
+                                    update: input => {
+                                        Analytics.logEvent(`button_clicked: Hud decision type edited -> ${input.target.value}`);
+                                        dispatch(updateSelectedCombatant({field: 'decision_type', value: input.target.value}));
+                                    },
                                 }
                             )}
                             {getEditableField(
@@ -289,7 +307,10 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                         g => (<option key={`${g}`}>{g}</option>)),
                                     label: (<span className={'Label'}>{'Gender: '}</span>),
                                     display: (<span>{combatant?.gender ?? ""}</span>),
-                                    update: input => dispatch(updateSelectedCombatant({field: 'gender', value: input.target.value})),
+                                    update: input => {
+                                        Analytics.logEvent(`button_clicked: Hud gender edited -> ${input.target.value}`);
+                                        dispatch(updateSelectedCombatant({field: 'gender', value: input.target.value}))
+                                    },
                                 }
                             )}
                             {getEditableField(
@@ -299,7 +320,10 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                         c => (<option key={`${c}`}>{c}</option>)),
                                     label: (<span className={'Label'}>{'Species: '}</span>),
                                     display: (<span>{combatant?.species ?? ""}</span>),
-                                    update: input => dispatch(updateSelectedCombatant({field: 'species', value: input.target.value})),
+                                    update: input => {
+                                        Analytics.logEvent(`button_clicked: Hud species edited -> ${input.target.value}`);
+                                        dispatch(updateSelectedCombatant({field: 'species', value: input.target.value}));
+                                    },
                                 }
                             )}
                             <div className='Non_editable_row'>
@@ -319,6 +343,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                         checked={combatant?.immortal ?? false} 
                                         disabled={combatant?.fitness <= MIN_HEALTH} 
                                         onChange={(input) => {
+                                            Analytics.logEvent(`button_clicked: Hud immortal updated -> ${input.target.checked}`);
                                             dispatch(updateSelectedCombatant({field: 'immortal', value: input.target.checked}));
                                             setEditing({...editing, fitness: undefined});
                                         }}

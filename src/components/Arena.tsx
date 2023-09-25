@@ -15,6 +15,7 @@ import { PaintEntity } from "../data/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { Purpose } from "../models/EntityModel";
+import Analytics from "../analytics";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -31,14 +32,17 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     auxFunctions = (event: KeyboardEvent) => {
         if (event.key === ' ') {
+            Analytics.logEvent('key_pressed: Space');
             // stops page from scrolling
             event.preventDefault();
             this.props.pauseUnpause();
         } else if (event.key === 'k' || event.key === 'K') {
+            Analytics.logEvent('key_pressed: K');
             // stops page from scrolling
             event.preventDefault();
             this.props.killSelected();
         } else if (event.key === 's' || event.key === 'S') {
+            Analytics.logEvent('key_pressed: S');
             // stops page from scrolling
             event.preventDefault();
             this.props.spawnAtSelected();
@@ -114,12 +118,15 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
                     onClick={() => {
                         if (selected_paint !== Pointer.Target) {
+                            Analytics.logEvent('tap_on_board: Paint');
                             this.props.paintOnTile({position: idx, type: selected_paint});
                         } else {
+                            Analytics.logEvent('tap_on_board: Select');
                             this.props.clickOnTile(select_args);
                         }
                     }}
                     onDragEnter={() => {
+                        Analytics.logEvent('drag_on_board');
                         if (Object.keys(TileType).includes(selected_paint)) {
                             this.props.paintOnTile({position: idx, type: selected_paint});
                         }

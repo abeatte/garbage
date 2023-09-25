@@ -7,6 +7,7 @@ import { AppState } from "../data/store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { faChartBar } from "@fortawesome/free-solid-svg-icons";
+import Analytics from "../analytics";
 
 const Dashboard = ({onReset}: {onReset: () => void}) => {
     const ticker = useSelector((state: AppState) => state.ticker);
@@ -45,8 +46,10 @@ const Dashboard = ({onReset}: {onReset: () => void}) => {
         <div className="Species_stats_button_container">
             <button 
                 className={classNames('Clickable', 'Button', 'Restart')} 
-                onClick={() => dispatch(setActiveHudPanel(hud.activeHudPanel === HudPanel.STATS ? HudPanel.NONE : HudPanel.STATS))
-            }>
+                onClick={() => {
+                    Analytics.logEvent(`button_click: ${hud.activeHudPanel === HudPanel.STATS ? 'Hide' : 'Show'} Stats Panel`);
+                    dispatch(setActiveHudPanel(hud.activeHudPanel === HudPanel.STATS ? HudPanel.NONE : HudPanel.STATS));
+            }}>
                 <FontAwesomeIcon 
                     className="Clickable" 
                     icon={faChartBar} 

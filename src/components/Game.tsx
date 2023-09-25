@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
+import Analytics from '../analytics';
 import { select, setShowSettings } from '../data/boardSlice';
 import { HudDisplayMode, HudPanel, setActiveHudPanel, setScreenSize } from '../data/hudSlice';
 import { setSelectedPaint } from '../data/paintPaletteSlice';
@@ -20,6 +21,7 @@ class Game extends React.Component<AppState & DispatchProps> {
 
     escFunction =  (event: { key: string; }) => {
         if (event.key === "Escape") {
+            Analytics.logEvent('key_pressed: Escape');
             // close settings panel first, if it is open. 
             if (this.props.board.show_settings) {
                 this.props.setNotShowSettings();

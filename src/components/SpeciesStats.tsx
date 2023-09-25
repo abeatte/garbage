@@ -7,6 +7,7 @@ import { select } from "../data/boardSlice";
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { AppState } from "../data/store";
 import CombatantModel, { Character, DecisionType } from "../models/CombatantModel";
+import Analytics from "../analytics";
 
 const SpeciesStats = () => {
     const board = useSelector((state: AppState) => state.board);
@@ -53,7 +54,8 @@ const SpeciesStats = () => {
                     <span 
                         key={`${c.id}`}
                         className={selected_position === c.position ? "Selected" : ""} 
-                        onClick={() => {                            
+                        onClick={() => { 
+                            Analytics.logEvent('button_clicked: Stats combatant of species selected');                           
                             dispatch(select({position: c.position, follow_combatant: true}));
                             dispatch(setActiveHudPanel(HudPanel.DETAILS));
 
@@ -102,6 +104,7 @@ const SpeciesStats = () => {
             <button 
                 className={classNames("Clickable", "Exit")} 
                 onClick={() => {
+                    Analytics.logEvent('button_clicked: Stats\' "X"');
                     dispatch(setActiveHudPanel(HudPanel.NONE));
                 }}
             >

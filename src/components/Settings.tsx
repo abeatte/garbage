@@ -21,6 +21,7 @@ import {
 } from "../data/boardSlice";
 import { faListDots, faPause, faPlay } from "@fortawesome/free-solid-svg-icons";
 import Maps from "../data/Map";
+import Analytics from "../analytics";
 
 const Settings = ({onReset}: {onReset: () => void}) => {
     const ticker = useSelector((state: AppState) => state.ticker);
@@ -39,20 +40,32 @@ const Settings = ({onReset}: {onReset: () => void}) => {
     const resize_section = (
         <div style={{width: "182px"}}>
             <div className="Speed_buttons_container">
-                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(shrinkWidth())}>
+                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                    Analytics.logEvent('button_click: Shrink Width');
+                    dispatch(shrinkWidth());
+                }}>
                     <span>{"<"}</span>
                 </button>
                 <span className={classNames('Label', 'Centered')}>{`Width`}</span>
-                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(growWidth())}>
+                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                    Analytics.logEvent('button_click: Grow Width');
+                    dispatch(growWidth());
+                }}>
                     <span>{">"}</span>
                 </button>
             </div> 
             <div className="Speed_buttons_container">
-                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(shrinkHeight())}>
+                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                    Analytics.logEvent('button_click: Shrink Height');
+                    dispatch(shrinkHeight());
+                }}>
                     <span>{"<"}</span>
                 </button>
                 <span className={classNames('Label', 'Centered')}>{`Height`}</span>
-                <button className={classNames('Clickable', 'Button')} onClick={() => dispatch(growHeight())}>
+                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                    Analytics.logEvent('button_click: Grow Height');
+                    dispatch(growHeight());
+                }}>
                     <span>{">"}</span>
                 </button>
             </div> 
@@ -66,6 +79,7 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                         type="checkbox" 
                         checked={super_speed}
                         onChange={(input) => {
+                            Analytics.logEvent(`button_click: Super Speed ${input.target.checked ? 'Checked' : 'Unchecked'}`);
                             setSuperSpeed(input.target.checked)
                             dispatch(speedChange({
                                 value: input.target.checked ? MAX_TICK_SPEED: DEFAULT_TICK_SPEED, respectPause: true
@@ -80,6 +94,7 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                     type="checkbox" 
                     checked={board.use_genders}
                     onChange={(input) => {
+                        Analytics.logEvent(`button_click: Use Genders ${board.use_genders ? 'Unchecked' : 'Checked'}`);
                         dispatch(toggleUseGenders());
                     }}
                 />
@@ -91,6 +106,7 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                     type="checkbox" 
                     checked={board.show_real_tile_images}
                     onChange={(input) => {
+                        Analytics.logEvent(`button_click: Show Real Tile Images ${board.show_real_tile_images ? 'Unchecked' : 'Checked'}`);
                         dispatch(toggleShowRealTileImages());
                     }}
                 />
@@ -102,6 +118,7 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                     type="checkbox" 
                     checked={board.show_tile_potentials}
                     onChange={(input) => {
+                        Analytics.logEvent(`button_click: Show Tile Potentials ${board.show_tile_potentials ? 'Unchecked' : 'Checked'}`);
                         dispatch(toggleShowTilePotentials());
                     }}
                 />
@@ -112,7 +129,10 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                 <input
                     style={{width: "48px"}} 
                     type={"number"} 
-                    onChange={(input) => dispatch(setInitialNumCombatants(parseInt(input.target.value)))} 
+                    onChange={(input) => {
+                        Analytics.logEvent(`input_changed: Initial Combatant Count ${input.target.value}`);
+                        dispatch(setInitialNumCombatants(parseInt(input.target.value)));
+                    }}
                     value={board.initial_num_combatants}/>
             </div>
             <div>
@@ -120,7 +140,10 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                 <select
                     className={classNames('Dropdown_selector', 'Clickable')}
                     value={board.movement_logic}
-                    onChange={(input) => dispatch(setMovementLogic(input.target.value as unknown as MovementLogic))}
+                    onChange={(input) => {
+                        Analytics.logEvent(`input_changed: Movement Logic -> ${input.target.value}`);
+                        dispatch(setMovementLogic(input.target.value as unknown as MovementLogic));
+                    }}
                     >
                         {Object.values(MovementLogic).map(l => (<option key={l.toString()}>{l}</option>))}
                 </select>
@@ -130,9 +153,11 @@ const Settings = ({onReset}: {onReset: () => void}) => {
                 <select
                     className={classNames('Dropdown_selector', 'Clickable')}
                     value={board.map}
-                    onChange={(input) => dispatch(setMap(input.target.value))}
-                    >
-                        {Object.values(Maps).map(m => (<option key={m.name.toString()}>{m.name}</option>))}
+                    onChange={(input) => {
+                        Analytics.logEvent(`input_changed: Map -> ${input.target.value}`);
+                        dispatch(setMap(input.target.value));
+                }}>
+                    {Object.values(Maps).map(m => (<option key={m.name.toString()}>{m.name}</option>))}
                 </select>
             </div>
         </>
@@ -141,7 +166,10 @@ const Settings = ({onReset}: {onReset: () => void}) => {
         <button 
         style={{width: "182px"}}
             className={classNames('Clickable', 'Button', 'Restart')} 
-            onClick={() => onReset()
+            onClick={() => {
+                Analytics.logEvent('button_click: Restart');
+                onReset();
+            }
         }>
             <span>{"Restart"}</span>
         </button>
@@ -151,8 +179,10 @@ const Settings = ({onReset}: {onReset: () => void}) => {
         <div style={{margin: "0px 8px 0px 0px"}}>
             <button 
                 className={classNames('Clickable', 'Button')} 
-                onClick={() => dispatch(setShowSettings(!board.show_settings))
-            }>
+                onClick={() => {
+                    Analytics.logEvent('button_click: Show Settings');
+                    dispatch(setShowSettings(!board.show_settings));
+            }}>
                 <FontAwesomeIcon 
                     className="Clickable" 
                     icon={faListDots} 
@@ -168,8 +198,10 @@ const Settings = ({onReset}: {onReset: () => void}) => {
         <div style={{margin: "0px 8px 0px 0px"}}>
             <button 
                 className={classNames('Clickable', 'Button')} 
-                onClick={() => dispatch(pauseUnpause())
-            }>
+                onClick={() => {
+                    Analytics.logEvent('button_click: Pause/Unpause');
+                    dispatch(pauseUnpause());
+            }}>
                 <FontAwesomeIcon 
                     className="Clickable" 
                     icon={ticker.tick_speed > 0 ? faPause : faPlay} 

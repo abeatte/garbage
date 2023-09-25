@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Analytics from "../analytics";
 import '../css/PaintPalette.css';
 import { select } from "../data/boardSlice";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
@@ -30,6 +31,7 @@ const PaintPalette = () => {
             showRealTileImages={board.show_real_tile_images}
             className={classNames("Clickable")}
             onClick={() => {
+                Analytics.logEvent('button_clicked: Paint Palette Target selected');
                 dispatch(setSelectedPaint(Pointer.Target));
                 dispatch(select({}));
                 dispatch(setActiveHudPanel(HudPanel.NONE));
@@ -53,6 +55,7 @@ const PaintPalette = () => {
             showRealTileImages={board.show_real_tile_images}
             className={classNames("Clickable")}
             onClick={() => {
+                Analytics.logEvent('button_clicked: Paint Palette Kill selected');
                 dispatch(setSelectedPaint(Pointer.Kill));
                 dispatch(select({}));
                 dispatch(setActiveHudPanel(HudPanel.NONE));
@@ -85,6 +88,7 @@ const PaintPalette = () => {
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {
+                    Analytics.logEvent(`button_clicked: Paint Palette tile type ${tile.type} selected`);
                     dispatch(setSelectedPaint(tile.type));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
@@ -111,6 +115,7 @@ const PaintPalette = () => {
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {
+                    Analytics.logEvent(`button_clicked: Paint Palette item type ${item.type} selected`);
                     dispatch(setSelectedPaint(item.type));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
@@ -133,6 +138,7 @@ const PaintPalette = () => {
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {
+                    Analytics.logEvent('button_clicked: Paint Palette spider selected');
                     dispatch(setSelectedPaint(spider.spider_type));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
@@ -154,6 +160,7 @@ const PaintPalette = () => {
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {
+                    Analytics.logEvent(`'button_clicked: Paint Palette ${character} selected`);
                     dispatch(setSelectedPaint(character));
                     dispatch(select({}));
                     if (hud.activeHudPanel === HudPanel.DETAILS) {
@@ -178,7 +185,10 @@ const PaintPalette = () => {
             <div style={{display: 'flex', marginRight: '8px', marginTop: '8px'}}>
                 <FontAwesomeIcon 
                     id="paint_roller"
-                    onClick={() => dispatch(togglePalettsDisplayed())}
+                    onClick={() => {
+                        Analytics.logEvent('button_clicked: Paint Palette display toggled');
+                        dispatch(togglePalettsDisplayed())
+                    }}
                     icon={faPaintRoller} 
                     color='dark' 
                     size='lg' 
@@ -191,6 +201,7 @@ const PaintPalette = () => {
                         <button 
                             className={classNames("Clickable", "Exit")} 
                             onClick={() => {
+                                Analytics.logEvent('button_clicked: Paint Palette\'s "X"');
                                 dispatch(togglePalettsDisplayed());
                             }}
                         >
