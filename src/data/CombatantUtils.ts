@@ -45,7 +45,6 @@ export function initCombatantStartingPos(args: {species: Character, tiles: TileM
     let starting_pos = -1;
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
-        const potential_tile = args.tiles[potential_pos];
         if (!args.combatants[potential_pos]) {
             starting_pos = potential_pos;
         }
