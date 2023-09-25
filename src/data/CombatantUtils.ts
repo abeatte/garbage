@@ -46,7 +46,7 @@ export function initCombatantStartingPos(args: {species: Character, tiles: TileM
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
         const potential_tile = args.tiles[potential_pos];
-        if (!args.combatants[potential_pos] && getMapTileEffect({species: args.species, tileType: potential_tile.type}) > -1) {
+        if (!args.combatants[potential_pos]) {
             starting_pos = potential_pos;
         }
     }
@@ -105,7 +105,6 @@ export function updateCombatantsPositionsAfterResize(
 
         if (new_pos > -1 && new_pos < window_width * window_height) {
             const occupient = new_combatants[new_pos];
-            // tie goes to whoever got there first.
             new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[old_pos]) : combatants[old_pos];
             new_combatants[new_pos].position = new_pos;
             new_combatants[new_pos].visited_positions[new_pos] = new_pos;
