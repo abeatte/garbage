@@ -87,10 +87,10 @@ export function getMapTileEffect({species, tileType}: {species: Character | unde
         case Character.Turtle:
             if (tileType === TileType.Fire) {
                 // fire hurts a bit more
-                species_buff = -5;
+                species_buff = -10;
             } else if (tileType === TileType.Water) {
-                // water becomes neutral
-                species_buff = +5;
+                // water becomes a little positive
+                species_buff = +10;
             }
             break;
         case Character.Lizard:
