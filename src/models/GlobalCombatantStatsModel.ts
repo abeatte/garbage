@@ -31,8 +31,10 @@ export function getInitGlobalCombatantStatsModel(existing_values: {births: numbe
     }
 }
 
-export function getStrengthRating(args: {global_combatant_stats: GlobalCombatantStatsModel, fitness: number, immortal: boolean}): Strength {
-    if (args.immortal){
+export function getStrengthRating(args: {global_combatant_stats: GlobalCombatantStatsModel | undefined, fitness: number, immortal: boolean}): Strength {
+    if (!args.global_combatant_stats) {
+        return Strength.Average;
+    } else if (args.immortal){
         return Strength.Immortal;
     } else if (args.fitness > args.global_combatant_stats.average_bar) {
         return Strength.Strong;

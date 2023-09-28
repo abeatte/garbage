@@ -57,7 +57,9 @@ export function getRandomCombatantName(): string {
     return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
 }
 
-export function createCombatant(args: {spawn_position: number, species?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel}): CombatantModel {
+export function createCombatant(
+    args: {spawn_position: number, species?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel | undefined},
+): CombatantModel {
     const visited_positions = {} as {[position: number]: number};
     visited_positions[args.spawn_position] = args.spawn_position;
     return {   

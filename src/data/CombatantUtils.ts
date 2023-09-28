@@ -76,7 +76,7 @@ export function updateCombatantsPositionsAfterResize(
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const posData = 
-                getSurroundingPos({species: undefined, position: old_pos, window_width: old_window_width, tiles, combatants});
+                getSurroundingPos({species: combatants[old_pos].species, position: old_pos, window_width: old_window_width, tiles, combatants});
             const up_position = posData.surroundings[ClockFace.t];
             const up_left_position = posData.surroundings[ClockFace.tl];
             const left_position = posData.surroundings[ClockFace.l];
