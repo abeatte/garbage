@@ -198,10 +198,10 @@ function getBestMatePosition(
     return best_mate_position;
 }
 
-export function requestMove({movement_logic, brain, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, brains, posData, current_position, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
-        brain: NeuralNetwork<Input, Output>,
+        brains: {[species: string]:NeuralNetwork<Input, Output>},
         posData: PosData,
         current_position: number, 
         tiles: TileModel[], 
@@ -269,6 +269,7 @@ export function requestMove({movement_logic, brain, posData, current_position, t
     if (movement_logic === MovementLogic.NeuralNetwork) {
         // TODO: the Neural Network is blind to mating situations. 
         // this causes combatants to just sit in one spot when near others. 
+        const brain = brains[self.species];
         position = Brain.move(brain, self, posData);
     } else {
         const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;

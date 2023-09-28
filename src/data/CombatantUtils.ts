@@ -1,7 +1,7 @@
 import { Combatants, Items, MovementLogic } from "./boardSlice";
 import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
-import { TileModel, updateMapTileScorePotentials } from "../models/TileModel";
+import { getMapTileScorePotential, TileModel, updateMapTileScorePotentials } from "../models/TileModel";
 import Brain from "../models/Brain";
 import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../models/ItemModel";
 import { paintTileForSpider, SpiderModel } from "../models/SpiderModel";
@@ -124,7 +124,7 @@ export function calculateCombatantMovements(
         tiles: TileModel[]
     }
 ): {combatants: Combatants, births: number, deaths: number} {
-    const brain = Brain.init();
+    const brains = Brain.init();
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
@@ -163,7 +163,7 @@ export function calculateCombatantMovements(
             {
                 posData,
                 movement_logic, 
-                brain, 
+                brains, 
                 current_position, 
                 tiles, 
                 window_width,
@@ -590,7 +590,8 @@ export function getSurroundingPos(
     ret.max_potential = Number.MIN_VALUE;
     
     const setSurrounding = (position: number) => {
-        const score_potential = getMapTileEffect({species, tileType: tiles[position]?.type});
+        const score_potential = 
+            getMapTileScorePotential({species: species ?? Character.Bunny, position, tiles, window_width});
         if (score_potential < ret.min_potential) {
             ret.min_potential = score_potential;
         }

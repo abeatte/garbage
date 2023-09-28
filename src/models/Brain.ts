@@ -3,10 +3,27 @@ import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUti
 import { Input, Output } from "../scripts/BrainTrainer";
 import CombatantModel, { Character, getNewPositionFromClockFace } from "./CombatantModel";
 
-const neuralNetworkJSON = require('../data/NeuralNetwork.json');
+const bunnyNeuralNetworkJSONPath = require('../data/Bunny_NeuralNetwork.json');
+const turtleNeuralNetworkJSONPath = require('../data/Turtle_NeuralNetwork.json');
+const lizardNeuralNetworkJSONPath = require('../data/Lizard_NeuralNetwork.json');
+const elephantNeuralNetworkJSONPath = require('../data/Elephant_NeuralNetwork.json');
+const dogNeuralNetworkJSONPath = require('../data/Dog_NeuralNetwork.json');
+const catNeuralNetworkJSONPath = require('../data/Cat_NeuralNetwork.json');
+const unicornNeuralNetworkJSONPath = require('../data/Unicorn_NeuralNetwork.json');
+
 const brain = require('brain.js');
 
-const init = () => {
+const brains = {
+    Bunny: bunnyNeuralNetworkJSONPath,
+    Turtle: turtleNeuralNetworkJSONPath,
+    Lizard: lizardNeuralNetworkJSONPath,
+    Elephant: elephantNeuralNetworkJSONPath,
+    Dog: dogNeuralNetworkJSONPath,
+    Cat: catNeuralNetworkJSONPath,
+    Unicorn: unicornNeuralNetworkJSONPath,
+};
+
+const init = (): {[species: string]: NeuralNetwork<Input, Output>} => {
     // https://www.npmjs.com/package/brain.js?activeTab=readme
     const config = {
         inputSize: 9,
@@ -16,14 +33,20 @@ const init = () => {
         activation: 'sigmoid', // supported activation types: ['sigmoid', 'relu', 'leaky-relu', 'tanh'],
         leakyReluAlpha: 0.01, // supported for activation type 'leaky-relu'
     };
-    // create a simple feed forward neural network with backpropagation
-    const net = new brain.NeuralNetwork(config);
+
+    const nets: {[species: string]: NeuralNetwork<Input, Output>} = {};
+    Object.values(Character).forEach(c => {
+        // create a simple feed forward neural network with backpropagation
+        const net = new brain.NeuralNetwork(config);
+
+        const jsonFile = brains[c];
+        if (jsonFile?.sizes?.length > 0) {
+            net.fromJSON(jsonFile);
+        }
+        nets[c] = net;
+    });
     
-    if (neuralNetworkJSON?.sizes?.length > 0) {
-        net.fromJSON(neuralNetworkJSON);
-    }
-    
-    return net;
+    return nets;
 }
 
 const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, posData: PosData): number => {

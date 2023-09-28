@@ -22,7 +22,7 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
     tiles.forEach((t, idx) => {
         Object.values(Character).forEach(c => {
             t.score_potential[c] = 
-        Math.round(getMapTileScorePotential({species: c, position: idx, tiles, window_width}));
+        getMapTileScorePotential({species: c, position: idx, tiles, window_width});
         });
     });
 }
@@ -31,7 +31,7 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
  * @returns the given tile's potential as a tile to move to
  * (Tiles that are near high-value tiles have more potential than those near low-value/hurtful tiles)
  */
- function getMapTileScorePotential(args: {species: Character, position: number, tiles: TileModel[], window_width: number}): number {
+ export function getMapTileScorePotential(args: {species: Character, position: number, tiles: TileModel[], window_width: number}): number {
     const {species, position, tiles, window_width} = args;
 
     let possible_directions = Object.values(LegalMoves).length - 2;
@@ -64,5 +64,5 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
     
     // TODO: in the future, take into account an occupient of nearby tiles and their strengths;
     
-    return getMapTileEffect({species, tileType: tiles[position].type}) + (position_potential / possible_directions);
+    return Math.round(getMapTileEffect({species, tileType: tiles[position].type}) + (position_potential / possible_directions));
 }
