@@ -19,7 +19,7 @@ interface TrainingSet extends INeuralNetworkDatum<Input, Output> {
 
 const JSON_FILE_PATH = path.join(__dirname, '../data/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
-const NUM_TRAINING_MAPS = 1;
+const NUM_TRAINING_MAPS = 5;
 
 const getTrainingSet = (species: Character, current_position: number, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
