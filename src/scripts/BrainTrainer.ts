@@ -1,7 +1,7 @@
-import { NeuralNetwork } from "brain.js/dist/src";
+import { ITrainingStatus } from "brain.js/dist/src/feed-forward";
 import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neural-network";
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import path from "path";
 import { DEFAULTS, MovementLogic } from "../data/boardSlice";
 import { DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
@@ -19,7 +19,7 @@ interface TrainingSet extends INeuralNetworkDatum<Input, Output> {
 
 const JSON_FILE_PATH = path.join(__dirname, '../data/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
-const NUM_TRAINING_MAPS = 5;
+const NUM_TRAINING_MAPS = 1;
 
 const getTrainingSet = (species: Character, current_position: number, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
@@ -49,7 +49,7 @@ const getTrainingSet = (species: Character, current_position: number, posData: P
     return { input, output };
 }
 
-const train = (species: Character, net: NeuralNetwork<Input, Output>) => {
+const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
     // TODO: finish creating this so that the posData will have a Clockface.C combataint to use for species. 
@@ -67,57 +67,43 @@ const train = (species: Character, net: NeuralNetwork<Input, Output>) => {
             const posData = getSurroundingPos({species, position, window_width: width, tiles, combatants})
             training_sets.push(getTrainingSet(species, position, posData, tiles, width));
         }
-
-        console.log(`Training sets built: (${map + 1}/${NUM_TRAINING_MAPS})`);
     }
-
-    console.log(`\nGenerated a total of ${training_sets.length} training sets.\n`);
-
-    // throw new Error();
-    console.log('\nTraining...');
-    net.train(training_sets, {
-        log: (status: INeuralNetworkState) => {
-            console.log(`Training Delta: ${status.error}`, '...'.repeat(status.iterations / 2000));
-        },
-        logPeriod: 2000,
-    });
-    console.log(`${species.toString()} Neural Network trained!\n`);
+    return training_sets;
 }
 
 const writeJSONToFile = (species: Character, nn_json: INeuralNetworkJSON) => {
-    console.log('Writing JSON to file...');
     const file_path = JSON_FILE_PATH + species.toString() + '_' + JSON_FILE_NAME
     writeFileSync(file_path, JSON.stringify(nn_json), 'utf8');
-    console.log(`JSON has been written for ${species.toString()}.\n`);
 };
 
-const readTextFromJSONFile = (species: Character): string => {
-    const file_path = JSON_FILE_PATH + species.toLowerCase() + '/' + JSON_FILE_NAME
-    const file_exists = existsSync(file_path);
-    console.log(`${species.toString()} JSON file: `, file_exists);
-
-    let text = '';
-    if (file_exists) {
-        console.log('Reading JSON from file...');
-        text = readFileSync(file_path, 'utf8');
-        console.log('JSON has been read.\n');
-    }
-    
-    return text;
-}
-
 export function run() {
-    
-    console.log("Commencing training...")
+    const start_time = Date.now();
 
     const nets = Brain.init();
+    const trainings: Promise<ITrainingStatus>[] = [];
     Object.values(Character).forEach(c => {
-        console.log(`${c.toString()}...`);
-        train(c, nets[c]);
-        writeJSONToFile(c, nets[c].toJSON());
+        const training_sets = buildTrainingSets(c);
+        // throw new Error();
+        trainings.push(nets[c].trainAsync(training_sets, {        
+            log: (status: INeuralNetworkState) => {
+                const time_lapse_sec = Math.floor((Date.now() - start_time) / 1000);
+                console.log(
+                    '[' + ('.'.repeat(status.iterations / 2000)) + (' '.repeat(10 - status.iterations / 2000)) + `] (${time_lapse_sec} sec)`,
+                    `Training Delta: ${status.error.toFixed(10)} (${c.toString()})`,
+                );
+            },
+            logPeriod: 2000,
+        }));
     });
 
-    console.log('Training complete!\n');
+    console.log("Running training...");
+    console.log("(Note: this can take up to 30 min per Map)")
+    Promise.all(trainings).then(_results => {
+        Object.values(Character).forEach(c => {
+            writeJSONToFile(c, nets[c].toJSON());
+        });
+        console.log('\nTraining complete!\n');
+    });
 }
 
 run();
