@@ -86,9 +86,15 @@ export function run() {
         // throw new Error();
         trainings.push(nets[c].trainAsync(training_sets, {        
             log: (status: INeuralNetworkState) => {
-                const time_lapse_sec = Math.floor((Date.now() - start_time) / 1000);
+                const time_lapse = (Date.now() - start_time);
+                const hours = Math.floor(time_lapse / (1000 * 60 * 60)),
+                    minutes = Math.floor((time_lapse / (1000 * 60)) % 60),
+                    seconds = Math.floor((time_lapse / 1000) % 60);
+
+                const duration_string = `${hours}h ${minutes}m ${seconds}s`;
+
                 console.log(
-                    '[' + ('.'.repeat(status.iterations / 2000)) + (' '.repeat(10 - status.iterations / 2000)) + `] (${time_lapse_sec} sec)`,
+                    '[' + ('.'.repeat(status.iterations / 2000)) + (' '.repeat(10 - status.iterations / 2000)) + `] (${duration_string})`,
                     `Training Delta: ${status.error.toFixed(10)} (${c.toString()})`,
                 );
             },
