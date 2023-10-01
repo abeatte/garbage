@@ -334,7 +334,7 @@ export function requestMove({movement_logic, brains, posData, current_position, 
                     current_position, 
                     clockFace, 
                     window_width, 
-                    tiles.length);
+                    tiles.length);  
             }
             attempts--;
             // avoid fire if you can

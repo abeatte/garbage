@@ -176,11 +176,13 @@ export function calculateCombatantMovements(
             working_combatants[new_position] = combatant;
             combatant.position = new_position;
             combatant.visited_positions[new_position] = new_position;
+        } else if (combatant.id === occupant.id) {
+            // this combatant has decided not to move anywhere
+            // no-op
         } else if (
             occupant.species === combatant.species &&
             // if a Fighter is here they're not here to mate!
-            (movement_logic === MovementLogic.DecisionTree &&
-            combatant.decision_type !== DecisionType.Fighter)
+            combatant.decision_type !== DecisionType.Fighter
         ) {
             // space is occupied by a friendly
             if (
