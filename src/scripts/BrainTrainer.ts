@@ -17,7 +17,7 @@ interface TrainingSet extends INeuralNetworkDatum<Input, Output> {
     output: Output,
 }
 
-const JSON_FILE_PATH = path.join(__dirname, '../data/');
+const JSON_FILE_PATH = path.join(__dirname, '../data/nets/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
 const NUM_TRAINING_MAPS = 1;
 

@@ -3,13 +3,13 @@ import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUti
 import { Input, Output } from "../scripts/BrainTrainer";
 import CombatantModel, { Character, getNewPositionFromClockFace } from "./CombatantModel";
 
-const bunnyNeuralNetworkJSONPath = require('../data/Bunny_NeuralNetwork.json');
-const turtleNeuralNetworkJSONPath = require('../data/Turtle_NeuralNetwork.json');
-const lizardNeuralNetworkJSONPath = require('../data/Lizard_NeuralNetwork.json');
-const elephantNeuralNetworkJSONPath = require('../data/Elephant_NeuralNetwork.json');
-const dogNeuralNetworkJSONPath = require('../data/Dog_NeuralNetwork.json');
-const catNeuralNetworkJSONPath = require('../data/Cat_NeuralNetwork.json');
-const unicornNeuralNetworkJSONPath = require('../data/Unicorn_NeuralNetwork.json');
+const bunnyNeuralNetworkJSONPath = require('../data/nets/Bunny_NeuralNetwork.json');
+const turtleNeuralNetworkJSONPath = require('../data/nets/Turtle_NeuralNetwork.json');
+const lizardNeuralNetworkJSONPath = require('../data/nets/Lizard_NeuralNetwork.json');
+const elephantNeuralNetworkJSONPath = require('../data/nets/Elephant_NeuralNetwork.json');
+const dogNeuralNetworkJSONPath = require('../data/nets/Dog_NeuralNetwork.json');
+const catNeuralNetworkJSONPath = require('../data/nets/Cat_NeuralNetwork.json');
+const unicornNeuralNetworkJSONPath = require('../data/nets/Unicorn_NeuralNetwork.json');
 
 const brain = require('brain.js');
 
