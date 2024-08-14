@@ -19,11 +19,13 @@ import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../mo
 import Maps from './Map';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
+export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
 
 export type Combatants = {[position: number]: CombatantModel};
 export type Items = {[position: number]: ItemModel[]};
 
 export const DEFAULTS = {
+    game_mode: GameMode.Title,
     window_width: 26,
     window_height: 30,
     num_combatants: 25,
@@ -34,6 +36,7 @@ export const DEFAULTS = {
 }
 
 interface BoardState {
+    game_mode: GameMode,
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
     width: number,
@@ -117,8 +120,8 @@ function handleResize(
     state.global_combatant_stats.deaths += deaths;
 }
 
-function initState(args?: {map: string, width: number, height: number, initial_num_combatants: number, use_genders: boolean}): BoardState {
-    const {map, width, height, initial_num_combatants, use_genders} = args ?? {map: Maps['World'].name, width: DEFAULTS.window_width,
+function initState(args?: {game_mode: GameMode, map: string, width: number, height: number, initial_num_combatants: number, use_genders: boolean}): BoardState {
+    const {game_mode, map, width, height, initial_num_combatants, use_genders} = args ?? {map: Maps['World'].name, width: DEFAULTS.window_width,
         height: DEFAULTS.window_height,
         use_genders: DEFAULTS.use_genders,
         initial_num_combatants: DEFAULTS.num_combatants,
@@ -127,6 +130,7 @@ function initState(args?: {map: string, width: number, height: number, initial_n
     const {combatants, global_combatant_stats} = 
         initCombatants({tiles, num_combatants: initial_num_combatants, use_genders});
     return {
+        game_mode: game_mode ?? GameMode.Title,
         game_count: 1,
         global_combatant_stats, 
         width,
@@ -182,8 +186,17 @@ export const boardSlice = createSlice({
         state.height += 1
         handleResize({state, old_window_width, old_window_height});
     },
+    setGameMode: (state, action: { payload: GameMode }) => {
+        if (state.game_mode == action.payload) {
+            return;
+        }
+
+        state.game_mode = action.payload;
+        reset();
+    },
     reset: (state) => {
         const new_state = initState({
+            game_mode: state.game_mode,
             map: state.map,
             width: state.width, 
             height: state.height, 
@@ -367,6 +380,7 @@ export const boardSlice = createSlice({
 })
 
 export const { 
+    setGameMode,
     shrinkWidth, 
     growWidth, 
     shrinkHeight, 
