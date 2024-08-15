@@ -8,7 +8,7 @@ import {
 } from "../data/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
-import { MovementLogic } from "../data/boardSlice";
+import { ArrowKey, MovementLogic } from "../data/boardSlice";
 import Brain from "./Brain";
 import { NeuralNetwork } from "brain.js/dist/src";
 import { Input, Output } from "../scripts/BrainTrainer";
@@ -31,7 +31,9 @@ export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
+    is_player: boolean;
     taken_turn: boolean;
+    player_turn: number;
     state: State;
     visited_positions: {[position: number]: number};
     kills: number;
@@ -65,7 +67,9 @@ export function createCombatant(
     return {   
         id: uuid(),
         name: getRandomCombatantName(),
+        is_player: false,
         taken_turn: false,
+        player_turn: -1,
         state: State.Spawning, 
         kills: 0,
         fitness: 0,
@@ -343,6 +347,27 @@ export function requestMove({movement_logic, brains, posData, current_position, 
     
     return position;
 };
+
+export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_count: number) {
+    let clockFace;
+    switch (arrowKey) {
+        case ArrowKey.ARROWLEFT:
+            clockFace = ClockFace.l;
+            break;
+        case ArrowKey.ARROWRIGHT:
+            clockFace = ClockFace.r;
+            break;
+        case ArrowKey.ARROWUP:
+            clockFace = ClockFace.t;
+            break;
+        case ArrowKey.ARROWDOWN:
+            clockFace = ClockFace.b;
+            break;
+        default:
+            clockFace = ClockFace.c;
+    } 
+    return getNewPositionFromClockFace(current_position, clockFace, window_width, tile_count);
+}
 
 export function getNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
     let new_position = current_position;
