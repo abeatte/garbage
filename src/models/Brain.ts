@@ -1,5 +1,5 @@
 import { NeuralNetwork } from "brain.js/dist/src";
-import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/CombatantUtils";
+import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/utils/CombatantUtils";
 import { Input, Output } from "../scripts/BrainTrainer";
 import CombatantModel, { Character, getNewPositionFromClockFace } from "./CombatantModel";
 

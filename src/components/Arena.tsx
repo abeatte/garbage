@@ -3,7 +3,7 @@ import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
 import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/tickerSlice'
-import { tick as combatantTick, reset as resetBoard, select, killSelected, spawnAtSelected, paintTile } from '../data/boardSlice'
+import { tick as combatantTick, movePlayer, reset as resetBoard, select, killSelected, spawnAtSelected, paintTile, GameMode, ArrowKey } from '../data/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
@@ -16,6 +16,8 @@ import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
+import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
+import Controls from "./Controls";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -31,46 +33,65 @@ class Arena extends React.Component<AppState & DispatchProps> {
     interval: NodeJS.Timer | undefined = undefined;
 
     auxFunctions = (event: KeyboardEvent) => {
-        if (event.key === ' ') {
+        const key = event.key.toUpperCase();
+        if (key === ' ') {
             Analytics.logEvent('key_pressed: Space');
             // stops page from scrolling
             event.preventDefault();
             this.props.pauseUnpause();
-        } else if (event.key === 'k' || event.key === 'K') {
+        } else if (key === 'K') {
             Analytics.logEvent('key_pressed: K');
             // stops page from scrolling
             event.preventDefault();
             this.props.killSelected();
-        } else if (event.key === 's' || event.key === 'S') {
+        } else if (key === 'S') {
             Analytics.logEvent('key_pressed: S');
             // stops page from scrolling
             event.preventDefault();
             this.props.spawnAtSelected();
         }
+
+        if (this.props.board.game_mode === GameMode.Adventure) {
+            if (key === ArrowKey.ARROWLEFT || 
+                key === ArrowKey.ARROWRIGHT || 
+                key === ArrowKey.ARROWUP || 
+                key === ArrowKey.ARROWDOWN) {
+                Analytics.logEvent(`key_pressed: ${key}`);
+                event.preventDefault();
+                this.props.movePlayer(key);
+                this.props.performTick();
+            }
+        }
     }
 
     componentDidMount() {
         document.addEventListener("keydown", this.auxFunctions, false);
-        const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
-        if (tick_interval > 0) {
-            this.interval = setInterval(() => this.props.performTick(), tick_interval);
+        if (this.props.board.game_mode === GameMode.God) {
+            const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
+            if (tick_interval > 0) {
+                this.interval = setInterval(() => this.props.performTick(), tick_interval);
+            }
         }
     }
 
     componentDidUpdate(prevProps: AppState, prevState: AppState) {
         // handle tick_speed updates
-        if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed) {
-            const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
-            clearInterval(this.interval);
-            if (tick_interval > 0) {
-                this.interval = setInterval(() => this.props.performTick(), tick_interval);
-            } 
+
+        if (this.props.board.game_mode === GameMode.God) {
+            if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed) {
+                const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
+                clearInterval(this.interval);
+                if (tick_interval > 0) {
+                    this.interval = setInterval(() => this.props.performTick(), tick_interval);
+                } 
+            }
         }
 
         // handle combatant updates
         if (
             Object.keys(this.props.board.combatants).length < 1 && 
-            Object.keys(this.props.board.items).length < 1
+            Object.keys(this.props.board.items).length < 1 && 
+            !!this.props.board.player
         ) {
             this.props.pause();
             clearInterval(this.interval);
@@ -88,7 +109,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
         const selected_position = this.props.board.selected_position;
         const tiles = [] as JSX.Element[];
         this.props.board.tiles.forEach((tile, idx) => {
-            const maybe_combatant = this.props.board.combatants[idx];
+            const maybe_combatant = getCombatantAtTarget({target: idx, player: this.props.board.player, combatants: this.props.board.combatants});
             const maybe_items = this.props.board.items[idx];
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
@@ -97,6 +118,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 key={'combatant'}
                 draggable={Object.keys(TileType).includes(selected_paint)} 
                 species={maybe_combatant.species}
+                state={maybe_combatant.state}
             />) : undefined;
             const maybe_items_view: JSX.Element[] = [];           
             const maybe_items_view_2: JSX.Element[] = [];
@@ -166,6 +188,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     </div>
                 </div>
                 <PaintPalette/>
+                {this.props.board.game_mode === GameMode.Adventure && <Controls/>}
             </div>
         );
     }
@@ -186,6 +209,7 @@ interface DispatchProps {
     pauseUnpause: () => void,
     killSelected: () => void,
     spawnAtSelected: () => void,
+    movePlayer:(key: ArrowKey) => void,
     pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
     paintOnTile: (paint_args: {position: number, type: PaintEntity}) => void,
@@ -206,6 +230,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         pauseUnpause: () => dispatch(pauseUnpause()),
         killSelected: () => dispatch(killSelected()),
         spawnAtSelected: () => dispatch(spawnAtSelected()),
+        movePlayer: (key: ArrowKey) => dispatch(movePlayer(key)),
         clickOnTile: (select_args) => {
             dispatch(select(select_args));
             dispatch(setActiveHudPanel(select_args ? HudPanel.DETAILS : HudPanel.NONE));

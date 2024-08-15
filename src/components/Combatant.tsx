@@ -1,7 +1,8 @@
 import React from 'react';
 import '../css/Combatant.css';
-import { Character } from '../models/CombatantModel';
+import { Character, State } from '../models/CombatantModel';
 import { Purpose } from '../models/EntityModel';
+import classNames from 'classnames';
 const Bunny = require('../images/combatants/bunny.png');
 const Turtle = require('../images/combatants/turtle.png');
 const Elephant = require('../images/combatants/lil_eli.png');
@@ -201,7 +202,7 @@ const getCharacter = (species: Character) => {
     return character;
 }
 
-const Combatant = (props: {species: Character, purpose?: Purpose, draggable?: boolean}) => {
+const Combatant = (props: {species: Character, state: State, purpose?: Purpose, draggable?: boolean}) => {
     const char = getCharacter(props.species);
     const for_detail_view = props.purpose === Purpose.Detail;
     const for_paint_view = props.purpose === Purpose.Paint;
@@ -209,7 +210,7 @@ const Combatant = (props: {species: Character, purpose?: Purpose, draggable?: bo
         return (<span style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</span>);
     } else {
         return (<div 
-            className="Sprite" 
+            className={classNames({"Sprite" : true, "Dead" : props.state === State.Dead})}
             draggable={props.draggable}
             style={
                 {

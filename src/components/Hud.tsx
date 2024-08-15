@@ -18,7 +18,7 @@ import {
 } from '../data/boardSlice'
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
-import { MIN_HEALTH } from '../data/CombatantUtils';
+import { MIN_HEALTH } from '../data/utils/CombatantUtils';
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
@@ -28,6 +28,7 @@ import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
 import { Purpose } from '../models/EntityModel';
 import Analytics from '../analytics';
+import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 
 function getEditableField(
     args: {
@@ -98,7 +99,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
     const [editing, setEditing] = useState({} as EditingObject);
 
     const selected_position = board.selected_position ?? -1;
-    const combatant = selected_position > -1 ? board.combatants[selected_position] : undefined;
+    const combatant = getCombatantAtTarget({target: selected_position, player: board.player, combatants: board.combatants});
     const items = selected_position > -1 ? board.items[selected_position] : undefined;
     const tile = selected_position > -1 ? board.tiles[selected_position]: undefined;
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
@@ -176,7 +177,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 <div>
                                     {
                                         combatant ? (
-                                            <Combatant purpose={Purpose.Detail} species={combatant.species}/>
+                                            <Combatant purpose={Purpose.Detail} species={combatant.species} state={combatant.state}/>
                                         ) : undefined
                                     }
                                     

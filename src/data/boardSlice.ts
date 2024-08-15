@@ -7,23 +7,27 @@ import {
     MIN_HEALTH,
     killAndCopy,
     addItemToBoard, 
-} from './CombatantUtils';
+} from './utils/CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
-import CombatantModel, { Character, createCombatant, Gender, getRandomGender, getRandomSpecies } from '../models/CombatantModel';
+import CombatantModel, { Character, createCombatant, Gender, getNewPositionFromArrowKey, getRandomGender, getRandomSpecies } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
-import { updateItemsAfterResize } from './ItemUtils';
+import { updateItemsAfterResize } from './utils/ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../models/SpiderModel';
 import Maps from './Map';
+import { getCombatantAtTarget } from './utils/TargetingUtils';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
+export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
+export enum ArrowKey { ARROWLEFT = "ARROWLEFT", ARROWRIGHT = "ARROWRIGHT", ARROWUP = "ARROWUP", ARROWDOWN = "ARROWDOWN" };
 
 export type Combatants = {[position: number]: CombatantModel};
 export type Items = {[position: number]: ItemModel[]};
 
 export const DEFAULTS = {
+    game_mode: GameMode.Title,
     window_width: 26,
     window_height: 30,
     num_combatants: 25,
@@ -34,6 +38,7 @@ export const DEFAULTS = {
 }
 
 interface BoardState {
+    game_mode: GameMode,
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
     width: number,
@@ -43,6 +48,7 @@ interface BoardState {
     show_settings: boolean,
     show_real_tile_images: boolean,
     show_tile_potentials: boolean,
+    player: CombatantModel | undefined,
     combatants: Combatants,
     items: Items,
     selected_position: number| undefined,
@@ -53,16 +59,28 @@ interface BoardState {
 }
 
 function initCombatants(
-    {tiles, num_combatants, use_genders}: 
-    {tiles: TileModel[], num_combatants: number, use_genders: boolean}
-): {combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
+    {tiles, num_combatants, init_player, use_genders}: 
+    {tiles: TileModel[], num_combatants: number, init_player: boolean, use_genders: boolean}
+): {player: CombatantModel | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel} {
     const combatants = {} as Combatants;
     const global_combatant_stats = getInitGlobalCombatantStatsModel();
+
+    let player = undefined;
+    if (init_player) {
+        player = createCombatant({
+            species: getRandomSpecies(), 
+            spawn_position: initCombatantStartingPos({tiles, player, combatants}), 
+            use_genders, 
+            global_combatant_stats,
+        });
+        player.is_player = true;
+    }
+
     for (let i = 0; i < num_combatants; i++) {
 
         const species = getRandomSpecies();
 
-        const c_pos: number = initCombatantStartingPos({species, tiles, combatants});
+        const c_pos: number = initCombatantStartingPos({tiles, player, combatants});
         if (c_pos < 0) {
             continue;
         }
@@ -87,7 +105,7 @@ function initCombatants(
     global_combatant_stats.weak_bar = (global_combatant_stats.average_fitness + global_combatant_stats.min_fitness)/2;;
     global_combatant_stats.average_bar = (global_combatant_stats.average_fitness + global_combatant_stats.max_fitness)/2;
 
-    return {combatants, global_combatant_stats};
+    return {player, combatants, global_combatant_stats};
 }
 
 function handleResize(
@@ -117,16 +135,17 @@ function handleResize(
     state.global_combatant_stats.deaths += deaths;
 }
 
-function initState(args?: {map: string, width: number, height: number, initial_num_combatants: number, use_genders: boolean}): BoardState {
-    const {map, width, height, initial_num_combatants, use_genders} = args ?? {map: Maps['World'].name, width: DEFAULTS.window_width,
+function initState(args?: {game_mode: GameMode, map: string, width: number, height: number, initial_num_combatants: number, use_genders: boolean}): BoardState {
+    const {game_mode, map, width, height, initial_num_combatants, use_genders} = args ?? {map: Maps['World'].name, width: DEFAULTS.window_width,
         height: DEFAULTS.window_height,
         use_genders: DEFAULTS.use_genders,
         initial_num_combatants: DEFAULTS.num_combatants,
     };
     const tiles = Maps[map].generate({width, height});
-    const {combatants, global_combatant_stats} = 
-        initCombatants({tiles, num_combatants: initial_num_combatants, use_genders});
+    const {player, combatants, global_combatant_stats} = 
+        initCombatants({tiles, num_combatants: initial_num_combatants, init_player: game_mode === GameMode.Adventure, use_genders});
     return {
+        game_mode: game_mode ?? GameMode.Title,
         game_count: 1,
         global_combatant_stats, 
         width,
@@ -136,6 +155,7 @@ function initState(args?: {map: string, width: number, height: number, initial_n
         show_settings: false,
         show_real_tile_images: true,
         show_tile_potentials: DEFAULTS.show_tile_potentials,
+        player, 
         combatants,
         items: {},
         selected_position: undefined,
@@ -182,8 +202,16 @@ export const boardSlice = createSlice({
         state.height += 1
         handleResize({state, old_window_width, old_window_height});
     },
+    setGameMode: (state, action: { payload: GameMode }) => {
+        if (state.game_mode === action.payload) {
+            return;
+        }
+
+        state.game_mode = action.payload;
+    },
     reset: (state) => {
         const new_state = initState({
+            game_mode: state.game_mode,
             map: state.map,
             width: state.width, 
             height: state.height, 
@@ -192,6 +220,7 @@ export const boardSlice = createSlice({
         });
 
         state.tiles = new_state.tiles;
+        state.player = new_state.player;
         state.combatants = new_state.combatants;
         state.items = {};
         state.selected_position = undefined;
@@ -199,24 +228,30 @@ export const boardSlice = createSlice({
         state.game_count += 1;
         state.global_combatant_stats = new_state.global_combatant_stats;
     },
-    tick: (state) => {
-        let combatant_id_to_follow : string | undefined;
-        if (state.follow_selected_combatant) {
-            combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
+    movePlayer: (state, action: {payload: ArrowKey}) => {
+        if (state.player) {
+            state.player.player_turn = 
+                getNewPositionFromArrowKey(state.player.position, action.payload, state.width, state.tiles.length);
         }
+    },
+    tick: (state) => {
+        const combatant_id_to_follow = getCombatantAtTarget({target: state.selected_position, player: state.player, combatants: state.combatants})?.id;
         const movement_result = calculateCombatantMovements({
             movement_logic: state.movement_logic,
             use_genders: state.use_genders,
+            player: state.player,
             combatants: state.combatants,
             global_combatant_stats: state.global_combatant_stats,
             window_width: state.width, 
             tiles: state.tiles
         });
+
         const old_global_combatant_stats = state.global_combatant_stats;
         old_global_combatant_stats.births += movement_result.births;
         old_global_combatant_stats.deaths += movement_result.deaths;
         
         const entity_result = updateEntities({
+            player: state.player,
             combatants: movement_result.combatants, 
             items: state.items,
             global_combatant_stats: old_global_combatant_stats, 
@@ -230,7 +265,7 @@ export const boardSlice = createSlice({
         state.global_combatant_stats = entity_result.globalCombatantStats;
 
         if (!!combatant_id_to_follow) {
-            const followed = Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
+            const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
             if (!!followed && followed.fitness > MIN_HEALTH) {
                 state.selected_position = followed.position;
             }
@@ -244,7 +279,7 @@ export const boardSlice = createSlice({
         state, 
         action: {payload: {field: any, value: string | boolean | number | undefined}}
     ) => {
-        const selected = state.combatants[state.selected_position ?? -1];
+        const selected = getCombatantAtTarget({target: state.selected_position, player: state.player, combatants: state.combatants});
         if (selected) {
             // @ts-ignore
             selected[action.payload.field] = action.payload.value;
@@ -349,11 +384,13 @@ export const boardSlice = createSlice({
         
         state.initial_num_combatants = action.payload;
 
-        const {combatants, global_combatant_stats} = initCombatants({
+        const {player, combatants, global_combatant_stats} = initCombatants({
             tiles: state.tiles, 
             num_combatants: state.initial_num_combatants, 
+            init_player: state.game_mode === GameMode.Adventure,
             use_genders: state.use_genders
         });
+        state.player = player;
         state.selected_position = undefined;
         state.follow_selected_combatant = false;
         state.game_count += 1;
@@ -367,11 +404,13 @@ export const boardSlice = createSlice({
 })
 
 export const { 
+    setGameMode,
     shrinkWidth, 
     growWidth, 
     shrinkHeight, 
     growHeight, 
     reset, 
+    movePlayer,
     tick, 
     select, 
     updateSelectedCombatant, 

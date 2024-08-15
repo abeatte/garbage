@@ -5,10 +5,10 @@ import {
     PosData,
     IllegalMoves,
     LegalMoves, 
-} from "../data/CombatantUtils";
+} from "../data/utils/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
-import { MovementLogic } from "../data/boardSlice";
+import { ArrowKey, MovementLogic } from "../data/boardSlice";
 import Brain from "./Brain";
 import { NeuralNetwork } from "brain.js/dist/src";
 import { Input, Output } from "../scripts/BrainTrainer";
@@ -31,7 +31,9 @@ export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
+    is_player: boolean;
     taken_turn: boolean;
+    player_turn: number;
     state: State;
     visited_positions: {[position: number]: number};
     kills: number;
@@ -65,8 +67,10 @@ export function createCombatant(
     return {   
         id: uuid(),
         name: getRandomCombatantName(),
+        is_player: false,
         taken_turn: false,
-        state: State.Spawning, 
+        player_turn: -1,
+        state: State.Alive,
         kills: 0,
         fitness: 0,
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
@@ -198,17 +202,15 @@ function getBestMatePosition(
     return best_mate_position;
 }
 
-export function requestMove({movement_logic, brains, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, brains, posData, self, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
         brains: {[species: string]:NeuralNetwork<Input, Output>},
         posData: PosData,
-        current_position: number, 
+        self: CombatantModel, 
         tiles: TileModel[], 
         window_width: number,
 }): number {
-    const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
-
     const bucketed_enemy_strengths = {} as {[key: string]: number[]}; 
     const bucketed_ally_strengths = {} as {[key: string]: number[]};
     const bucketed_mate_strengths = {} as {[key: string]: number[]};
@@ -331,7 +333,7 @@ export function requestMove({movement_logic, brains, posData, current_position, 
             } else {
                 const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
                 position = getNewPositionFromClockFace(
-                    current_position, 
+                    self.position, 
                     clockFace, 
                     window_width, 
                     tiles.length);  
@@ -343,6 +345,27 @@ export function requestMove({movement_logic, brains, posData, current_position, 
     
     return position;
 };
+
+export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_count: number) {
+    let clockFace;
+    switch (arrowKey) {
+        case ArrowKey.ARROWLEFT:
+            clockFace = ClockFace.l;
+            break;
+        case ArrowKey.ARROWRIGHT:
+            clockFace = ClockFace.r;
+            break;
+        case ArrowKey.ARROWUP:
+            clockFace = ClockFace.t;
+            break;
+        case ArrowKey.ARROWDOWN:
+            clockFace = ClockFace.b;
+            break;
+        default:
+            clockFace = ClockFace.c;
+    } 
+    return getNewPositionFromClockFace(current_position, clockFace, window_width, tile_count);
+}
 
 export function getNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
     let new_position = current_position;

@@ -4,7 +4,7 @@ import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
 import { DEFAULTS, MovementLogic } from "../data/boardSlice";
-import { DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
+import { DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
@@ -21,7 +21,7 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/nets/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
 const NUM_TRAINING_MAPS = 1;
 
-const getTrainingSet = (species: Character, current_position: number, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
+const getTrainingSet = (species: Character, combatant: CombatantModel, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = posData.surroundings[clockFace];
         if (sur !== undefined) {
@@ -37,7 +37,7 @@ const getTrainingSet = (species: Character, current_position: number, posData: P
             movement_logic: MovementLogic.DecisionTree, 
             brains: {}, 
             posData, 
-            current_position, 
+            self: combatant, 
             tiles, 
             window_width
         }
@@ -65,7 +65,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
             trainer.position = position;
             combatants[position] = trainer;
             const posData = getSurroundingPos({species, position, window_width: width, tiles, combatants})
-            training_sets.push(getTrainingSet(species, position, posData, tiles, width));
+            training_sets.push(getTrainingSet(species, trainer, posData, tiles, width));
         }
     }
     return training_sets;

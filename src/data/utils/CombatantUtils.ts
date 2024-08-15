@@ -1,10 +1,12 @@
-import { Combatants, Items, MovementLogic } from "./boardSlice";
-import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
-import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
-import { getMapTileScorePotential, TileModel, updateMapTileScorePotentials } from "../models/TileModel";
-import Brain from "../models/Brain";
-import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../models/ItemModel";
-import { paintTileForSpider, SpiderModel } from "../models/SpiderModel";
+import { Combatants, Items, MovementLogic } from "./../boardSlice";
+import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../../models/CombatantModel";
+import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
+import { getMapTileScorePotential, TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
+import Brain from "../../models/Brain";
+import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../../models/ItemModel";
+import { paintTileForSpider, SpiderModel } from "../../models/SpiderModel";
+import { Input, Output } from "../../scripts/BrainTrainer";
+import { NeuralNetwork } from "brain.js";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -41,11 +43,11 @@ export interface PosData {
     surroundings: (Surroundings | undefined)[],
 }
 
-export function initCombatantStartingPos(args: {species: Character, tiles: TileModel[], combatants: Combatants}): number {
+export function initCombatantStartingPos(args: {tiles: TileModel[], player: CombatantModel | undefined, combatants: Combatants}): number {
     let starting_pos = -1;
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
-        if (!args.combatants[potential_pos]) {
+        if (!args.combatants[potential_pos] && args.player?.position !== potential_pos) {
             starting_pos = potential_pos;
         }
     }
@@ -113,102 +115,144 @@ export function updateCombatantsPositionsAfterResize(
     return new_combatants;
 }
 
-export function calculateCombatantMovements(
-    {movement_logic, use_genders, combatants, global_combatant_stats, window_width, tiles}: 
+function processCombatantMovement(
+    {combatant, movement_logic, brains, use_genders, working_combatants, global_combatant_stats, window_width, tiles}: 
     {
         movement_logic: MovementLogic,
         use_genders: boolean, 
+        brains: {[species: string]: NeuralNetwork<Input, Output>},
+        combatant: CombatantModel | undefined,
+        working_combatants: {[position: number]: CombatantModel | undefined},
+        global_combatant_stats: GlobalCombatantStatsModel, 
+        window_width: number, 
+        tiles: TileModel[]
+    }
+): {combatant: CombatantModel | undefined, deaths: number} {
+    let deaths = 0; 
+
+    if (combatant === undefined || combatant.taken_turn) {
+        return {combatant, deaths};
+    }
+
+    const current_position = combatant.position;
+
+    if (!evalHealth(combatant) || combatant.state === State.Dead) {
+        // you die
+        combatant.state = State.Dead;
+        working_combatants[current_position] = undefined;
+        deaths++;
+        return {combatant, deaths};
+    }
+    
+    if (combatant.state === State.Mating) {
+        // do nothing; their turn is taken up by mating
+        return {combatant, deaths};
+    }
+
+    const posData = getSurroundingPos(
+        {
+            species: combatant.species,
+            position: current_position,
+            window_width, 
+            tiles, 
+            combatants: working_combatants,
+        }
+    );
+    let new_position = requestMove(
+        {
+            posData,
+            movement_logic, 
+            brains, 
+            self: combatant, 
+            tiles, 
+            window_width,
+        });
+
+    if (combatant.is_player && combatant.player_turn > -1) {
+        new_position = combatant.player_turn;
+        combatant.player_turn = -1;
+    } 
+
+    combatant.taken_turn = true;
+
+    const occupant = working_combatants[new_position];
+    if (!occupant) {
+        // space is empty; OK to move
+        working_combatants[current_position] = undefined;
+        working_combatants[new_position] = combatant;
+        combatant.position = new_position;
+        combatant.visited_positions[new_position] = new_position;
+    } else if (combatant.id === occupant.id) {
+        // this combatant has decided not to move anywhere
+        // no-op
+    } else if (
+        occupant.species === combatant.species &&
+        // if a Fighter is here they're not here to mate!
+        combatant.decision_type !== DecisionType.Fighter
+    ) {
+        // space is occupied by a friendly
+        if (
+            // your not too young
+            combatant.tick > MAX_YOUNGLING_TICK && 
+            // they're not too young
+            occupant.tick > MAX_YOUNGLING_TICK &&
+            (
+                // they are the correct gender (so woke! LOL)
+                combatant.gender === Gender.Unknown ||
+                occupant.gender === Gender.Unknown ||
+                combatant.gender !== occupant.gender
+            )
+        ) {
+                occupant.state = State.Mating;
+                combatant.state = State.Mating;
+                combatant.spawn = createCombatant({spawn_position: -1, use_genders, global_combatant_stats});
+        }
+    } else {
+        // space is occupied by a enemy (or an ally but with a Fighter incumbent)
+        working_combatants[current_position] = undefined;
+        working_combatants[new_position] = compete(combatant, occupant);
+        (working_combatants[new_position] as CombatantModel).position = new_position;
+        (working_combatants[new_position] as CombatantModel).visited_positions[new_position] = new_position;
+        deaths++;            
+    }
+
+    return {combatant, deaths};
+}
+
+export function calculateCombatantMovements(
+    {movement_logic, use_genders, player, combatants, global_combatant_stats, window_width, tiles}: 
+    {
+        movement_logic: MovementLogic,
+        use_genders: boolean, 
+        player: CombatantModel | undefined,
         combatants: Combatants,
         global_combatant_stats: GlobalCombatantStatsModel, 
         window_width: number, 
         tiles: TileModel[]
     }
-): {combatants: Combatants, births: number, deaths: number} {
+): {player: CombatantModel | undefined, combatants: Combatants, births: number, deaths: number} {
     const brains = Brain.init();
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
+    if (player) {
+        working_combatants[player.position] = player;
+    }
+
     Object.keys(working_combatants).forEach((p) => {
         const current_position = parseInt(p);
         const combatant = working_combatants[current_position];
-        if (combatant === undefined || combatant.taken_turn) {
-            return;
-        }
-        
-        combatant.taken_turn = true;
-
-        if (!evalHealth(combatant) || combatant.state === State.Dead) {
-            // you die
-            combatant.state = State.Dead;
-            working_combatants[current_position] = undefined;
-            deaths++;
-            return;
-        }
-        
-        if (combatant.state === State.Mating) {
-            // do nothing; their turn is taken up by mating
-            return;
-        }
-
-        const posData = getSurroundingPos(
-            {
-                species: combatant.species,
-                position: current_position,
-                window_width, 
-                tiles, 
-                combatants: working_combatants,
-            }
-        );
-        const new_position = requestMove(
-            {
-                posData,
-                movement_logic, 
-                brains, 
-                current_position, 
-                tiles, 
-                window_width,
-            });
-
-        const occupant = working_combatants[new_position];
-        if (!occupant) {
-            // space is empty; OK to move
-            working_combatants[current_position] = undefined;
-            working_combatants[new_position] = combatant;
-            combatant.position = new_position;
-            combatant.visited_positions[new_position] = new_position;
-        } else if (combatant.id === occupant.id) {
-            // this combatant has decided not to move anywhere
-            // no-op
-        } else if (
-            occupant.species === combatant.species &&
-            // if a Fighter is here they're not here to mate!
-            combatant.decision_type !== DecisionType.Fighter
-        ) {
-            // space is occupied by a friendly
-            if (
-                // your not too young
-                combatant.tick > MAX_YOUNGLING_TICK && 
-                // they're not too young
-                occupant.tick > MAX_YOUNGLING_TICK &&
-                (
-                    // they are the correct gender (so woke! LOL)
-                    combatant.gender === Gender.Unknown ||
-                    occupant.gender === Gender.Unknown ||
-                    combatant.gender !== occupant.gender
-                )
-            ) {
-                    occupant.state = State.Mating;
-                    combatant.state = State.Mating;
-                    combatant.spawn = createCombatant({spawn_position: -1, use_genders, global_combatant_stats});
-            }
-        } else {
-            // space is occupied by a enemy (or an ally but with a Fighter incumbent)
-            working_combatants[current_position] = undefined;
-            working_combatants[new_position] = compete(combatant, occupant);
-            (working_combatants[new_position] as CombatantModel).position = new_position;
-            (working_combatants[new_position] as CombatantModel).visited_positions[new_position] = new_position;
-            deaths++;            
-        }
+        const values = processCombatantMovement({
+            movement_logic, 
+            use_genders, 
+            combatant,
+            working_combatants, 
+            global_combatant_stats, 
+            window_width, 
+            brains,
+            tiles});
+            
+        deaths += values.deaths;
     });
 
     Object.values(working_combatants)
@@ -248,13 +292,16 @@ export function calculateCombatantMovements(
     // duplicate the now undefined combatants 
     const ret_combatants = {} as Combatants;
     Object.values(working_combatants).forEach(c => {
-        if (c !== undefined) {
-            c.taken_turn = false;
+        if (c === undefined) return;
+        c.taken_turn = false;
+        if (!c.is_player) {
             ret_combatants[c.position] = c;
+        } else {
+            player = c;
         }
     })
 
-    return {combatants: ret_combatants, births, deaths};
+    return {player, combatants: ret_combatants, births, deaths};
 }
 
 /**
@@ -270,11 +317,14 @@ export function killAndCopy({positions, combatants}: {positions: number[], comba
     }, {} as Combatants);
 }
 
-export function updateEntities({combatants, items, global_combatant_stats, window_width, tiles}: 
-    {combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
+export function updateEntities({player, combatants, items, global_combatant_stats, window_width, tiles}: 
+    {player: CombatantModel | undefined, combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
 : {combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel} {
     const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
+    if (player) {
+        working_combatants[player.position] = player;
+    }
     const working_items = items as {[position: number]: ItemModel[] | undefined};
     let deaths = 0;
 
@@ -455,7 +505,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
     // duplicate the now undefined combatants 
     const ret_combatants = {} as Combatants;
     Object.values(working_combatants).forEach(c => {
-        if (c !== undefined) {
+        if (c !== undefined && !c.is_player) {
             ret_combatants[c.position] = c;
         }
     })
