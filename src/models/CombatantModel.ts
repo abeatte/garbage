@@ -70,7 +70,7 @@ export function createCombatant(
         is_player: false,
         taken_turn: false,
         player_turn: -1,
-        state: State.Spawning, 
+        state: State.Alive,
         kills: 0,
         fitness: 0,
         strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
