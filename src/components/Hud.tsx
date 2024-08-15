@@ -177,7 +177,7 @@ interface EditingObject {name: string | undefined, fitness: string | undefined};
                                 <div>
                                     {
                                         combatant ? (
-                                            <Combatant purpose={Purpose.Detail} species={combatant.species}/>
+                                            <Combatant purpose={Purpose.Detail} species={combatant.species} state={combatant.state}/>
                                         ) : undefined
                                     }
                                     

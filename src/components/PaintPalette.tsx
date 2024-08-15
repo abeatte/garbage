@@ -9,7 +9,7 @@ import { select } from "../data/boardSlice";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { setSelectedPaint, togglePalettsDisplayed } from "../data/paintPaletteSlice";
 import { AppState } from "../data/store";
-import { Character } from "../models/CombatantModel";
+import { Character, State } from "../models/CombatantModel";
 import { Purpose } from "../models/EntityModel";
 import { createItemModel, Type as ItemType } from "../models/ItemModel";
 import { Pointer } from "../models/PointerModel";
@@ -170,7 +170,7 @@ const PaintPalette = () => {
                 isSelected={paintPalette.selected === character}
                 key={`paint_item_${idx}`}
             >
-                <Combatant species={character} purpose={Purpose.Paint}/>
+                <Combatant species={character} state={State.Alive} purpose={Purpose.Paint}/>
             </Tile>
         )
     });

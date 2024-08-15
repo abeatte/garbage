@@ -117,6 +117,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 key={'combatant'}
                 draggable={Object.keys(TileType).includes(selected_paint)} 
                 species={maybe_combatant.species}
+                state={maybe_combatant.state}
             />) : undefined;
             const maybe_items_view: JSX.Element[] = [];           
             const maybe_items_view_2: JSX.Element[] = [];
