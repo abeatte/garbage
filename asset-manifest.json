@@ -1,12 +1,13 @@
 {
   "files": {
-    "main.css": "/garbage/static/css/main.8d2b6e85.css",
-    "main.js": "/garbage/static/js/main.081ac84c.js",
+    "main.css": "/garbage/static/css/main.cce0f466.css",
+    "main.js": "/garbage/static/js/main.e401fdf5.js",
     "static/js/787.6a7af51a.chunk.js": "/garbage/static/js/787.6a7af51a.chunk.js",
     "static/media/water.png": "/garbage/static/media/water.e707dab4b003c5ddf5e9.png",
     "static/media/trees.png": "/garbage/static/media/trees.359c2b3c23844c4d7c2b.png",
     "static/media/lava.png": "/garbage/static/media/lava.071798749395d7dfb96e.png",
     "static/media/sand.png": "/garbage/static/media/sand.fd9925149498bb344ad5.png",
+    "static/media/icon.png": "/garbage/static/media/icon.6ba855ce1e5de0abff68.png",
     "static/media/dog_and_cat.png": "/garbage/static/media/dog_and_cat.2eccaeb07bc92574ca70.png",
     "static/media/lil_eli.png": "/garbage/static/media/lil_eli.5180292def231e5c6d48.png",
     "static/media/turtle.png": "/garbage/static/media/turtle.8a65c0709a59fac3a76f.png",
@@ -14,12 +15,12 @@
     "static/media/bunny.png": "/garbage/static/media/bunny.58d3a67731da7fc9c65b.png",
     "static/media/unicorn.png": "/garbage/static/media/unicorn.f5b06f7d21d35697ac4b.png",
     "index.html": "/garbage/index.html",
-    "main.8d2b6e85.css.map": "/garbage/static/css/main.8d2b6e85.css.map",
-    "main.081ac84c.js.map": "/garbage/static/js/main.081ac84c.js.map",
+    "main.cce0f466.css.map": "/garbage/static/css/main.cce0f466.css.map",
+    "main.e401fdf5.js.map": "/garbage/static/js/main.e401fdf5.js.map",
     "787.6a7af51a.chunk.js.map": "/garbage/static/js/787.6a7af51a.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.8d2b6e85.css",
-    "static/js/main.081ac84c.js"
+    "static/css/main.cce0f466.css",
+    "static/js/main.e401fdf5.js"
   ]
 }
