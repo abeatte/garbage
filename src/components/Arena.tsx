@@ -17,6 +17,7 @@ import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
 import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
+import Controls from "./Controls";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -187,6 +188,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     </div>
                 </div>
                 <PaintPalette/>
+                {this.props.board.game_mode === GameMode.Adventure && <Controls/>}
             </div>
         );
     }
