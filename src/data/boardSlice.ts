@@ -17,6 +17,7 @@ import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../models/SpiderModel';
 import Maps from './Map';
+import { getCombatantAtTarget } from './TargetingUtils';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
@@ -234,10 +235,7 @@ export const boardSlice = createSlice({
         }
     },
     tick: (state) => {
-        let combatant_id_to_follow : string | undefined;
-        if (state.follow_selected_combatant) {
-            combatant_id_to_follow = state.combatants[state.selected_position ?? -1]?.id;
-        }
+        const combatant_id_to_follow = getCombatantAtTarget({target: state.selected_position, player: state.player, combatants: state.combatants})?.id;
         const movement_result = calculateCombatantMovements({
             movement_logic: state.movement_logic,
             use_genders: state.use_genders,
@@ -253,6 +251,7 @@ export const boardSlice = createSlice({
         old_global_combatant_stats.deaths += movement_result.deaths;
         
         const entity_result = updateEntities({
+            player: state.player,
             combatants: movement_result.combatants, 
             items: state.items,
             global_combatant_stats: old_global_combatant_stats, 
@@ -266,7 +265,7 @@ export const boardSlice = createSlice({
         state.global_combatant_stats = entity_result.globalCombatantStats;
 
         if (!!combatant_id_to_follow) {
-            const followed = Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
+            const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
             if (!!followed && followed.fitness > MIN_HEALTH) {
                 state.selected_position = followed.position;
             }
@@ -280,7 +279,7 @@ export const boardSlice = createSlice({
         state, 
         action: {payload: {field: any, value: string | boolean | number | undefined}}
     ) => {
-        const selected = state.combatants[state.selected_position ?? -1];
+        const selected = getCombatantAtTarget({target: state.selected_position, player: state.player, combatants: state.combatants});
         if (selected) {
             // @ts-ignore
             selected[action.payload.field] = action.payload.value;

@@ -202,17 +202,15 @@ function getBestMatePosition(
     return best_mate_position;
 }
 
-export function requestMove({movement_logic, brains, posData, current_position, tiles, window_width}:
+export function requestMove({movement_logic, brains, posData, self, tiles, window_width}:
     {
         movement_logic: MovementLogic, 
         brains: {[species: string]:NeuralNetwork<Input, Output>},
         posData: PosData,
-        current_position: number, 
+        self: CombatantModel, 
         tiles: TileModel[], 
         window_width: number,
 }): number {
-    const self = posData.surroundings[ClockFace.c]?.occupant as CombatantModel;
-
     const bucketed_enemy_strengths = {} as {[key: string]: number[]}; 
     const bucketed_ally_strengths = {} as {[key: string]: number[]};
     const bucketed_mate_strengths = {} as {[key: string]: number[]};
@@ -335,7 +333,7 @@ export function requestMove({movement_logic, brains, posData, current_position, 
             } else {
                 const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
                 position = getNewPositionFromClockFace(
-                    current_position, 
+                    self.position, 
                     clockFace, 
                     window_width, 
                     tiles.length);  

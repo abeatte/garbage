@@ -116,13 +116,11 @@ export function updateCombatantsPositionsAfterResize(
 }
 
 function processCombatantMovement(
-    {combatant, movement_logic, brains, use_genders, deaths, current_position, working_combatants, global_combatant_stats, window_width, tiles}: 
+    {combatant, movement_logic, brains, use_genders, working_combatants, global_combatant_stats, window_width, tiles}: 
     {
         movement_logic: MovementLogic,
         use_genders: boolean, 
-        deaths: number,
         brains: {[species: string]: NeuralNetwork<Input, Output>},
-        current_position: number,
         combatant: CombatantModel | undefined,
         working_combatants: {[position: number]: CombatantModel | undefined},
         global_combatant_stats: GlobalCombatantStatsModel, 
@@ -130,9 +128,13 @@ function processCombatantMovement(
         tiles: TileModel[]
     }
 ): {combatant: CombatantModel | undefined, deaths: number} {
+    let deaths = 0; 
+
     if (combatant === undefined || combatant.taken_turn) {
         return {combatant, deaths};
     }
+
+    const current_position = combatant.position;
 
     if (!evalHealth(combatant) || combatant.state === State.Dead) {
         // you die
@@ -161,7 +163,7 @@ function processCombatantMovement(
             posData,
             movement_logic, 
             brains, 
-            current_position, 
+            self: combatant, 
             tiles, 
             window_width,
         });
@@ -234,8 +236,7 @@ export function calculateCombatantMovements(
     let births = 0, deaths = 0;
 
     if (player) {
-        player.position = player.player_turn;
-        player.taken_turn = true;
+        working_combatants[player.position] = player;
     }
 
     Object.keys(working_combatants).forEach((p) => {
@@ -248,12 +249,10 @@ export function calculateCombatantMovements(
             working_combatants, 
             global_combatant_stats, 
             window_width, 
-            brains, 
-            deaths,
-            current_position,
+            brains,
             tiles});
             
-        deaths = values.deaths;
+        deaths += values.deaths;
     });
 
     Object.values(working_combatants)
@@ -293,14 +292,14 @@ export function calculateCombatantMovements(
     // duplicate the now undefined combatants 
     const ret_combatants = {} as Combatants;
     Object.values(working_combatants).forEach(c => {
-        if (c !== undefined) {
-            c.taken_turn = false;
+        if (c === undefined) return;
+        c.taken_turn = false;
+        if (!c.is_player) {
             ret_combatants[c.position] = c;
+        } else {
+            player = c;
         }
     })
-
-    if (player)
-        player.taken_turn = false;
 
     return {player, combatants: ret_combatants, births, deaths};
 }
@@ -318,11 +317,14 @@ export function killAndCopy({positions, combatants}: {positions: number[], comba
     }, {} as Combatants);
 }
 
-export function updateEntities({combatants, items, global_combatant_stats, window_width, tiles}: 
-    {combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
+export function updateEntities({player, combatants, items, global_combatant_stats, window_width, tiles}: 
+    {player: CombatantModel | undefined, combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
 : {combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel} {
     const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
+    if (player) {
+        working_combatants[player.position] = player;
+    }
     const working_items = items as {[position: number]: ItemModel[] | undefined};
     let deaths = 0;
 
@@ -503,7 +505,7 @@ export function updateEntities({combatants, items, global_combatant_stats, windo
     // duplicate the now undefined combatants 
     const ret_combatants = {} as Combatants;
     Object.values(working_combatants).forEach(c => {
-        if (c !== undefined) {
+        if (c !== undefined && !c.is_player) {
             ret_combatants[c.position] = c;
         }
     })

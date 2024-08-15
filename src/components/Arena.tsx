@@ -16,6 +16,7 @@ import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
+import { getCombatantAtTarget } from "../data/TargetingUtils";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -107,7 +108,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
         const selected_position = this.props.board.selected_position;
         const tiles = [] as JSX.Element[];
         this.props.board.tiles.forEach((tile, idx) => {
-            const maybe_combatant =  this.props.board.player?.position === idx ? this.props.board.player : this.props.board.combatants[idx];
+            const maybe_combatant = getCombatantAtTarget({target: idx, player: this.props.board.player, combatants: this.props.board.combatants});
             const maybe_items = this.props.board.items[idx];
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
