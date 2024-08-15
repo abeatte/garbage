@@ -16,7 +16,7 @@ import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
 import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
-import { getCombatantAtTarget } from "../data/TargetingUtils";
+import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {

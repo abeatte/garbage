@@ -18,7 +18,7 @@ import {
 } from '../data/boardSlice'
 import { pause } from '../data/tickerSlice'
 import classNames from 'classnames';
-import { MIN_HEALTH } from '../data/CombatantUtils';
+import { MIN_HEALTH } from '../data/utils/CombatantUtils';
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
@@ -28,7 +28,7 @@ import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
 import { Purpose } from '../models/EntityModel';
 import Analytics from '../analytics';
-import { getCombatantAtTarget } from '../data/TargetingUtils';
+import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 
 function getEditableField(
     args: {

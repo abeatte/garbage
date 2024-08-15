@@ -3,7 +3,7 @@ import './css/App.css'
 import { Provider } from 'react-redux'
 import store from './data/store'
 import Analytics from './analytics';
-import TitleScreen from './components/TitleScreen';
+import Game from './components/Game';
 
 Analytics.init();
 
@@ -11,7 +11,7 @@ function App() {
   return (
     <div className={'App'}> 
       <Provider store={store}>
-        <TitleScreen/>
+        <Game/>
       </Provider>
     </div>
   );

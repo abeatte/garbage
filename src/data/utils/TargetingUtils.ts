@@ -1,5 +1,5 @@
-import CombatantModel from "../models/CombatantModel";
-import { Combatants } from "./boardSlice";
+import CombatantModel from "../../models/CombatantModel";
+import { Combatants } from "./../boardSlice";
 
 export function getCombatantAtTarget(args: {target: number | undefined, player: CombatantModel | undefined, combatants: Combatants}): CombatantModel | undefined {
     if (args.target === undefined || args.target < 0) return undefined;

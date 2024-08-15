@@ -1,11 +1,11 @@
-import { Combatants, Items, MovementLogic } from "./boardSlice";
-import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../models/CombatantModel";
-import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
-import { getMapTileScorePotential, TileModel, updateMapTileScorePotentials } from "../models/TileModel";
-import Brain from "../models/Brain";
-import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../models/ItemModel";
-import { paintTileForSpider, SpiderModel } from "../models/SpiderModel";
-import { Input, Output } from "../scripts/BrainTrainer";
+import { Combatants, Items, MovementLogic } from "./../boardSlice";
+import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../../models/CombatantModel";
+import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
+import { getMapTileScorePotential, TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
+import Brain from "../../models/Brain";
+import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../../models/ItemModel";
+import { paintTileForSpider, SpiderModel } from "../../models/SpiderModel";
+import { Input, Output } from "../../scripts/BrainTrainer";
 import { NeuralNetwork } from "brain.js";
 
 export const MAX_YOUNGLING_TICK = 5;

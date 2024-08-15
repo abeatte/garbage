@@ -1,10 +1,12 @@
-import React from "react";
-import { AppDispatch, AppState } from "../data/store";
-import Game from "./Game";
-import { connect } from "react-redux";
-import Analytics from "../analytics";
-import { GameMode, reset, setGameMode } from "../data/boardSlice";
+import React from 'react';
 import '../css/TitleScreen.css';
+import { AppDispatch, AppState } from '../data/store'; 
+import { GameMode, reset, setGameMode } from '../data/boardSlice';
+import Analytics from '../analytics';
+import { connect } from 'react-redux';
+import classNames from 'classnames';
+
+const logo = require('../images/icon.png');
 
 class TitleScreen extends React.Component<AppState & DispatchProps> {
     keysFunction =  (event: { key: string; }) => {
@@ -12,11 +14,9 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
         if (key === "A") {
             Analytics.logEvent('key_pressed: A');
             this.props.setGameMode(GameMode.Adventure);
-            document.removeEventListener("keydown", this.keysFunction, false);
         } else if (key === "G") {
             Analytics.logEvent('key_pressed: G');
             this.props.setGameMode(GameMode.God);
-            document.removeEventListener("keydown", this.keysFunction, false);
         }
     }
 
@@ -27,28 +27,47 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
     componentWillUnmount() {
         document.removeEventListener("keydown", this.keysFunction, false);
     } 
-
+    
     render() {
-        
-        let screen;
-        switch(this.props.board.game_mode) {
-            /* eslint-disable no-fallthrough */
-            case GameMode.Adventure:
-                // fall-through
-            case GameMode.God:
-                screen = (<Game/>);
-                break;
-            case GameMode.Title:
-                // fall-through
-            default:
-                screen = (
-                    <div className="Title">
-                        <h1>"Welcome to Garbage"</h1>
-                        <h3>"Will you be playing in (A)dventure Mode or (G)od Mode?"</h3>
-                    </div>
-                );
+        return (
+            <div className="Title">
+                <h1>Welcome to</h1>
+                <img
+                    className="Logo" 
+                    src={logo}
+                    alt='logo'
+                />
+                <h3>How will you be playing?</h3>
+                <div className='Button_row'>
+                    <button 
+                        className={classNames('Clickable', 'Button')} 
+                        onClick={() => this.props.setGameMode(GameMode.Adventure)}
+                    >
+                        (A)dventure Mode
+                    </button>
+                    <button 
+                        className={classNames('Clickable', 'Button')}
+                        onClick={() => this.props.setGameMode(GameMode.God)}
+                    >
+                        (G)od Mode
+                    </button>
+                </div>
+            </div>
+        );
+    }
+}
+
+interface DispatchProps {
+    setGameMode: (gameMode: GameMode) => void,
+}
+
+
+function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
+    return {
+        setGameMode: (gameMode: GameMode) => {
+            dispatch(setGameMode(gameMode));
+            dispatch(reset());
         }
-        return screen;
     }
 }
 
@@ -60,18 +79,5 @@ function mapStateToProps(state: AppState): AppState {
         paintPalette: state.paintPalette,
     };
 }
-
-interface DispatchProps {
-    setGameMode: (gameMode: GameMode) => void,
-}
-
-function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
-    return {
-        setGameMode: (gameMode: GameMode) => {
-            dispatch(setGameMode(gameMode));
-            dispatch(reset());
-        }
-    }
-  }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TitleScreen);

@@ -4,7 +4,7 @@ import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
 import { DEFAULTS, MovementLogic } from "../data/boardSlice";
-import { DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/CombatantUtils";
+import { DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";

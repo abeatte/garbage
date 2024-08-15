@@ -5,7 +5,7 @@ import {
     PosData,
     IllegalMoves,
     LegalMoves, 
-} from "../data/CombatantUtils";
+} from "../data/utils/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 import { ArrowKey, MovementLogic } from "../data/boardSlice";

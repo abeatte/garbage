@@ -1,4 +1,4 @@
-import { LegalMoves } from "../data/CombatantUtils";
+import { LegalMoves } from "../data/utils/CombatantUtils";
 import { Character, getMapTileEffect } from "./CombatantModel";
 
 export enum Type {Void = "Void", Water = "Water", Fire = "Fire", Rock = "Rock", Sand = "Sand", Grass ="Grass"};

@@ -1,4 +1,4 @@
-import { Items } from "./boardSlice";
+import { Items } from "./../boardSlice";
 
 export function updateItemsAfterResize(
     {items, window_width, window_height, old_window_width}: 

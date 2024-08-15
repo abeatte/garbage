@@ -7,17 +7,17 @@ import {
     MIN_HEALTH,
     killAndCopy,
     addItemToBoard, 
-} from './CombatantUtils';
+} from './utils/CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../models/ItemModel';
 import CombatantModel, { Character, createCombatant, Gender, getNewPositionFromArrowKey, getRandomGender, getRandomSpecies } from '../models/CombatantModel';
 import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../models/GlobalCombatantStatsModel';
-import { updateItemsAfterResize } from './ItemUtils';
+import { updateItemsAfterResize } from './utils/ItemUtils';
 import { PaintEntity } from './paintPaletteSlice';
 import { Pointer } from '../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../models/SpiderModel';
 import Maps from './Map';
-import { getCombatantAtTarget } from './TargetingUtils';
+import { getCombatantAtTarget } from './utils/TargetingUtils';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };

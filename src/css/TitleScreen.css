@@ -1,6 +1,24 @@
-.Title
-{
+.Title {
     align-content: center;
     text-align: center;
     width: 100%;
+    text-align: -webkit-center;
+}
+
+.Logo {
+    width: 250px;
+    height: 250px;
+}
+
+.Button_row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: fit-content;
+}
+
+.Button_row .Button {
+    width: 135px;
+    height: 35px;
+    margin: 0px 5px 0px 5px;
 }
