@@ -1,5 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../data/store";
+import { useDispatch } from "react-redux";
 import classNames from "classnames";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,7 +7,6 @@ import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp } from "@fortawesome/
 import { ArrowKey, movePlayer, tick } from "../data/boardSlice";
 
 const Controls = () => {
-    const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch();
 
     return (
