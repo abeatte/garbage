@@ -1,9 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import Analytics from '../analytics';
-import { select, setShowSettings } from '../data/boardSlice';
-import { HudDisplayMode, HudPanel, setActiveHudPanel, setScreenSize } from '../data/hudSlice';
-import { setSelectedPaint } from '../data/paintPaletteSlice';
+import { select, setShowSettings } from '../data/slices/boardSlice';
+import { HudDisplayMode, HudPanel, setActiveHudPanel, setScreenSize } from '../data/slices/hudSlice';
+import { setSelectedPaint } from '../data/slices/paintPaletteSlice';
 import { AppDispatch, AppState } from '../data/store';
 import { Pointer } from '../models/PointerModel';
 import Arena from './Arena';

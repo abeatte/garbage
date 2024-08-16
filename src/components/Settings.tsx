@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useSelector, useDispatch } from 'react-redux'
-import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, pauseUnpause, speedChange } from '../data/tickerSlice'
+import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, pauseUnpause, speedChange } from '../data/slices/tickerSlice'
 import { 
     growHeight, 
     growWidth, 
@@ -18,7 +18,7 @@ import {
     toggleShowRealTileImages, 
     toggleShowTilePotentials, 
     toggleUseGenders 
-} from "../data/boardSlice";
+} from "../data/slices/boardSlice";
 import { faListDots, faPause, faPlay } from "@fortawesome/free-solid-svg-icons";
 import Maps from "../data/Map";
 import Analytics from "../analytics";

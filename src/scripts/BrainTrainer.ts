@@ -3,8 +3,8 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
-import { DEFAULTS, MovementLogic } from "../data/boardSlice";
-import { DiagonalMoves, getSurroundingPos, LegalMoves, PosData } from "../data/utils/CombatantUtils";
+import { DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
+import { DiagonalMoves, getSurroundings, LegalMoves, PosData } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
@@ -64,7 +64,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
             const combatants: {[position: number]: CombatantModel} = {};            
             trainer.position = position;
             combatants[position] = trainer;
-            const posData = getSurroundingPos({species, position, window_width: width, tiles, combatants})
+            const posData = getSurroundings({species, position, window_width: width, tiles, combatants})
             training_sets.push(getTrainingSet(species, trainer, posData, tiles, width));
         }
     }

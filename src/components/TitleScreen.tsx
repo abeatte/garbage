@@ -1,7 +1,7 @@
 import React from 'react';
 import '../css/TitleScreen.css';
 import { AppDispatch, AppState } from '../data/store'; 
-import { GameMode, reset, setGameMode } from '../data/boardSlice';
+import { GameMode, reset, setGameMode } from '../data/slices/boardSlice';
 import Analytics from '../analytics';
 import { connect } from 'react-redux';
 import classNames from 'classnames';

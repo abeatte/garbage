@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Character } from "../models/CombatantModel";
-import { Type as ItemType } from "../models/ItemModel";
-import { Pointer } from "../models/PointerModel";
-import { Type as TileType } from "../models/TileModel";
-import { Type as SpiderType } from "../models/SpiderModel";
+import { Character } from "../../models/CombatantModel";
+import { Type as ItemType } from "../../models/ItemModel";
+import { Pointer } from "../../models/PointerModel";
+import { Type as TileType } from "../../models/TileModel";
+import { Type as SpiderType } from "../../models/SpiderModel";
 
 export type PaintEntity = Pointer | TileType | ItemType | Character | SpiderType;
 

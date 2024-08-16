@@ -8,7 +8,7 @@ import {
 } from "../data/utils/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
-import { ArrowKey, MovementLogic } from "../data/boardSlice";
+import { ArrowKey, MovementLogic } from "../data/slices/boardSlice";
 import Brain from "./Brain";
 import { NeuralNetwork } from "brain.js/dist/src";
 import { Input, Output } from "../scripts/BrainTrainer";

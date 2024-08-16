@@ -1,7 +1,7 @@
 import React from "react";
 import { AppState } from "../data/store";
 import { connect } from "react-redux";
-import { GameMode } from "../data/boardSlice";
+import { GameMode } from "../data/slices/boardSlice";
 import GameBoard from "./GameBoard";
 import TitleScreen from "./TitleScreen";
 import { mapStateToProps } from "../data/utils/ReactUtils";

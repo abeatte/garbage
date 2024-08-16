@@ -31,7 +31,7 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
  * @returns the given tile's potential as a tile to move to
  * (Tiles that are near high-value tiles have more potential than those near low-value/hurtful tiles)
  */
- export function getMapTileScorePotential(args: {species: Character, position: number, tiles: TileModel[], window_width: number}): number {
+ export function getMapTileScorePotential(args: {species: Character | undefined, position: number, tiles: TileModel[], window_width: number}): number {
     const {species, position, tiles, window_width} = args;
 
     let possible_directions = Object.values(LegalMoves).length - 2;

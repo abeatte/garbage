@@ -5,7 +5,7 @@ import Settings from "./Settings";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../data/store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
+import { HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
 import { faChartBar } from "@fortawesome/free-solid-svg-icons";
 import Analytics from "../analytics";
 

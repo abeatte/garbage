@@ -1,7 +1,26 @@
-import { Combatants, Items, MovementLogic } from "./../boardSlice";
-import CombatantModel, { Character, createCombatant, DecisionType, Gender, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove, State } from "../../models/CombatantModel";
-import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
-import { getMapTileScorePotential, TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
+import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
+import CombatantModel, { 
+    Character, 
+    createCombatant, 
+    DecisionType, 
+    Gender, 
+    getMapTileEffect, 
+    getNewPositionFromClockFace, 
+    getRandomDecisionType, 
+    getRandomSpecies, 
+    requestMove, 
+    State 
+} from "../../models/CombatantModel";
+import { 
+    getInitGlobalCombatantStatsModel, 
+    getStrengthRating, 
+    GlobalCombatantStatsModel 
+} from "../../models/GlobalCombatantStatsModel";
+import { 
+    getMapTileScorePotential, 
+    TileModel, 
+    updateMapTileScorePotentials 
+} from "../../models/TileModel";
 import Brain from "../../models/Brain";
 import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../../models/ItemModel";
 import { paintTileForSpider, SpiderModel } from "../../models/SpiderModel";
@@ -43,8 +62,11 @@ export interface PosData {
     surroundings: (Surroundings | undefined)[],
 }
 
-export function initCombatantStartingPos(args: {tiles: TileModel[], player: CombatantModel | undefined, combatants: Combatants}): number {
+export function initCombatantStartingPos(
+    args: {tiles: TileModel[], player: CombatantModel | undefined, combatants: Combatants}
+): number {
     let starting_pos = -1;
+    // you have 10 tries to find a valid spot otherwise you don't get to exist
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
         if (!args.combatants[potential_pos] && args.player?.position !== potential_pos) {
@@ -78,7 +100,7 @@ export function updateCombatantsPositionsAfterResize(
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const posData = 
-                getSurroundingPos({species: combatants[old_pos].species, position: old_pos, window_width: old_window_width, tiles, combatants});
+                getSurroundings({species: combatants[old_pos].species, position: old_pos, window_width: old_window_width, tiles, combatants});
             const up_position = posData.surroundings[ClockFace.t];
             const up_left_position = posData.surroundings[ClockFace.tl];
             const left_position = posData.surroundings[ClockFace.l];
@@ -149,7 +171,7 @@ function processCombatantMovement(
         return {combatant, deaths};
     }
 
-    const posData = getSurroundingPos(
+    const posData = getSurroundings(
         {
             species: combatant.species,
             position: current_position,
@@ -269,7 +291,7 @@ export function calculateCombatantMovements(
             parent.spawn = undefined;
             birthSpawn({
                 posData:
-                    getSurroundingPos({
+                    getSurroundings({
                         species: spawn.species,
                         position: parent.position,
                         window_width, 
@@ -294,10 +316,10 @@ export function calculateCombatantMovements(
     Object.values(working_combatants).forEach(c => {
         if (c === undefined) return;
         c.taken_turn = false;
-        if (!c.is_player) {
-            ret_combatants[c.position] = c;
-        } else {
+        if (c.is_player) {
             player = c;
+        } else {
+            ret_combatants[c.position] = c;
         }
     })
 
@@ -346,7 +368,7 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                 case ItemType.Bomb:
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
                         // time to blow
-                        const posData = getSurroundingPos(
+                        const posData = getSurroundings(
                             {
                                 species: undefined,
                                 position: item.position,
@@ -376,7 +398,7 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                     }
                 break;
                 case ItemType.PokemonBall:
-                    const posData = getSurroundingPos(
+                    const posData = getSurroundings(
                         {
                             species: undefined,
                             position: item.position,
@@ -619,13 +641,14 @@ function compete(a: CombatantModel, b: CombatantModel) {
     }
 }
 
-export function getSurroundingPos(
+export function getSurroundings(
     {species, position, window_width, tiles, combatants}: 
     {
         species: Character | undefined,
         position: number, 
         window_width: number, 
         tiles: TileModel[], 
+        // the Player should already be in the combatants array at this point in evaluation
         combatants: {[position: number]: CombatantModel | undefined}
     }
 ): PosData {
@@ -643,7 +666,7 @@ export function getSurroundingPos(
     
     const setSurrounding = (position: number) => {
         const score_potential = 
-            getMapTileScorePotential({species: species ?? Character.Bunny, position, tiles, window_width});
+            getMapTileScorePotential({species, position, tiles, window_width});
         if (score_potential < ret.min_potential) {
             ret.min_potential = score_potential;
         }

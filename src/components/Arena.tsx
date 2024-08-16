@@ -2,8 +2,8 @@ import React from "react";
 import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
-import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/tickerSlice'
-import { tick as combatantTick, movePlayer, reset as resetBoard, select, killSelected, spawnAtSelected, paintTile, GameMode, ArrowKey } from '../data/boardSlice'
+import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/slices/tickerSlice'
+import { tick as combatantTick, movePlayer, reset as resetBoard, select, killSelected, spawnAtSelected, paintTile, GameMode, ArrowKey } from '../data/slices/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
@@ -11,9 +11,9 @@ import { AppDispatch, AppState } from "../data/store";
 import PaintPalette from "./PaintPalette";
 import { Type as TileType } from "../models/TileModel";
 import Item from "./Item";
-import { PaintEntity } from "../data/paintPaletteSlice";
+import { PaintEntity } from "../data/slices/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
-import { HudPanel, setActiveHudPanel } from "../data/hudSlice";
+import { HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
 import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
 import { getCombatantAtTarget } from "../data/utils/TargetingUtils";

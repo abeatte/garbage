@@ -15,11 +15,11 @@ import {
     select, 
     MovementLogic,
     paintTile
-} from '../data/boardSlice'
-import { pause } from '../data/tickerSlice'
+} from '../data/slices/boardSlice'
+import { pause } from '../data/slices/tickerSlice'
 import classNames from 'classnames';
 import { MIN_HEALTH } from '../data/utils/CombatantUtils';
-import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/hudSlice';
+import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/slices/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
 import { Character, DecisionType, Gender, getRandomCombatantName } from '../models/CombatantModel';

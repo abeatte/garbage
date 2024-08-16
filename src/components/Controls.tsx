@@ -4,7 +4,7 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Analytics from "../analytics";
 import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp } from "@fortawesome/free-solid-svg-icons";
-import { ArrowKey, movePlayer, tick } from "../data/boardSlice";
+import { ArrowKey, movePlayer, tick } from "../data/slices/boardSlice";
 
 const Controls = () => {
     const dispatch = useDispatch();

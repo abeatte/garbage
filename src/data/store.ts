@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import tickerReducer from './tickerSlice';
-import boardReducer from './boardSlice';
-import hudReducer from './hudSlice';
-import paintPaletteReducer from './paintPaletteSlice';
+import tickerReducer from './slices/tickerSlice';
+import boardReducer from './slices/boardSlice';
+import hudReducer from './slices/hudSlice';
+import paintPaletteReducer from './slices/paintPaletteSlice';
 
 const store = configureStore({
   reducer: {

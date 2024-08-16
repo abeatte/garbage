@@ -3,8 +3,8 @@ import '../css/SpeciesStats.css'
 import '../css/Panel.css'
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { select } from "../data/boardSlice";
-import { HudDisplayMode, HudPanel, setActiveHudPanel } from "../data/hudSlice";
+import { select } from "../data/slices/boardSlice";
+import { HudDisplayMode, HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
 import { AppState } from "../data/store";
 import CombatantModel, { Character, DecisionType } from "../models/CombatantModel";
 import Analytics from "../analytics";
