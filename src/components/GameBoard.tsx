@@ -12,7 +12,6 @@ import SpeciesStats from './SpeciesStats';
 import { mapStateToProps } from '../data/utils/ReactUtils';
 
 class Game extends React.Component<AppState & DispatchProps> {
-    
     handleWindowWidthResize = (
         setScreenSize: (dimens: {width: number, height: number}) => void, 
         dimens: {innerWidth: number, innerHeight: number}

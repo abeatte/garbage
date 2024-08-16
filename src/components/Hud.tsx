@@ -31,7 +31,7 @@ import Analytics from '../analytics';
 import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 
 function getEditableField(
-    args: {
+    {editing_value, enabled, editing_type, options, label, display, edit, update, done} : {
         editing_value: string | undefined, 
         enabled?: boolean, 
         editing_type?: string, 
@@ -43,7 +43,6 @@ function getEditableField(
         done?: () => void | undefined,
     }
 ) {
-    const {editing_value, enabled, editing_type, options, label, display, edit, update, done} = args;
 
     const edit_field = !!options ?
         (<select 

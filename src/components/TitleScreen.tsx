@@ -33,11 +33,7 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
         return (
             <div className="Title">
                 <h1>Welcome to</h1>
-                <img
-                    className="Logo" 
-                    src={logo}
-                    alt='logo'
-                />
+                <img className="Logo" src={logo} alt='logo'/>
                 <h3>How will you be playing?</h3>
                 <div className='Button_row'>
                     <button 
