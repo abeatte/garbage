@@ -2,8 +2,26 @@ import React from "react";
 import '../css/Arena.css';
 import classNames from 'classnames';
 import { connect } from 'react-redux'
-import { tick, reset as resetTicker, pause, pauseUnpause, MAX_TICK_SPEED } from '../data/slices/tickerSlice'
-import { tick as combatantTick, movePlayer, reset as resetBoard, select, killSelected, spawnAtSelected, paintTile, GameMode, ArrowKey } from '../data/slices/boardSlice'
+import { 
+    tick, 
+    reset as resetTicker, 
+    pause, 
+    pauseUnpause, 
+    MAX_TICK_SPEED 
+} from '../data/slices/tickerSlice'
+import { 
+    tick as combatantTick, 
+    movePlayer, 
+    reset as resetBoard, 
+    select, 
+    killSelected, 
+    spawnAtSelected, 
+    paintTile, 
+    GameMode, 
+    ArrowKey, 
+    togglePlayerHighlight, 
+    PLAYER_HIGHLIGHT_COUNT
+} from '../data/slices/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
 import Tile from "./Tile";
@@ -33,6 +51,7 @@ const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
 class Arena extends React.Component<AppState & DispatchProps> {
 
     interval: NodeJS.Timer | undefined = undefined;
+    highlightInterval: NodeJS.Timer | undefined = undefined;
 
     auxFunctions = (event: KeyboardEvent) => {
         const key = event.key.toUpperCase();
@@ -63,6 +82,22 @@ class Arena extends React.Component<AppState & DispatchProps> {
         }
     }
 
+    highlightPlayerPosition(highlightCount = PLAYER_HIGHLIGHT_COUNT) {
+        var i = 0;
+        const change = () => {
+            i++
+            this.props.togglePlayerHighlight();
+
+            if (i === highlightCount) {
+                clearInterval(this.highlightInterval);
+                this.highlightInterval = undefined;
+            }
+        }
+        if (!this.highlightInterval && highlightCount > 0) {
+            this.highlightInterval = setInterval(change, 300);
+        }
+    }
+
     componentDidMount() {
         document.addEventListener("keydown", this.auxFunctions, false);
         if (this.props.board.game_mode === GameMode.God || this.props.board.player?.state === State.Dead) {
@@ -71,6 +106,8 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 this.interval = setInterval(() => this.props.performTick(), tick_interval);
             }
         }
+
+        this.highlightPlayerPosition(this.props.board.player_highlight_count);
     }
 
     componentDidUpdate(prevProps: AppState, prevState: AppState) {
@@ -84,6 +121,11 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     this.interval = setInterval(() => this.props.performTick(), tick_interval);
                 } 
             }
+        }
+
+        // handle player highlight updates  
+        if (prevProps.board.player_highlight_count === 0) {
+            this.highlightPlayerPosition(this.props.board.player_highlight_count);
         }
 
         // handle combatant updates
@@ -100,21 +142,25 @@ class Arena extends React.Component<AppState & DispatchProps> {
     componentWillUnmount() {
         clearInterval(this.interval);
         document.removeEventListener("keydown", this.auxFunctions, false);
-    } 
+    }
 
     render() {
         const width = this.props.board.width;
         const selected_paint = this.props.paintPalette.selected;
         const selected_position = this.props.board.selected_position;
+        const shouldHighlightPlayer = 
+            this.props.board.player_highlight_count > 0 && 
+            this.props.board.player_highlight_count % 2 === 0;
         const tiles = [] as JSX.Element[];
         this.props.board.tiles.forEach((tile, idx) => {
             const maybe_combatant = getCombatantAtTarget({target: idx, player: this.props.board.player, combatants: this.props.board.combatants});
+            const is_player_tile = maybe_combatant?.is_player;
             const maybe_items = this.props.board.items[idx];
             const is_selected = selected_position === idx;
             const select_args = is_selected ? undefined : {position: idx, follow_combatant: !!maybe_combatant}
 
             const maybe_combatant_view = maybe_combatant ? (<Combatant 
-                key={'combatant'}
+                key={is_player_tile ? 'player' : 'combatant'}
                 draggable={Object.keys(TileType).includes(selected_paint)} 
                 species={maybe_combatant.species}
                 state={maybe_combatant.state}
@@ -157,6 +203,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     tile={tile} 
                     showPotential={this.props.board.show_tile_potentials}
                     showRealTileImages={this.props.board.show_real_tile_images}
+                    highlight={is_player_tile && shouldHighlightPlayer}
                     className={classNames({"Clickable" : maybe_combatant || (maybe_items?.length ?? 0) > 0})}
                     isSelected={is_selected}
                     >
@@ -187,7 +234,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     </div>
                 </div>
                 <PaintPalette/>
-                {this.props.board.game_mode === GameMode.Adventure && <Controls/>}
+                {this.props.board.game_mode === GameMode.Adventure && <Controls playerHighlight={shouldHighlightPlayer}/>}
             </div>
         );
     }
@@ -199,6 +246,7 @@ interface DispatchProps {
     pauseUnpause: () => void,
     killSelected: () => void,
     spawnAtSelected: () => void,
+    togglePlayerHighlight: () => void,
     movePlayer:(key: ArrowKey) => void,
     pause: () => void, 
     clickOnTile: (select_args?: {}) => void,
@@ -220,6 +268,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         pauseUnpause: () => dispatch(pauseUnpause()),
         killSelected: () => dispatch(killSelected()),
         spawnAtSelected: () => dispatch(spawnAtSelected()),
+        togglePlayerHighlight: () => dispatch(togglePlayerHighlight()),
         movePlayer: (key: ArrowKey) => dispatch(movePlayer(key)),
         clickOnTile: (select_args) => {
             dispatch(select(select_args));

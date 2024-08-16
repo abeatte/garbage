@@ -39,6 +39,10 @@
     background-color: yellow;
 }
 
+.Tile.Highlight {
+    background-color: white;
+}
+
 .Tile.Selected {
     border: 1px solid red;
     width: 23px;

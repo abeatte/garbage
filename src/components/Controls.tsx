@@ -1,13 +1,17 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import classNames from "classnames";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Analytics from "../analytics";
-import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp } from "@fortawesome/free-solid-svg-icons";
-import { ArrowKey, movePlayer, tick } from "../data/slices/boardSlice";
+import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { ArrowKey, movePlayer, tick, togglePlayerHighlight } from "../data/slices/boardSlice";
+import { AppState } from "../data/store";
 
-const Controls = () => {
+const Controls = (props: {playerHighlight: boolean}) => {
+    const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch();
+
+    const targetHighlightColor = props.playerHighlight ? 'white' : undefined;
 
     return (
         <div className={classNames("Flyout_panel", "Right", "Bottom")}>
@@ -36,6 +40,28 @@ const Controls = () => {
                                 dispatch(tick());
                             }}
                             icon={faArrowLeft} 
+                            color='dark' 
+                            size='lg' 
+                            style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
+                        />
+                    </div>
+                    <div style={{
+                        display: 'flex', 
+                        backgroundColor: targetHighlightColor, 
+                        paddingRight: '8px', 
+                        marginRight: '-8px', 
+                        marginLeft: '2px', 
+                        paddingTop: '9px'
+                    }}>
+                        <FontAwesomeIcon 
+                            id="target"
+                            onClick={() => {
+                                Analytics.logEvent('button_clicked: Controls Flyout target');
+                                if (board.player_highlight_count == 0) {
+                                    dispatch(togglePlayerHighlight());
+                                }
+                            }}
+                            icon={faLocationCrosshairs} 
                             color='dark' 
                             size='lg' 
                             style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}

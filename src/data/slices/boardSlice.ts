@@ -23,11 +23,14 @@ export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural 
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
 export enum ArrowKey { ARROWLEFT = "ARROWLEFT", ARROWRIGHT = "ARROWRIGHT", ARROWUP = "ARROWUP", ARROWDOWN = "ARROWDOWN" };
 
+export const PLAYER_HIGHLIGHT_COUNT: number = 6;
+
 export type Combatants = {[position: number]: CombatantModel};
 export type Items = {[position: number]: ItemModel[]};
 
 export const DEFAULTS = {
     game_mode: GameMode.Title,
+    player_highlight_count: 0,
     window_width: 26,
     window_height: 30,
     num_combatants: 25,
@@ -48,6 +51,7 @@ interface BoardState {
     show_settings: boolean,
     show_real_tile_images: boolean,
     show_tile_potentials: boolean,
+    player_highlight_count: number,
     player: CombatantModel | undefined,
     combatants: Combatants,
     items: Items,
@@ -155,6 +159,7 @@ function initState(args?: {game_mode: GameMode, map: string, width: number, heig
         show_settings: false,
         show_real_tile_images: true,
         show_tile_potentials: DEFAULTS.show_tile_potentials,
+        player_highlight_count: game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
         player, 
         combatants,
         items: {},
@@ -220,13 +225,22 @@ export const boardSlice = createSlice({
         });
 
         state.tiles = new_state.tiles;
-        state.player = new_state.player;
+        state.player = new_state.player;            
+        state.player_highlight_count = 
+            state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
         state.combatants = new_state.combatants;
         state.items = {};
         state.selected_position = undefined;
         state.follow_selected_combatant = false;
         state.game_count += 1;
         state.global_combatant_stats = new_state.global_combatant_stats;
+    },
+    togglePlayerHighlight: (state) => {
+        if (state.player_highlight_count > 0) {
+            state.player_highlight_count -= 1;
+        } else {
+            state.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
+        }
     },
     movePlayer: (state, action: {payload: ArrowKey}) => {
         if (state.player) {
@@ -410,6 +424,7 @@ export const {
     shrinkHeight, 
     growHeight, 
     reset, 
+    togglePlayerHighlight,
     movePlayer,
     tick, 
     select, 

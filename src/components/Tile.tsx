@@ -28,11 +28,12 @@ const getImage = (tileType: TileType) => {
 }
 
 const Tile = (
-  {id, children, className, tile, isSelected, showPotential, showRealTileImages, onClick, onDragEnter}: {
+  {id, children, className, tile, highlight, isSelected, showPotential, showRealTileImages, onClick, onDragEnter}: {
     id?: number,
     children?: JSX.Element, 
     className?: string, 
     tile: TileModel | undefined, 
+    highlight?: boolean,
     isSelected?: boolean, 
     showPotential?: boolean,
     showRealTileImages?: boolean,
@@ -42,17 +43,18 @@ const Tile = (
 ) => {
     const paintRoller = document.getElementById('paint_roller') as HTMLElement;
     const image = tile?.type && getImage(tile.type);
+    const typeClass = tile?.type ?? TileType.Void;
     return (
       <div style={{position: "relative"}}>
         <div
           id={id?.toString()} 
-          className={classNames('Tile', tile?.type ?? TileType.Void, className, {"Selected" : isSelected})} 
+          className={classNames('Tile', highlight ? 'Highlight' : typeClass, className, {"Selected" : isSelected})} 
           onClick={onClick}
           onDragEnter={onDragEnter}
           onDragStart={(event) => event.dataTransfer.setDragImage(paintRoller, 8, 8)}
         >
           {
-            image && showRealTileImages &&
+            image && showRealTileImages && !highlight &&
             <img 
               style={{position: "absolute"}} 
               className={classNames('Tile', {"Selected": isSelected})} 
