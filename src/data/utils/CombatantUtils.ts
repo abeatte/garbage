@@ -257,7 +257,7 @@ export function calculateCombatantMovements(
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
     let births = 0, deaths = 0;
 
-    if (player) {
+    if (player && player.state !== State.Dead) {
         working_combatants[player.position] = player;
     }
 
@@ -344,7 +344,7 @@ export function updateEntities({player, combatants, items, global_combatant_stat
 : {combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel} {
     const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
     const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
-    if (player) {
+    if (player && player.state !== State.Dead) {
         working_combatants[player.position] = player;
     }
     const working_items = items as {[position: number]: ItemModel[] | undefined};
