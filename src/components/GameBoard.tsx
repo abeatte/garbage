@@ -9,6 +9,7 @@ import { Pointer } from '../models/PointerModel';
 import Arena from './Arena';
 import Hud from './Hud';
 import SpeciesStats from './SpeciesStats';
+import { mapStateToProps } from '../data/utils/ReactUtils';
 
 class Game extends React.Component<AppState & DispatchProps> {
     
@@ -76,15 +77,6 @@ class Game extends React.Component<AppState & DispatchProps> {
                 );
         }
     }
-}
-
-function mapStateToProps(state: AppState): AppState {
-    return {
-        ticker: state.ticker,
-        board: state.board,
-        hud: state.hud, 
-        paintPalette: state.paintPalette,
-    };
 }
 
 interface DispatchProps {

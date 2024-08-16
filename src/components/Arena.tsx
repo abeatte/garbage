@@ -18,6 +18,7 @@ import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
 import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
 import Controls from "./Controls";
+import { mapStateToProps } from "../data/utils/ReactUtils";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -192,15 +193,6 @@ class Arena extends React.Component<AppState & DispatchProps> {
             </div>
         );
     }
-}
-
-function mapStateToProps(state: AppState): AppState {
-    return {
-        ticker: state.ticker,
-        board: state.board,
-        hud: state.hud,
-        paintPalette: state.paintPalette,
-    };
 }
 
 interface DispatchProps {

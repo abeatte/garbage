@@ -5,6 +5,7 @@ import { GameMode, reset, setGameMode } from '../data/boardSlice';
 import Analytics from '../analytics';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
+import { mapStateToProps } from '../data/utils/ReactUtils';
 
 const logo = require('../images/icon.png');
 
@@ -61,7 +62,6 @@ interface DispatchProps {
     setGameMode: (gameMode: GameMode) => void,
 }
 
-
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
         setGameMode: (gameMode: GameMode) => {
@@ -69,15 +69,6 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
             dispatch(reset());
         }
     }
-}
-
-function mapStateToProps(state: AppState): AppState {
-    return {
-        ticker: state.ticker,
-        board: state.board,
-        hud: state.hud,
-        paintPalette: state.paintPalette,
-    };
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TitleScreen);
