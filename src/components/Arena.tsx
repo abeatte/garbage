@@ -19,6 +19,7 @@ import Analytics from "../analytics";
 import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
 import Controls from "./Controls";
 import { mapStateToProps } from "../data/utils/ReactUtils";
+import { State } from "../models/CombatantModel";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -37,17 +38,14 @@ class Arena extends React.Component<AppState & DispatchProps> {
         const key = event.key.toUpperCase();
         if (key === ' ') {
             Analytics.logEvent('key_pressed: Space');
-            // stops page from scrolling
             event.preventDefault();
             this.props.pauseUnpause();
         } else if (key === 'K') {
             Analytics.logEvent('key_pressed: K');
-            // stops page from scrolling
             event.preventDefault();
             this.props.killSelected();
         } else if (key === 'S') {
             Analytics.logEvent('key_pressed: S');
-            // stops page from scrolling
             event.preventDefault();
             this.props.spawnAtSelected();
         }
@@ -67,7 +65,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentDidMount() {
         document.addEventListener("keydown", this.auxFunctions, false);
-        if (this.props.board.game_mode === GameMode.God) {
+        if (this.props.board.game_mode === GameMode.God || this.props.board.player?.state === State.Dead) {
             const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
             if (tick_interval > 0) {
                 this.interval = setInterval(() => this.props.performTick(), tick_interval);
@@ -77,9 +75,9 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentDidUpdate(prevProps: AppState, prevState: AppState) {
         // handle tick_speed updates
-
-        if (this.props.board.game_mode === GameMode.God) {
-            if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed) {
+        if (this.props.board.game_mode === GameMode.God || this.props.board.player?.state === State.Dead) {
+            const playerJustDied = prevProps.board.player?.state !== this.props.board.player?.state;
+            if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed || playerJustDied) {
                 const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
                 clearInterval(this.interval);
                 if (tick_interval > 0) {
