@@ -16,11 +16,7 @@ import {
     getStrengthRating, 
     GlobalCombatantStatsModel 
 } from "../../models/GlobalCombatantStatsModel";
-import { 
-    getMapTileScorePotential, 
-    TileModel, 
-    updateMapTileScorePotentials 
-} from "../../models/TileModel";
+import { TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
 import Brain from "../../models/Brain";
 import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../../models/ItemModel";
 import { paintTileForSpider, SpiderModel } from "../../models/SpiderModel";
@@ -665,8 +661,7 @@ export function getSurroundings(
     ret.max_potential = Number.MIN_VALUE;
     
     const setSurrounding = (position: number) => {
-        const score_potential = 
-            getMapTileScorePotential({species, position, tiles, window_width});
+        const score_potential = !species ? -1 : tiles[position].score_potential[species];
         if (score_potential < ret.min_potential) {
             ret.min_potential = score_potential;
         }
