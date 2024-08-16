@@ -57,7 +57,7 @@ const Controls = (props: {playerHighlight: boolean}) => {
                             id="target"
                             onClick={() => {
                                 Analytics.logEvent('button_clicked: Controls Flyout target');
-                                if (board.player_highlight_count == 0) {
+                                if (board.player_highlight_count === 0) {
                                     dispatch(togglePlayerHighlight());
                                 }
                             }}
