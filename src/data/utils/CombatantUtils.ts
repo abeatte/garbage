@@ -662,7 +662,7 @@ export function getSurroundings(
     ret.max_potential = Number.MIN_VALUE;
 
     const setSurrounding = (position: number) => {
-        const score_potential = !species ? -1 : tiles[position].score_potential[species];
+        const score_potential = !species ? -1 : tiles[position]?.score_potential[species];
         if (score_potential < ret.min_potential) {
             ret.min_potential = score_potential;
         }
