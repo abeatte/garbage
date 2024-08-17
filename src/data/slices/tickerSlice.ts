@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 export const DEFAULT_TICK_SPEED = 1000;
 export const MAX_TICK_SPEED = 2000;
@@ -11,7 +11,7 @@ export const tickerSlice = createSlice({
     prev_tick_speed: 0,
   },
   reducers: {
-    speedChange: (state, action: { payload: { value: number, respectPause?: boolean } }) => {
+    speedChange: (state, action: PayloadAction<{ value: number, respectPause?: boolean }>) => {
       const tick_speed = state.tick_speed;
       let new_tick_speed = action.payload.value;
       if (new_tick_speed > MAX_TICK_SPEED) {

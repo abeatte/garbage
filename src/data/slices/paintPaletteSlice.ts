@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Character } from "../../models/CombatantModel";
 import { Type as ItemType } from "../../models/ItemModel";
 import { Pointer } from "../../models/PointerModel";
@@ -24,7 +24,7 @@ export const paintPaletteSlice = createSlice({
         togglePalettsDisplayed: (state) => {
             state.palette_displayed = !state.palette_displayed;
         },
-        setSelectedPaint: (state, action: { payload: PaintEntity }) => {
+        setSelectedPaint: (state, action: PayloadAction<PaintEntity>) => {
             state.selected = action.payload;
         }
     },

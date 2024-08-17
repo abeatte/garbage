@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import {
     initCombatantStartingPos,
     updateCombatantsPositionsAfterResize,
@@ -222,11 +222,11 @@ const mapReducers = {
         state.height += 1
         handleResize({ state, old_window_width, old_window_height });
     },
-    setMap: (state: BoardState & SettingsState, action: { payload: string }) => {
+    setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
         state.tiles = Maps[state.map].generate({ width: state.width, height: state.height });
     },
-    paintTile: (state: BoardState & SettingsState, action: { payload: { position: number, type: PaintEntity } }) => {
+    paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
         const current_occupant = state.combatants[action.payload.position]
         if (Object.keys(TileType).includes(action.payload.type)) {
             state.tiles[action.payload.position] =
@@ -280,10 +280,10 @@ const settingsReducers = {
             });
         }
     },
-    setShowSettings: (state: BoardState & SettingsState, action: { payload: boolean }) => {
+    setShowSettings: (state: BoardState & SettingsState, action: PayloadAction<boolean>) => {
         state.show_settings = action.payload;
     },
-    setMovementLogic: (state: BoardState & SettingsState, action: { payload: MovementLogic }) => {
+    setMovementLogic: (state: BoardState & SettingsState, action: PayloadAction<MovementLogic>) => {
         state.movement_logic = action.payload;
     },
 }
@@ -296,7 +296,7 @@ export const boardSlice = createSlice({
     reducers: {
         ...mapReducers,
         ...settingsReducers,
-        setGameMode: (state, action: { payload: GameMode }) => {
+        setGameMode: (state, action: PayloadAction<GameMode>) => {
             if (state.game_mode === action.payload) {
                 return;
             }
@@ -331,7 +331,7 @@ export const boardSlice = createSlice({
                 state.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
             }
         },
-        movePlayer: (state, action: { payload: ArrowKey }) => {
+        movePlayer: (state, action: PayloadAction<ArrowKey>) => {
             if (state.player) {
                 state.player.player_turn =
                     getNewPositionFromArrowKey(state.player.position, action.payload, state.width, state.tiles.length);
@@ -380,7 +380,7 @@ export const boardSlice = createSlice({
         },
         updateSelectedCombatant: (
             state,
-            action: { payload: { field: any, value: string | boolean | number | undefined } }
+            action: PayloadAction<{ field: any, value: string | boolean | number | undefined }>
         ) => {
             const selected = getCombatantAtTarget({ target: state.selected_position, player: state.player, combatants: state.combatants });
             if (selected) {
@@ -423,7 +423,7 @@ export const boardSlice = createSlice({
                 state.global_combatant_stats.num_combatants += 1;
             }
         },
-        setInitialNumCombatants: (state, action: { payload: number }) => {
+        setInitialNumCombatants: (state, action: PayloadAction<number>) => {
             action.payload = Math.min(action.payload, GAME_DEFAULTS.num_combatants * 40);
             state.initial_num_combatants = action.payload;
 

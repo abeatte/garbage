@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 const EXPANDED_MODE_ARENA_WIDTH = 785;
 const EXPANDED_MODE_HUD_WIDTH = 445;
@@ -32,7 +32,7 @@ export const hudSlice = createSlice({
     activeHudPanel: HudPanel,
   },
   reducers: {
-    setScreenSize: (state, action: { payload: { width: number, height: number } }) => {
+    setScreenSize: (state, action: PayloadAction<{ width: number, height: number }>) => {
       state.screenWidth = action.payload.width;
       state.screenHeight = action.payload.height;
       state.isPortraitMode = state.screenWidth < state.screenHeight;
