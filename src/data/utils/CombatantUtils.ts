@@ -1,20 +1,20 @@
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
-import CombatantModel, { 
-    Character, 
-    createCombatant, 
-    DecisionType, 
-    Gender, 
-    getMapTileEffect, 
-    getNewPositionFromClockFace, 
-    getRandomDecisionType, 
-    getRandomSpecies, 
-    requestMove, 
-    State 
+import CombatantModel, {
+    Character,
+    createCombatant,
+    DecisionType,
+    Gender,
+    getMapTileEffect,
+    getNewPositionFromClockFace,
+    getRandomDecisionType,
+    getRandomSpecies,
+    requestMove,
+    State
 } from "../../models/CombatantModel";
-import { 
-    getInitGlobalCombatantStatsModel, 
-    getStrengthRating, 
-    GlobalCombatantStatsModel 
+import {
+    getInitGlobalCombatantStatsModel,
+    getStrengthRating,
+    GlobalCombatantStatsModel
 } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
 import Brain from "../../models/Brain";
@@ -26,12 +26,12 @@ import { NeuralNetwork } from "brain.js";
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
-export enum ClockFace {  
-    c = 0, 
-    tl = 1, t = 2, tr = 3, 
-    r = 4,  
+export enum ClockFace {
+    c = 0,
+    tl = 1, t = 2, tr = 3,
+    r = 4,
     br = 5, b = 6, bl = 7,
-    l = 8, 
+    l = 8,
 };
 
 export const DirectionalMoves = [ClockFace.t, ClockFace.r, ClockFace.b, ClockFace.l];
@@ -44,22 +44,22 @@ export interface Surroundings {
     occupant: CombatantModel | undefined,
     tile: TileModel,
 }
-    
+
 export interface PosData {
-    coord: {x: number, y: number},
+    coord: { x: number, y: number },
     can_go_left: boolean,
     can_go_up: boolean,
     can_go_right: boolean,
     can_go_down: boolean,
     window_width: number,
     tile_count: number,
-    min_potential: number, 
+    min_potential: number,
     max_potential: number,
     surroundings: (Surroundings | undefined)[],
 }
 
 export function initCombatantStartingPos(
-    args: {tiles: TileModel[], player: CombatantModel | undefined, combatants: Combatants}
+    args: { tiles: TileModel[], player: CombatantModel | undefined, combatants: Combatants }
 ): number {
     let starting_pos = -1;
     // you have 10 tries to find a valid spot otherwise you don't get to exist
@@ -74,15 +74,15 @@ export function initCombatantStartingPos(
 };
 
 export function updateCombatantsPositionsAfterResize(
-{combatants, window_width, window_height, old_window_width, old_window_height, tiles}: 
-    {
-        combatants: Combatants, 
-        window_width: number, 
-        window_height: number, 
-        old_window_width: number, 
-        old_window_height: number, 
-        tiles: TileModel[]
-    }
+    { combatants, window_width, window_height, old_window_width, old_window_height, tiles }:
+        {
+            combatants: Combatants,
+            window_width: number,
+            window_height: number,
+            old_window_width: number,
+            old_window_height: number,
+            tiles: TileModel[]
+        }
 ) {
     const new_combatants = {} as Combatants;
 
@@ -95,8 +95,8 @@ export function updateCombatantsPositionsAfterResize(
 
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
-            const posData = 
-                getSurroundings({species: combatants[old_pos].species, position: old_pos, window_width: old_window_width, tiles, combatants});
+            const posData =
+                getSurroundings({ species: combatants[old_pos].species, position: old_pos, window_width: old_window_width, tiles, combatants });
             const up_position = posData.surroundings[ClockFace.t];
             const up_left_position = posData.surroundings[ClockFace.tl];
             const left_position = posData.surroundings[ClockFace.l];
@@ -116,7 +116,7 @@ export function updateCombatantsPositionsAfterResize(
                 new_pos = -1;
             }
         }
-        
+
         if (dif_row !== 0) {
             // translate old coord to new coord
             new_pos = coord[0] * window_width + coord[1];
@@ -134,22 +134,22 @@ export function updateCombatantsPositionsAfterResize(
 }
 
 function processCombatantMovement(
-    {combatant, movement_logic, brains, use_genders, working_combatants, global_combatant_stats, window_width, tiles}: 
-    {
-        movement_logic: MovementLogic,
-        use_genders: boolean, 
-        brains: {[species: string]: NeuralNetwork<Input, Output>},
-        combatant: CombatantModel | undefined,
-        working_combatants: {[position: number]: CombatantModel | undefined},
-        global_combatant_stats: GlobalCombatantStatsModel, 
-        window_width: number, 
-        tiles: TileModel[]
-    }
-): {combatant: CombatantModel | undefined, deaths: number} {
-    let deaths = 0; 
+    { combatant, movement_logic, brains, use_genders, working_combatants, global_combatant_stats, window_width, tiles }:
+        {
+            movement_logic: MovementLogic,
+            use_genders: boolean,
+            brains: { [species: string]: NeuralNetwork<Input, Output> },
+            combatant: CombatantModel | undefined,
+            working_combatants: { [position: number]: CombatantModel | undefined },
+            global_combatant_stats: GlobalCombatantStatsModel,
+            window_width: number,
+            tiles: TileModel[]
+        }
+): { combatant: CombatantModel | undefined, deaths: number } {
+    let deaths = 0;
 
     if (combatant === undefined || combatant.taken_turn) {
-        return {combatant, deaths};
+        return { combatant, deaths };
     }
 
     const current_position = combatant.position;
@@ -159,37 +159,37 @@ function processCombatantMovement(
         combatant.state = State.Dead;
         working_combatants[current_position] = undefined;
         deaths++;
-        return {combatant, deaths};
+        return { combatant, deaths };
     }
-    
+
     if (combatant.state === State.Mating) {
         // do nothing; their turn is taken up by mating
-        return {combatant, deaths};
+        return { combatant, deaths };
     }
 
     const posData = getSurroundings(
         {
             species: combatant.species,
             position: current_position,
-            window_width, 
-            tiles, 
+            window_width,
+            tiles,
             combatants: working_combatants,
         }
     );
     let new_position = requestMove(
         {
             posData,
-            movement_logic, 
-            brains, 
-            self: combatant, 
-            tiles, 
+            movement_logic,
+            brains,
+            self: combatant,
+            tiles,
             window_width,
         });
 
     if (combatant.is_player && combatant.player_turn > -1) {
         new_position = combatant.player_turn;
         combatant.player_turn = -1;
-    } 
+    }
 
     combatant.taken_turn = true;
 
@@ -211,7 +211,7 @@ function processCombatantMovement(
         // space is occupied by a friendly
         if (
             // your not too young
-            combatant.tick > MAX_YOUNGLING_TICK && 
+            combatant.tick > MAX_YOUNGLING_TICK &&
             // they're not too young
             occupant.tick > MAX_YOUNGLING_TICK &&
             (
@@ -221,9 +221,9 @@ function processCombatantMovement(
                 combatant.gender !== occupant.gender
             )
         ) {
-                occupant.state = State.Mating;
-                combatant.state = State.Mating;
-                combatant.spawn = createCombatant({spawn_position: -1, use_genders, global_combatant_stats});
+            occupant.state = State.Mating;
+            combatant.state = State.Mating;
+            combatant.spawn = createCombatant({ spawn_position: -1, use_genders, global_combatant_stats });
         }
     } else {
         // space is occupied by a enemy (or an ally but with a Fighter incumbent)
@@ -231,26 +231,26 @@ function processCombatantMovement(
         working_combatants[new_position] = compete(combatant, occupant);
         (working_combatants[new_position] as CombatantModel).position = new_position;
         (working_combatants[new_position] as CombatantModel).visited_positions[new_position] = new_position;
-        deaths++;            
+        deaths++;
     }
 
-    return {combatant, deaths};
+    return { combatant, deaths };
 }
 
 export function calculateCombatantMovements(
-    {movement_logic, use_genders, player, combatants, global_combatant_stats, window_width, tiles}: 
-    {
-        movement_logic: MovementLogic,
-        use_genders: boolean, 
-        player: CombatantModel | undefined,
-        combatants: Combatants,
-        global_combatant_stats: GlobalCombatantStatsModel, 
-        window_width: number, 
-        tiles: TileModel[]
-    }
-): {player: CombatantModel | undefined, combatants: Combatants, births: number, deaths: number} {
+    { movement_logic, use_genders, player, combatants, global_combatant_stats, window_width, tiles }:
+        {
+            movement_logic: MovementLogic,
+            use_genders: boolean,
+            player: CombatantModel | undefined,
+            combatants: Combatants,
+            global_combatant_stats: GlobalCombatantStatsModel,
+            window_width: number,
+            tiles: TileModel[]
+        }
+): { player: CombatantModel | undefined, combatants: Combatants, births: number, deaths: number } {
     const brains = Brain.init();
-    const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
+    const working_combatants = combatants as { [position: number]: CombatantModel | undefined };
     let births = 0, deaths = 0;
 
     if (player && player.state !== State.Dead) {
@@ -261,15 +261,16 @@ export function calculateCombatantMovements(
         const current_position = parseInt(p);
         const combatant = working_combatants[current_position];
         const values = processCombatantMovement({
-            movement_logic, 
-            use_genders, 
+            movement_logic,
+            use_genders,
             combatant,
-            working_combatants, 
-            global_combatant_stats, 
-            window_width, 
+            working_combatants,
+            global_combatant_stats,
+            window_width,
             brains,
-            tiles});
-            
+            tiles
+        });
+
         deaths += values.deaths;
     });
 
@@ -290,13 +291,14 @@ export function calculateCombatantMovements(
                     getSurroundings({
                         species: spawn.species,
                         position: parent.position,
-                        window_width, 
-                        tiles, 
+                        window_width,
+                        tiles,
                         combatants: working_combatants,
-                    }), 
+                    }),
                 spawn,
                 parent,
-                arena_size: tiles.length});
+                arena_size: tiles.length
+            });
             if (spawn.position > -1) {
                 working_combatants[spawn.position] = spawn;
                 spawn.state = State.Alive;
@@ -319,14 +321,14 @@ export function calculateCombatantMovements(
         }
     })
 
-    return {player, combatants: ret_combatants, births, deaths};
+    return { player, combatants: ret_combatants, births, deaths };
 }
 
 /**
  * Handles the removing of Combatants from the Combatants object without creating undefined spaces. 
  * @returns a copy of the Combatants without the killed positions (and no undefined spaces)
  */
-export function killAndCopy({positions, combatants}: {positions: number[], combatants: Combatants}): Combatants {
+export function killAndCopy({ positions, combatants }: { positions: number[], combatants: Combatants }): Combatants {
     return Object.values(combatants).reduce((ret_combatants, combatant, _idx, _working_combatants) => {
         if (!positions.includes(combatant.position)) {
             ret_combatants[combatant.position] = combatant;
@@ -335,15 +337,15 @@ export function killAndCopy({positions, combatants}: {positions: number[], comba
     }, {} as Combatants);
 }
 
-export function updateEntities({player, combatants, items, global_combatant_stats, window_width, tiles}: 
-    {player: CombatantModel | undefined, combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[]})
-: {combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel} {
+export function updateEntities({ player, combatants, items, global_combatant_stats, window_width, tiles }:
+    { player: CombatantModel | undefined, combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[] })
+    : { combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel } {
     const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
-    const working_combatants = combatants as {[position: number]: CombatantModel | undefined};
+    const working_combatants = combatants as { [position: number]: CombatantModel | undefined };
     if (player && player.state !== State.Dead) {
         working_combatants[player.position] = player;
     }
-    const working_items = items as {[position: number]: ItemModel[] | undefined};
+    const working_items = items as { [position: number]: ItemModel[] | undefined };
     let deaths = 0;
 
     const item_keys = Object.keys(items);
@@ -360,7 +362,7 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                 return;
             }
 
-            switch(item.type) {
+            switch (item.type) {
                 case ItemType.Bomb:
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
                         // time to blow
@@ -368,8 +370,8 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                             {
                                 species: undefined,
                                 position: item.position,
-                                window_width, 
-                                tiles, 
+                                window_width,
+                                tiles,
                                 combatants: working_combatants,
                             }
                         );
@@ -383,7 +385,7 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                                 c_to_die.state = State.Dead;
                                 working_combatants[c_to_die.position] = undefined;
                                 deaths++;
-                                item.kills +=1;
+                                item.kills += 1;
                             }
                             const items_to_die = working_items[surrounding.position];
                             if ((items_to_die?.length ?? 0) > 0) {
@@ -392,14 +394,14 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                         });
                         removeItemFromBoard(item, working_items);
                     }
-                break;
+                    break;
                 case ItemType.PokemonBall:
                     const posData = getSurroundings(
                         {
                             species: undefined,
                             position: item.position,
-                            window_width, 
-                            tiles, 
+                            window_width,
+                            tiles,
                             combatants: working_combatants,
                         }
                     );
@@ -447,14 +449,14 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                             c.tick += 1;
                         });
                     }
-                break;
+                    break;
                 case ItemType.MedPack:
                     const occupant = working_combatants[position];
                     if (occupant) {
                         occupant.fitness += -MIN_HEALTH;
                         removeItemFromBoard(item, working_items);
                     }
-                break;
+                    break;
                 case ItemType.Spider:
                     const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
                     const new_position = getNewPositionFromClockFace(
@@ -467,11 +469,11 @@ export function updateEntities({player, combatants, items, global_combatant_stat
                     if (item.fuse_length > 0 && item.tick < item.fuse_length) {
                         item.position = new_position;
                         addItemToBoard(item, working_items);
-                        paintTileForSpider(item as SpiderModel, tiles, false); 
+                        paintTileForSpider(item as SpiderModel, tiles, false);
                     }
-                break;
+                    break;
             }
-            item.tick +=1;
+            item.tick += 1;
         });
     })
 
@@ -485,11 +487,11 @@ export function updateEntities({player, combatants, items, global_combatant_stat
         }
 
         if (!combatant.immortal) {
-            combatant.fitness += getMapTileEffect({species: combatant.species, tileType: tiles[position].type});
+            combatant.fitness += getMapTileEffect({ species: combatant.species, tileType: tiles[position].type });
         }
         combatant.strength = getStrengthRating({
-            global_combatant_stats, 
-            fitness: combatant.fitness, 
+            global_combatant_stats,
+            fitness: combatant.fitness,
             immortal: combatant.immortal
         });
 
@@ -508,16 +510,16 @@ export function updateEntities({player, combatants, items, global_combatant_stat
     working_global_combatant_stats.deaths += deaths;
 
     const number_of_new_combatants = combatant_keys.length;
-    working_global_combatant_stats.num_combatants = 
+    working_global_combatant_stats.num_combatants =
         number_of_new_combatants;
-    working_global_combatant_stats.average_position = 
-        working_global_combatant_stats.average_position/number_of_new_combatants;
-    working_global_combatant_stats.average_fitness = 
-        working_global_combatant_stats.average_fitness/number_of_new_combatants;
-    working_global_combatant_stats.weak_bar = 
-        (working_global_combatant_stats.average_fitness + working_global_combatant_stats.min_fitness)/2;;
-    working_global_combatant_stats.average_bar = 
-        (working_global_combatant_stats.average_fitness + working_global_combatant_stats.max_fitness)/2;
+    working_global_combatant_stats.average_position =
+        working_global_combatant_stats.average_position / number_of_new_combatants;
+    working_global_combatant_stats.average_fitness =
+        working_global_combatant_stats.average_fitness / number_of_new_combatants;
+    working_global_combatant_stats.weak_bar =
+        (working_global_combatant_stats.average_fitness + working_global_combatant_stats.min_fitness) / 2;;
+    working_global_combatant_stats.average_bar =
+        (working_global_combatant_stats.average_fitness + working_global_combatant_stats.max_fitness) / 2;
 
     // This step is crucial as without copying the Redux store will 
     // duplicate the now undefined combatants 
@@ -540,10 +542,10 @@ export function updateEntities({player, combatants, items, global_combatant_stat
     })
 
     updateMapTileScorePotentials(tiles, window_width);
-    return {combatants: ret_combatants, items: ret_items, tiles: tiles, globalCombatantStats: working_global_combatant_stats};
+    return { combatants: ret_combatants, items: ret_items, tiles: tiles, globalCombatantStats: working_global_combatant_stats };
 }
 
-function removeItemFromBoard(item: ItemModel, working_items: {[position: number]: ItemModel[] | undefined}) {
+function removeItemFromBoard(item: ItemModel, working_items: { [position: number]: ItemModel[] | undefined }) {
     const items = working_items[item.position];
     if (items !== undefined && items.length > 1) {
         const idx_to_remove = items.indexOf(item);
@@ -553,7 +555,7 @@ function removeItemFromBoard(item: ItemModel, working_items: {[position: number]
     }
 }
 
-export function addItemToBoard(item: ItemModel, working_items: {[position: number]: ItemModel[] | undefined}) {
+export function addItemToBoard(item: ItemModel, working_items: { [position: number]: ItemModel[] | undefined }) {
     if (working_items[item.position] === undefined) {
         working_items[item.position] = [];
     }
@@ -569,24 +571,23 @@ export function addItemToBoard(item: ItemModel, working_items: {[position: numbe
  * @param {*} c combatant
  * @returns true if combatant should live
  */
- function evalHealth(c: CombatantModel) {
+function evalHealth(c: CombatantModel) {
     return c.fitness > MIN_HEALTH;
 };
 
-function birthSpawn({posData, spawn, parent, arena_size}: 
-    {posData: PosData, spawn: CombatantModel, parent: CombatantModel, arena_size: number})
-{
-    const {surroundings} = posData;
-    const friendly_positions = [], 
-    enemy_positions = [], 
-    empty_positions = [] as number[];
+function birthSpawn({ posData, spawn, parent, arena_size }:
+    { posData: PosData, spawn: CombatantModel, parent: CombatantModel, arena_size: number }) {
+    const { surroundings } = posData;
+    const friendly_positions = [],
+        enemy_positions = [],
+        empty_positions = [] as number[];
 
     surroundings.forEach((surrounding, idx, s_arr) => {
         if (!surrounding) {
             return;
         }
-        
-        const {position, occupant: c} = surrounding;
+
+        const { position, occupant: c } = surrounding;
 
         if (!c) {
             if (position > -1 && position < arena_size) {
@@ -603,8 +604,8 @@ function birthSpawn({posData, spawn, parent, arena_size}:
         // spawn dies; too dangerous
     } else {
         // safe, let's do it!
-        const spawn_pos = empty_positions.length > 0 ? 
-            empty_positions[Math.round(Math.random() * (empty_positions.length - 1))]:
+        const spawn_pos = empty_positions.length > 0 ?
+            empty_positions[Math.round(Math.random() * (empty_positions.length - 1))] :
             -1;
         if (spawn_pos > -1) {
             spawn.position = spawn_pos;
@@ -638,28 +639,28 @@ function compete(a: CombatantModel, b: CombatantModel) {
 }
 
 export function getSurroundings(
-    {species, position, window_width, tiles, combatants}: 
-    {
-        species: Character | undefined,
-        position: number, 
-        window_width: number, 
-        tiles: TileModel[], 
-        // the Player should already be in the combatants array at this point in evaluation
-        combatants: {[position: number]: CombatantModel | undefined}
-    }
+    { species, position, window_width, tiles, combatants }:
+        {
+            species: Character | undefined,
+            position: number,
+            window_width: number,
+            tiles: TileModel[],
+            // the Player should already be in the combatants array at this point in evaluation
+            combatants: { [position: number]: CombatantModel | undefined }
+        }
 ): PosData {
-    const ret = {surroundings: [] as Surroundings[]} as PosData;
+    const ret = { surroundings: [] as Surroundings[] } as PosData;
 
-    ret.coord = {y: Math.floor(position / window_width), x: position % window_width};
+    ret.coord = { y: Math.floor(position / window_width), x: position % window_width };
     ret.can_go_left = position % window_width > 0;
     ret.can_go_up = position - window_width > -1
     ret.can_go_right = position % window_width < window_width - 1;
-    ret.can_go_down = position + window_width < tiles.length; 
+    ret.can_go_down = position + window_width < tiles.length;
     ret.window_width = window_width;
     ret.tile_count = tiles.length;
     ret.min_potential = Number.MAX_VALUE;
     ret.max_potential = Number.MIN_VALUE;
-    
+
     const setSurrounding = (position: number) => {
         const score_potential = !species ? -1 : tiles[position].score_potential[species];
         if (score_potential < ret.min_potential) {
@@ -679,23 +680,23 @@ export function getSurroundings(
 
     // start at center position and then move clockwise around
     ret.surroundings = Array(9);
-    ret.surroundings[ClockFace.c] = 
+    ret.surroundings[ClockFace.c] =
         setSurrounding(position);
-    ret.surroundings[ClockFace.tl] = ret.can_go_up && ret.can_go_left ? 
+    ret.surroundings[ClockFace.tl] = ret.can_go_up && ret.can_go_left ?
         setSurrounding(position - window_width - 1) : undefined;
-    ret.surroundings[ClockFace.t] = ret.can_go_up ? 
+    ret.surroundings[ClockFace.t] = ret.can_go_up ?
         setSurrounding(position - window_width) : undefined;
-    ret.surroundings[ClockFace.tr] = ret.can_go_up && ret.can_go_right ? 
+    ret.surroundings[ClockFace.tr] = ret.can_go_up && ret.can_go_right ?
         setSurrounding(position - window_width + 1) : undefined;
-    ret.surroundings[ClockFace.r] = ret.can_go_right ? 
+    ret.surroundings[ClockFace.r] = ret.can_go_right ?
         setSurrounding(position + 1) : undefined;
-    ret.surroundings[ClockFace.br] = ret.can_go_down && ret.can_go_right ? 
+    ret.surroundings[ClockFace.br] = ret.can_go_down && ret.can_go_right ?
         setSurrounding(position + window_width + 1) : undefined;
-    ret.surroundings[ClockFace.b] = ret.can_go_down ? 
+    ret.surroundings[ClockFace.b] = ret.can_go_down ?
         setSurrounding(position + window_width) : undefined;
-    ret.surroundings[ClockFace.bl] = ret.can_go_down && ret.can_go_left ? 
+    ret.surroundings[ClockFace.bl] = ret.can_go_down && ret.can_go_left ?
         setSurrounding(position + window_width - 1) : undefined;
-    ret.surroundings[ClockFace.l] = ret.can_go_left ? 
+    ret.surroundings[ClockFace.l] = ret.can_go_left ?
         setSurrounding(position - 1) : undefined;
 
     return ret;

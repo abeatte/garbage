@@ -1,10 +1,10 @@
 import uuid from "react-uuid";
-import { 
-    MAX_YOUNGLING_TICK, 
+import {
+    MAX_YOUNGLING_TICK,
     ClockFace,
     PosData,
     IllegalMoves,
-    LegalMoves, 
+    LegalMoves,
 } from "../data/utils/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
@@ -17,12 +17,12 @@ import { EntityModel } from "./EntityModel";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
-export enum Character { 
-    Bunny = "Bunny", 
-    Turtle = "Turtle", 
-    Lizard = "Lizard", 
-    Elephant = "Elephant", 
-    Dog = "Dog", 
+export enum Character {
+    Bunny = "Bunny",
+    Turtle = "Turtle",
+    Lizard = "Lizard",
+    Elephant = "Elephant",
+    Dog = "Dog",
     Cat = "Cat",
     Unicorn = "Unicorn",
 };
@@ -35,7 +35,7 @@ export interface CombatantModel extends EntityModel {
     taken_turn: boolean;
     player_turn: number;
     state: State;
-    visited_positions: {[position: number]: number};
+    visited_positions: { [position: number]: number };
     kills: number;
     fitness: number;
     strength: Strength;
@@ -52,7 +52,7 @@ const uniqueNamesConfig: UniqueNamesConfig = {
     separator: '|',
     style: 'capital',
     length: 3,
-  };
+};
 
 export function getRandomCombatantName(): string {
     const nameParts = uniqueNamesGenerator(uniqueNamesConfig).split("|");
@@ -60,11 +60,11 @@ export function getRandomCombatantName(): string {
 }
 
 export function createCombatant(
-    args: {spawn_position: number, species?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel | undefined},
+    args: { spawn_position: number, species?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel | undefined },
 ): CombatantModel {
-    const visited_positions = {} as {[position: number]: number};
+    const visited_positions = {} as { [position: number]: number };
     visited_positions[args.spawn_position] = args.spawn_position;
-    return {   
+    return {
         id: uuid(),
         name: getRandomCombatantName(),
         is_player: false,
@@ -73,7 +73,7 @@ export function createCombatant(
         state: State.Alive,
         kills: 0,
         fitness: 0,
-        strength: getStrengthRating({global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false}),
+        strength: getStrengthRating({ global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false }),
         decision_type: DecisionType.Neutral,
         immortal: false,
         species: args.species ?? getRandomSpecies(),
@@ -86,7 +86,7 @@ export function createCombatant(
     }
 }
 
-export function getMapTileEffect({species, tileType}: {species: Character | undefined, tileType: TileType}) {
+export function getMapTileEffect({ species, tileType }: { species: Character | undefined, tileType: TileType }) {
     let species_buff = 0;
 
     switch (species) {
@@ -118,7 +118,7 @@ export function getMapTileEffect({species, tileType}: {species: Character | unde
         return -5 + species_buff;
     } else if (tileType === TileType.Grass) {
         // grass is very good
-        return 50 + species_buff;       
+        return 50 + species_buff;
     } else {
         // lame, you get nothing
         return 0 + species_buff;
@@ -138,15 +138,15 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
         return 1;
     } else if (b === Strength.Average && (a !== Strength.Immortal && a !== Strength.Strong)) {
         return 1;
-    } else { 
+    } else {
         return -1;
     }
 };
 
 // Lovers do not fight;
 function getBestEnemyPosition(
-    {self, bucketed_enemy_strengths}:
-    {self: CombatantModel, bucketed_enemy_strengths: {[key: string]: number[]}}
+    { self, bucketed_enemy_strengths }:
+        { self: CombatantModel, bucketed_enemy_strengths: { [key: string]: number[] } }
 ): number {
     // position based on best prey (enemy) space
     const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
@@ -160,61 +160,59 @@ function getBestEnemyPosition(
 
 // Allies of the given self;
 function getBestAllyPosition(
-    {self, bucketed_ally_strengths}:
-    {self: CombatantModel, bucketed_ally_strengths: {[key: string]: number[]}}
+    { self, bucketed_ally_strengths }:
+        { self: CombatantModel, bucketed_ally_strengths: { [key: string]: number[] } }
 ): number {
     // position based on best prey (enemy) space
     const best_ally_bucket = bucketed_ally_strengths[Object.keys(bucketed_ally_strengths)
         .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
         .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
     const best_hunter_position = best_ally_bucket?.length > 0 ?
-    best_ally_bucket[Math.floor(Math.random() * best_ally_bucket.length)] : -1;
+        best_ally_bucket[Math.floor(Math.random() * best_ally_bucket.length)] : -1;
 
     return best_hunter_position;
 }
 
 // All types like open spaces;
 function getBestOpenPosition(
-    {self, movement_logic, bucketed_empty_tiles}:
-    {self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: {[key:string]: number[]}}): number
-{
+    { self, movement_logic, bucketed_empty_tiles }:
+        { self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: { [key: string]: number[] } }): number {
     // position based on best safe space
     const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
         .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
-    const best_safe_position = best_safe_bucket?.length > 0 ? 
-    best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : -1;
+    const best_safe_position = best_safe_bucket?.length > 0 ?
+        best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : -1;
 
     return best_safe_position;
 }
 
 // Fighters do not mate; 
 function getBestMatePosition(
-    {self, bucketed_mate_strengths}:
-    {self: CombatantModel, bucketed_mate_strengths: {[key: string]: number[]}}): number
-{
+    { self, bucketed_mate_strengths }:
+        { self: CombatantModel, bucketed_mate_strengths: { [key: string]: number[] } }): number {
     // position based on best mate space
     const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
         .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
         .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
     const best_mate_position = best_mate_bucket?.length > 0 ?
-    best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : -1;
+        best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : -1;
 
     return best_mate_position;
 }
 
-export function requestMove({movement_logic, brains, posData, self, tiles, window_width}:
+export function requestMove({ movement_logic, brains, posData, self, tiles, window_width }:
     {
-        movement_logic: MovementLogic, 
-        brains: {[species: string]:NeuralNetwork<Input, Output>},
+        movement_logic: MovementLogic,
+        brains: { [species: string]: NeuralNetwork<Input, Output> },
         posData: PosData,
-        self: CombatantModel, 
-        tiles: TileModel[], 
+        self: CombatantModel,
+        tiles: TileModel[],
         window_width: number,
-}): number {
-    const bucketed_enemy_strengths = {} as {[key: string]: number[]}; 
-    const bucketed_ally_strengths = {} as {[key: string]: number[]};
-    const bucketed_mate_strengths = {} as {[key: string]: number[]};
-    const bucketed_empty_tiles = {} as {[key: number]: number[]}; 
+    }): number {
+    const bucketed_enemy_strengths = {} as { [key: string]: number[] };
+    const bucketed_ally_strengths = {} as { [key: string]: number[] };
+    const bucketed_mate_strengths = {} as { [key: string]: number[] };
+    const bucketed_empty_tiles = {} as { [key: number]: number[] };
 
     posData.surroundings.forEach((surrounding, idx, s_arr) => {
         if (!surrounding) {
@@ -236,13 +234,13 @@ export function requestMove({movement_logic, brains, posData, self, tiles, windo
             }
         } else if (
             // same species
-            occupant.species === self.species && 
+            occupant.species === self.species &&
             // not already 'engaged'
-            occupant.state !== State.Mating && 
+            occupant.state !== State.Mating &&
             // not too young
-            occupant.tick > MAX_YOUNGLING_TICK && 
+            occupant.tick > MAX_YOUNGLING_TICK &&
             // not on hurtful tile
-            (getMapTileEffect({species: self.species, tileType: surrounding.tile.type}) ?? -1) > -1
+            (getMapTileEffect({ species: self.species, tileType: surrounding.tile.type }) ?? -1) > -1
         ) {
             const strength = occupant.strength;
             if (bucketed_mate_strengths[strength] === undefined) {
@@ -267,7 +265,7 @@ export function requestMove({movement_logic, brains, posData, self, tiles, windo
         }
     });
 
-    let position : number;
+    let position: number;
     if (movement_logic === MovementLogic.NeuralNetwork) {
         // TODO: the Neural Network is blind to mating situations. 
         // this causes combatants to just sit in one spot when near others. 
@@ -279,32 +277,32 @@ export function requestMove({movement_logic, brains, posData, self, tiles, windo
         let attempts = 3;
         do {
             // position based on best prey (enemy) space
-            let best_enemy_position =  -1;
+            let best_enemy_position = -1;
             if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Lover) {
-                best_enemy_position = getBestEnemyPosition({self, bucketed_enemy_strengths});
+                best_enemy_position = getBestEnemyPosition({ self, bucketed_enemy_strengths });
             }
 
             // if a fighter has no enemy to fight then they fight an ally
             if (
-                best_enemy_position === -1 && 
-                movement_logic === MovementLogic.DecisionTree && 
+                best_enemy_position === -1 &&
+                movement_logic === MovementLogic.DecisionTree &&
                 self.decision_type === DecisionType.Fighter
             ) {
-                best_enemy_position = getBestAllyPosition({self, bucketed_ally_strengths});
+                best_enemy_position = getBestAllyPosition({ self, bucketed_ally_strengths });
             }
-            
+
             // position based on best safe space
-            let best_safe_position = getBestOpenPosition({self, movement_logic, bucketed_empty_tiles});
+            let best_safe_position = getBestOpenPosition({ self, movement_logic, bucketed_empty_tiles });
 
             // position based on best mate space
             let best_mate_position = -1;
             if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Fighter) {
-                best_mate_position = getBestMatePosition({self, bucketed_mate_strengths});
+                best_mate_position = getBestMatePosition({ self, bucketed_mate_strengths });
             }
 
             if (
                 // Adventurers are disinterested in places they have been before
-                movement_logic === MovementLogic.DecisionTree && 
+                movement_logic === MovementLogic.DecisionTree &&
                 self.decision_type === DecisionType.Adventurer
             ) {
                 if (self.visited_positions[best_enemy_position] !== undefined) {
@@ -320,11 +318,11 @@ export function requestMove({movement_logic, brains, posData, self, tiles, windo
 
             if (best_enemy_position !== -1 && !random_walk_enabled) {
                 position = best_enemy_position;
-            // % chance you'll choose to mate
+                // % chance you'll choose to mate
             } else if (
-                best_mate_position !== -1 && 
-                !random_walk_enabled && 
-                self.decision_type !== DecisionType.Fighter && 
+                best_mate_position !== -1 &&
+                !random_walk_enabled &&
+                self.decision_type !== DecisionType.Fighter &&
                 (self.decision_type === DecisionType.Lover || Math.random() > 0.5)
             ) {
                 position = best_mate_position;
@@ -333,16 +331,16 @@ export function requestMove({movement_logic, brains, posData, self, tiles, windo
             } else {
                 const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
                 position = getNewPositionFromClockFace(
-                    self.position, 
-                    clockFace, 
-                    window_width, 
-                    tiles.length);  
+                    self.position,
+                    clockFace,
+                    window_width,
+                    tiles.length);
             }
             attempts--;
             // avoid fire if you can
-        } while (getMapTileEffect({species: self.species, tileType: tiles[position].type}) < 0 && attempts > 0);
+        } while (getMapTileEffect({ species: self.species, tileType: tiles[position].type }) < 0 && attempts > 0);
     }
-    
+
     return position;
 };
 
@@ -363,7 +361,7 @@ export function getNewPositionFromArrowKey(current_position: number, arrowKey: A
             break;
         default:
             clockFace = ClockFace.c;
-    } 
+    }
     return getNewPositionFromClockFace(current_position, clockFace, window_width, tile_count);
 }
 
@@ -371,35 +369,35 @@ export function getNewPositionFromClockFace(current_position: number, clockFace:
     let new_position = current_position;
     switch (clockFace) {
         case ClockFace.l:
-            new_position = 
-                current_position % window_width > 0 ? 
+            new_position =
+                current_position % window_width > 0 ?
                     current_position - 1 : current_position;
             break;
         case ClockFace.t:
-            new_position = 
-                current_position - window_width > -1 ? 
+            new_position =
+                current_position - window_width > -1 ?
                     current_position - window_width : current_position;
             break;
         case ClockFace.r:
-            new_position = 
-                current_position % window_width < window_width - 1 ? 
+            new_position =
+                current_position % window_width < window_width - 1 ?
                     current_position + 1 : current_position;
             break;
         case ClockFace.b:
-            new_position = 
-                current_position + window_width < tile_count ? 
+            new_position =
+                current_position + window_width < tile_count ?
                     current_position + window_width : current_position;
             break;
         case ClockFace.c:
-            // fallthrough
+        // fallthrough
         default:
             new_position = current_position;
-            break;            
+            break;
     }
     return new_position;
 };
 
-export function getRandomSpecies(): Character  {
+export function getRandomSpecies(): Character {
     const set = Object.keys(Character);
     return set[Math.round(Math.random() * (set.length - 1))] as Character;
 }
@@ -411,7 +409,7 @@ export function getRandomGender(): Gender {
 
 export function getRandomDecisionType(): DecisionType {
     const set = Object.keys(DecisionType);
-    return set[Math.round(Math.random() * (set.length-1))] as DecisionType;
+    return set[Math.round(Math.random() * (set.length - 1))] as DecisionType;
 }
 
 export default CombatantModel;

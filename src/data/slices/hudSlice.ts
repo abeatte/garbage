@@ -32,23 +32,23 @@ export const hudSlice = createSlice({
     activeHudPanel: HudPanel,
   },
   reducers: {
-    setScreenSize: (state, action: {payload: {width: number, height: number}}) => {
+    setScreenSize: (state, action: { payload: { width: number, height: number } }) => {
       state.screenWidth = action.payload.width;
       state.screenHeight = action.payload.height;
       state.isPortraitMode = state.screenWidth < state.screenHeight;
-      
-      state.hudDisplayMode = 
+
+      state.hudDisplayMode =
         getHudDisplayMode(state.screenWidth, state.activeHudPanel);
     },
     setActiveHudPanel: (state, action) => {
       state.activeHudPanel = action.payload;
-      state.hudDisplayMode = 
+      state.hudDisplayMode =
         getHudDisplayMode(state.screenWidth, state.activeHudPanel)
     }
   },
 })
 
-export const { 
+export const {
   setScreenSize,
   setActiveHudPanel,
 } = hudSlice.actions

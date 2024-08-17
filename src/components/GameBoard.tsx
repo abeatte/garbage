@@ -13,13 +13,13 @@ import { mapStateToProps } from '../data/utils/ReactUtils';
 
 class Game extends React.Component<AppState & DispatchProps> {
     handleWindowWidthResize = (
-        setScreenSize: (dimens: {width: number, height: number}) => void, 
-        dimens: {innerWidth: number, innerHeight: number}
+        setScreenSize: (dimens: { width: number, height: number }) => void,
+        dimens: { innerWidth: number, innerHeight: number }
     ) => {
-        setScreenSize({width: dimens.innerWidth, height: dimens.innerHeight});
+        setScreenSize({ width: dimens.innerWidth, height: dimens.innerHeight });
     }
 
-    escFunction =  (event: { key: string; }) => {
+    escFunction = (event: { key: string; }) => {
         if (event.key === "Escape") {
             Analytics.logEvent('key_pressed: Escape');
             // close settings panel first, if it is open. 
@@ -39,7 +39,7 @@ class Game extends React.Component<AppState & DispatchProps> {
         document.addEventListener("keydown", this.escFunction, false);
         this.handleWindowWidthResize(this.props.setScreenSize, window);
         window.addEventListener(
-            'resize', 
+            'resize',
             () => this.handleWindowWidthResize(this.props.setScreenSize, window)
         );
     }
@@ -47,13 +47,13 @@ class Game extends React.Component<AppState & DispatchProps> {
     componentWillUnmount() {
         document.removeEventListener("keydown", this.escFunction, false);
         window.removeEventListener('resize', () => this.handleWindowWidthResize);
-    } 
+    }
 
     render() {
-        const activeHudPanel = this.props.hud.activeHudPanel === HudPanel.DETAILS ? 
-            (<Hud/>) : (<SpeciesStats/>);
-            
-        switch(this.props.hud.hudDisplayMode) {
+        const activeHudPanel = this.props.hud.activeHudPanel === HudPanel.DETAILS ?
+            (<Hud />) : (<SpeciesStats />);
+
+        switch (this.props.hud.hudDisplayMode) {
             case HudDisplayMode.FULL_SCREEN:
                 return (
                     <>
@@ -63,14 +63,14 @@ class Game extends React.Component<AppState & DispatchProps> {
             case HudDisplayMode.GONE:
                 return (
                     <>
-                        <Arena/>
+                        <Arena />
                     </>
                 );
             case HudDisplayMode.SIDE_PANEL:
             default:
                 return (
                     <>
-                        <Arena/>
+                        <Arena />
                         {activeHudPanel}
                     </>
                 );
@@ -83,7 +83,7 @@ interface DispatchProps {
     setNoActiveHudPanel: () => void,
     setNotShowSettings: () => void,
     setNoPaintSelected: () => void,
-    setScreenSize: (dimens: {width: number, height: number}) => void,
+    setScreenSize: (dimens: { width: number, height: number }) => void,
 }
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
@@ -92,9 +92,9 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         setNoActiveHudPanel: () => dispatch(setActiveHudPanel(HudPanel.NONE)),
         setNotShowSettings: () => dispatch(setShowSettings(false)),
         setNoPaintSelected: () => dispatch(setSelectedPaint(Pointer.Target)),
-        setScreenSize: (dimens: {width: number, height: number}) => 
-            dispatch(setScreenSize({width: dimens.width, height: dimens.height}))
+        setScreenSize: (dimens: { width: number, height: number }) =>
+            dispatch(setScreenSize({ width: dimens.width, height: dimens.height }))
     }
-  }
-  
+}
+
 export default connect(mapStateToProps, mapDispatchToProps)(Game);

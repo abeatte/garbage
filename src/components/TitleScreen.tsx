@@ -1,6 +1,6 @@
 import React from 'react';
 import '../css/TitleScreen.css';
-import { AppDispatch, AppState } from '../data/store'; 
+import { AppDispatch, AppState } from '../data/store';
 import { GameMode, reset, setGameMode } from '../data/slices/boardSlice';
 import Analytics from '../analytics';
 import { connect } from 'react-redux';
@@ -10,7 +10,7 @@ import { mapStateToProps } from '../data/utils/ReactUtils';
 const logo = require('../images/icon.png');
 
 class TitleScreen extends React.Component<AppState & DispatchProps> {
-    keysFunction =  (event: { key: string; }) => {
+    keysFunction = (event: { key: string; }) => {
         const key = event.key.toUpperCase();
         if (key === "A") {
             Analytics.logEvent('key_pressed: A');
@@ -27,22 +27,22 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
 
     componentWillUnmount() {
         document.removeEventListener("keydown", this.keysFunction, false);
-    } 
-    
+    }
+
     render() {
         return (
             <div className="Title">
                 <h1>Welcome to</h1>
-                <img className="Logo" src={logo} alt='logo'/>
+                <img className="Logo" src={logo} alt='logo' />
                 <h3>How will you be playing?</h3>
                 <div className='Button_row'>
-                    <button 
-                        className={classNames('Clickable', 'Button')} 
+                    <button
+                        className={classNames('Clickable', 'Button')}
                         onClick={() => this.props.setGameMode(GameMode.Adventure)}
                     >
                         (A)dventure Mode
                     </button>
-                    <button 
+                    <button
                         className={classNames('Clickable', 'Button')}
                         onClick={() => this.props.setGameMode(GameMode.God)}
                     >

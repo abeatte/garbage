@@ -10,8 +10,8 @@ import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 
-export type Input = {[position: string]: number};
-export type Output = {[direction: string]: number};
+export type Input = { [position: string]: number };
+export type Output = { [direction: string]: number };
 interface TrainingSet extends INeuralNetworkDatum<Input, Output> {
     input: Input,
     output: Output,
@@ -27,18 +27,18 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, posData: 
         if (sur !== undefined) {
             const positive_shifted_potential = sur.tile.score_potential[species] + Math.abs(posData.min_potential);
             let range = Math.abs(posData.min_potential) + posData.max_potential;
-            move_potentials[clockFace] = positive_shifted_potential * 1.0/range;
+            move_potentials[clockFace] = positive_shifted_potential * 1.0 / range;
         }
         return move_potentials;
-    }, {} as {[direction: string]: number});
+    }, {} as { [direction: string]: number });
 
     const requested_position = requestMove(
         {
-            movement_logic: MovementLogic.DecisionTree, 
-            brains: {}, 
-            posData, 
-            self: combatant, 
-            tiles, 
+            movement_logic: MovementLogic.DecisionTree,
+            brains: {},
+            posData,
+            self: combatant,
+            tiles,
             window_width
         }
     );
@@ -53,18 +53,18 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
     // TODO: finish creating this so that the posData will have a Clockface.C combataint to use for species. 
-    const trainer = createCombatant({spawn_position: 0, species, use_genders: false, global_combatant_stats: undefined});
-    
-    for(let map = 0; map < NUM_TRAINING_MAPS; map++) {
+    const trainer = createCombatant({ spawn_position: 0, species, use_genders: false, global_combatant_stats: undefined });
+
+    for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
         const width = DEFAULTS.window_width;
         const height = DEFAULTS.window_height;
-        const tiles = Maps[DEFAULTS.map].generate({width, height});
+        const tiles = Maps[DEFAULTS.map].generate({ width, height });
 
-        for(let position = 0; position < tiles.length; position++) {
-            const combatants: {[position: number]: CombatantModel} = {};            
+        for (let position = 0; position < tiles.length; position++) {
+            const combatants: { [position: number]: CombatantModel } = {};
             trainer.position = position;
             combatants[position] = trainer;
-            const posData = getSurroundings({species, position, window_width: width, tiles, combatants})
+            const posData = getSurroundings({ species, position, window_width: width, tiles, combatants })
             training_sets.push(getTrainingSet(species, trainer, posData, tiles, width));
         }
     }
@@ -84,7 +84,7 @@ export function run() {
     Object.values(Character).forEach(c => {
         const training_sets = buildTrainingSets(c);
         // throw new Error();
-        trainings.push(nets[c].trainAsync(training_sets, {        
+        trainings.push(nets[c].trainAsync(training_sets, {
             log: (status: INeuralNetworkState) => {
                 const time_lapse = (Date.now() - start_time);
                 const hours = Math.floor(time_lapse / (1000 * 60 * 60)),

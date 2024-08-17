@@ -10,19 +10,19 @@ import { mapStateToProps } from "../data/utils/ReactUtils";
 
 class Game extends React.Component<AppState> {
     render() {
-        
+
         let screen;
-        switch(this.props.board.game_mode) {
+        switch (this.props.board.game_mode) {
             case GameMode.Adventure:
-                // fall-through
+            // fall-through
             case GameMode.God:
-                screen = (<GameBoard/>);
+                screen = (<GameBoard />);
                 break;
             case GameMode.Title:
-                // fall-through
+            // fall-through
             default:
                 screen = (
-                    <TitleScreen/>
+                    <TitleScreen />
                 );
         }
         return screen;

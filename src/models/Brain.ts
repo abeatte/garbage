@@ -23,7 +23,7 @@ const brains = {
     Unicorn: unicornNeuralNetworkJSONPath,
 };
 
-const init = (): {[species: string]: NeuralNetwork<Input, Output>} => {
+const init = (): { [species: string]: NeuralNetwork<Input, Output> } => {
     // https://www.npmjs.com/package/brain.js?activeTab=readme
     const config = {
         inputSize: 9,
@@ -34,7 +34,7 @@ const init = (): {[species: string]: NeuralNetwork<Input, Output>} => {
         leakyReluAlpha: 0.01, // supported for activation type 'leaky-relu'
     };
 
-    const nets: {[species: string]: NeuralNetwork<Input, Output>} = {};
+    const nets: { [species: string]: NeuralNetwork<Input, Output> } = {};
     Object.values(Character).forEach(c => {
         // create a simple feed forward neural network with backpropagation
         const net = new brain.NeuralNetwork(config);
@@ -45,17 +45,17 @@ const init = (): {[species: string]: NeuralNetwork<Input, Output>} => {
         }
         nets[c] = net;
     });
-    
+
     return nets;
 }
 
 const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, posData: PosData): number => {
     // keys are ClockFace values (b, t, l, r); values are potentials (53, -2, ...)
     const move_potentials = LegalMoves.reduce((move_potentials, direction) => {
-        move_potentials[Object.keys(ClockFace)[direction]] = 
+        move_potentials[Object.keys(ClockFace)[direction]] =
             posData.surroundings[direction]?.tile?.score_potential[Character.Bunny] ?? MIN_HEALTH
         return move_potentials;
-    }, {} as {[direction: string]: number});
+    }, {} as { [direction: string]: number });
 
     const output = brain.run(move_potentials);
 
@@ -66,18 +66,18 @@ const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, po
         return clockFace;
     }, 0);
     const new_position = getNewPositionFromClockFace(
-        combatant.position, 
-        clockFace, 
-        posData.window_width, 
+        combatant.position,
+        clockFace,
+        posData.window_width,
         posData.tile_count
     );
 
     return new_position;
 }
-  
-  const Brain = {
-    init, 
-    move,
-  }
 
-  export default Brain;
+const Brain = {
+    init,
+    move,
+}
+
+export default Brain;

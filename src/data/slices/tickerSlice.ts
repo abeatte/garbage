@@ -11,7 +11,7 @@ export const tickerSlice = createSlice({
     prev_tick_speed: 0,
   },
   reducers: {
-    speedChange: (state, action: {payload: {value: number, respectPause?: boolean}}) => {
+    speedChange: (state, action: { payload: { value: number, respectPause?: boolean } }) => {
       const tick_speed = state.tick_speed;
       let new_tick_speed = action.payload.value;
       if (new_tick_speed > MAX_TICK_SPEED) {
@@ -20,19 +20,19 @@ export const tickerSlice = createSlice({
         new_tick_speed = 0;
       }
 
-      if (action.payload.respectPause && tick_speed === 0 && 
+      if (action.payload.respectPause && tick_speed === 0 &&
         new_tick_speed !== state.prev_tick_speed
       ) {
-          state.prev_tick_speed = new_tick_speed;
+        state.prev_tick_speed = new_tick_speed;
       } else if (new_tick_speed !== tick_speed) {
-          state.tick_speed = new_tick_speed;
-          state.prev_tick_speed = tick_speed;
+        state.tick_speed = new_tick_speed;
+        state.prev_tick_speed = tick_speed;
       }
     },
     pauseUnpause: (state) => {
-        const tick_speed = state.tick_speed;
-        state.tick_speed = tick_speed === 0 ? state.prev_tick_speed : 0;
-        state.prev_tick_speed = tick_speed;
+      const tick_speed = state.tick_speed;
+      state.tick_speed = tick_speed === 0 ? state.prev_tick_speed : 0;
+      state.prev_tick_speed = tick_speed;
     },
     pause: (state) => {
       const tick_speed = state.tick_speed;
@@ -43,7 +43,7 @@ export const tickerSlice = createSlice({
     },
     unpause: (state) => {
       const tick_speed = state.tick_speed;
-      state.tick_speed = 
+      state.tick_speed =
         state.prev_tick_speed > 0 ? state.prev_tick_speed : DEFAULT_TICK_SPEED;
       state.prev_tick_speed = tick_speed;
     },
@@ -58,7 +58,7 @@ export const tickerSlice = createSlice({
 
 export const {
   speedChange,
-  pauseUnpause, 
+  pauseUnpause,
   pause,
   unpause,
   tick,

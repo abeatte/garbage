@@ -27,7 +27,7 @@ const PaintPalette = () => {
 
     const target = (
         <Tile
-            tile={createTileModel({index: -1, type: TileType.Void})}
+            tile={createTileModel({ index: -1, type: TileType.Void })}
             showRealTileImages={board.show_real_tile_images}
             className={classNames("Clickable")}
             onClick={() => {
@@ -35,23 +35,23 @@ const PaintPalette = () => {
                 dispatch(setSelectedPaint(Pointer.Target));
                 dispatch(select({}));
                 dispatch(setActiveHudPanel(HudPanel.NONE));
-            }} 
+            }}
             isSelected={paintPalette.selected === Pointer.Target}
             key={`paint_target`}
         >
-            <FontAwesomeIcon 
-                className="Clickable" 
-                icon={faCrosshairs} 
-                color='red' 
-                size='lg' 
-                style={{alignSelf: 'center'}}
+            <FontAwesomeIcon
+                className="Clickable"
+                icon={faCrosshairs}
+                color='red'
+                size='lg'
+                style={{ alignSelf: 'center' }}
             />
         </Tile>
     );
 
     const kill = (
         <Tile
-            tile={createTileModel({index: -1, type: TileType.Void})}
+            tile={createTileModel({ index: -1, type: TileType.Void })}
             showRealTileImages={board.show_real_tile_images}
             className={classNames("Clickable")}
             onClick={() => {
@@ -59,30 +59,30 @@ const PaintPalette = () => {
                 dispatch(setSelectedPaint(Pointer.Kill));
                 dispatch(select({}));
                 dispatch(setActiveHudPanel(HudPanel.NONE));
-            }} 
+            }}
             isSelected={paintPalette.selected === Pointer.Kill}
             key={`paint_target`}
         >
-            <FontAwesomeIcon 
-                className="Clickable" 
-                icon={faSkullCrossbones} 
-                color='red' 
-                size='lg' 
-                style={{alignSelf: 'center'}}
+            <FontAwesomeIcon
+                className="Clickable"
+                icon={faSkullCrossbones}
+                color='red'
+                size='lg'
+                style={{ alignSelf: 'center' }}
             />
         </Tile>
     );
 
 
     const tiles = Object.keys(TileType).map((k, idx) => {
-        const tile = createTileModel({index: -1, type: TileType[k as keyof typeof TileType]});
+        const tile = createTileModel({ index: -1, type: TileType[k as keyof typeof TileType] });
 
         if (tile.type === TileType.Void) {
             return undefined;
         }
 
         return (
-            <Tile 
+            <Tile
                 id={idx}
                 tile={tile}
                 showRealTileImages={board.show_real_tile_images}
@@ -92,24 +92,24 @@ const PaintPalette = () => {
                     dispatch(setSelectedPaint(tile.type));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
-                }} 
+                }}
                 isSelected={paintPalette.selected === tile.type}
                 key={`paint_tile_${idx}`}
             />
         )
     })
 
-    const background_tile = createTileModel({index: -1, type: TileType.Sand});
-    
+    const background_tile = createTileModel({ index: -1, type: TileType.Sand });
+
     const items = Object.keys(ItemType).map((k, idx) => {
-        const item = createItemModel({position: -1, type: ItemType[k as keyof typeof ItemType]});
+        const item = createItemModel({ position: -1, type: ItemType[k as keyof typeof ItemType] });
 
         if (item.type === ItemType.Spider) {
             return undefined;
         }
 
         return (
-            <Tile 
+            <Tile
                 id={idx}
                 tile={background_tile}
                 showRealTileImages={board.show_real_tile_images}
@@ -119,20 +119,20 @@ const PaintPalette = () => {
                     dispatch(setSelectedPaint(item.type));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
-                }} 
+                }}
                 isSelected={paintPalette.selected === item.type}
                 key={`paint_item_${idx}`}
             >
-                <Item item={item} purpose={Purpose.Paint}/>
+                <Item item={item} purpose={Purpose.Paint} />
             </Tile>
         )
     });
 
     const spiders = Object.keys(SpiderType).map((k, idx) => {
-        const spider = createSpiderModel({position: -1, type: SpiderType[k as keyof typeof SpiderType]});
-        const tile = createTileModel({index: -1, type: spider.tile_action});
+        const spider = createSpiderModel({ position: -1, type: SpiderType[k as keyof typeof SpiderType] });
+        const tile = createTileModel({ index: -1, type: spider.tile_action });
         return (
-            <Tile 
+            <Tile
                 id={idx}
                 tile={tile}
                 showRealTileImages={board.show_real_tile_images}
@@ -142,7 +142,7 @@ const PaintPalette = () => {
                     dispatch(setSelectedPaint(spider.spider_type));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
-                }} 
+                }}
                 isSelected={paintPalette.selected === spider.spider_type}
                 key={`paint_item_${idx}`}
             >
@@ -154,7 +154,7 @@ const PaintPalette = () => {
     const characters = Object.keys(Character).map((k, idx) => {
         const character = Character[k as keyof typeof Character];
         return (
-            <Tile 
+            <Tile
                 id={idx}
                 tile={background_tile}
                 showRealTileImages={board.show_real_tile_images}
@@ -166,11 +166,11 @@ const PaintPalette = () => {
                     if (hud.activeHudPanel === HudPanel.DETAILS) {
                         dispatch(setActiveHudPanel(HudPanel.NONE));
                     }
-                }} 
+                }}
                 isSelected={paintPalette.selected === character}
                 key={`paint_item_${idx}`}
             >
-                <Combatant species={character} state={State.Alive} purpose={Purpose.Paint}/>
+                <Combatant species={character} state={State.Alive} purpose={Purpose.Paint} />
             </Tile>
         )
     });
@@ -182,30 +182,30 @@ const PaintPalette = () => {
             "Left": true,
             "Bottom": true,
         })}>
-            <div style={{display: 'flex', marginRight: '8px', marginTop: '8px'}}>
-                <FontAwesomeIcon 
+            <div style={{ display: 'flex', marginRight: '8px', marginTop: '8px' }}>
+                <FontAwesomeIcon
                     id="paint_roller"
                     onClick={() => {
                         Analytics.logEvent('button_clicked: Paint Palette display toggled');
                         dispatch(togglePalettsDisplayed())
                     }}
-                    icon={faPaintRoller} 
-                    color='dark' 
-                    size='lg' 
-                    style={{alignSelf: 'center', margin: '0px 0px 8px 8px'}}
+                    icon={faPaintRoller}
+                    color='dark'
+                    size='lg'
+                    style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
                 />
             </div>
             {
                 paintPalette.palette_displayed && (
                     <div className='Exit_button_container'>
-                        <button 
-                            className={classNames("Clickable", "Exit")} 
+                        <button
+                            className={classNames("Clickable", "Exit")}
                             onClick={() => {
                                 Analytics.logEvent('button_clicked: Paint Palette\'s "X"');
                                 dispatch(togglePalettsDisplayed());
                             }}
                         >
-                        <span>{"X"}</span>
+                            <span>{"X"}</span>
                         </button>
                     </div>
                 )

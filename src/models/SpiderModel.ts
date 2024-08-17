@@ -24,18 +24,18 @@ function getTileType(type: Type): TileType {
     }
 }
 
-export function createSpiderModel({position, type}: {position: number, type: Type}): SpiderModel {
-    const ret = createItemModel({position, type: ItemType.Spider }) as SpiderModel;
+export function createSpiderModel({ position, type }: { position: number, type: Type }): SpiderModel {
+    const ret = createItemModel({ position, type: ItemType.Spider }) as SpiderModel;
     ret.spider_type = type;
     ret.tile_action = getTileType(type);
     return ret;
 }
 
 export function paintTileForSpider(spider: SpiderModel, tiles: TileModel[], update_tile_potentials?: boolean, window_width?: number) {
-    tiles[spider.position] = 
-                    createTileModel({index: spider.position, type: spider.tile_action});
-    
+    tiles[spider.position] =
+        createTileModel({ index: spider.position, type: spider.tile_action });
+
     if (update_tile_potentials && window_width) {
-            updateMapTileScorePotentials(tiles, window_width);
+        updateMapTileScorePotentials(tiles, window_width);
     }
 }

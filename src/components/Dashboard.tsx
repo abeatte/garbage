@@ -9,7 +9,7 @@ import { HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
 import { faChartBar } from "@fortawesome/free-solid-svg-icons";
 import Analytics from "../analytics";
 
-const Dashboard = ({onReset}: {onReset: () => void}) => {
+const Dashboard = ({ onReset }: { onReset: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
     const hud = useSelector((state: AppState) => state.hud);
@@ -44,18 +44,18 @@ const Dashboard = ({onReset}: {onReset: () => void}) => {
 
     const show_stats_button = (
         <div className="Species_stats_button_container">
-            <button 
-                className={classNames('Clickable', 'Button', 'Restart')} 
+            <button
+                className={classNames('Clickable', 'Button', 'Restart')}
                 onClick={() => {
                     Analytics.logEvent(`button_click: ${hud.activeHudPanel === HudPanel.STATS ? 'Hide' : 'Show'} Stats Panel`);
                     dispatch(setActiveHudPanel(hud.activeHudPanel === HudPanel.STATS ? HudPanel.NONE : HudPanel.STATS));
-            }}>
-                <FontAwesomeIcon 
-                    className="Clickable" 
-                    icon={faChartBar} 
-                    color='dark' 
-                    size='lg' 
-                    style={{alignSelf: 'center', margin: '10px 0px 4px 0px'}}
+                }}>
+                <FontAwesomeIcon
+                    className="Clickable"
+                    icon={faChartBar}
+                    color='dark'
+                    size='lg'
+                    style={{ alignSelf: 'center', margin: '10px 0px 4px 0px' }}
                 />
             </button>
         </div>
@@ -63,8 +63,8 @@ const Dashboard = ({onReset}: {onReset: () => void}) => {
 
     return (
         <div className={'Dashboard'}>
-            <div style={{display: "flex", flexDirection: "row", flexGrow: "1", position: "unset", backgroundColor: "peru"}}>
-                <Settings onReset={onReset}/>
+            <div style={{ display: "flex", flexDirection: "row", flexGrow: "1", position: "unset", backgroundColor: "peru" }}>
+                <Settings onReset={onReset} />
                 {game_stats_section}
                 {show_stats_button}
             </div>

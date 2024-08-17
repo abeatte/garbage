@@ -24,7 +24,7 @@ export const paintPaletteSlice = createSlice({
         togglePalettsDisplayed: (state) => {
             state.palette_displayed = !state.palette_displayed;
         },
-        setSelectedPaint: (state, action: {payload: PaintEntity}) => {
+        setSelectedPaint: (state, action: { payload: PaintEntity }) => {
             state.selected = action.payload;
         }
     },

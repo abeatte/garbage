@@ -17,7 +17,7 @@ export interface GlobalCombatantStatsModel {
     deaths: number,
 }
 
-export function getInitGlobalCombatantStatsModel(existing_values: {births: number, deaths: number} = {births: 0, deaths: 0}): GlobalCombatantStatsModel {
+export function getInitGlobalCombatantStatsModel(existing_values: { births: number, deaths: number } = { births: 0, deaths: 0 }): GlobalCombatantStatsModel {
     return {
         min_fitness: 0,
         average_fitness: 0,
@@ -31,10 +31,10 @@ export function getInitGlobalCombatantStatsModel(existing_values: {births: numbe
     }
 }
 
-export function getStrengthRating(args: {global_combatant_stats: GlobalCombatantStatsModel | undefined, fitness: number, immortal: boolean}): Strength {
+export function getStrengthRating(args: { global_combatant_stats: GlobalCombatantStatsModel | undefined, fitness: number, immortal: boolean }): Strength {
     if (!args.global_combatant_stats) {
         return Strength.Average;
-    } else if (args.immortal){
+    } else if (args.immortal) {
         return Strength.Immortal;
     } else if (args.fitness > args.global_combatant_stats.average_bar) {
         return Strength.Strong;

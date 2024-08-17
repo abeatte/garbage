@@ -19,12 +19,12 @@ const SpeciesStats = () => {
     const species = Object.values(Character).reduce((species, cha) => {
         species[cha] = [];
         return species;
-    }, {} as {[key in Character]: CombatantModel[]});
+    }, {} as { [key in Character]: CombatantModel[] });
 
     const decision_types = Object.values(DecisionType).reduce((decision_types, type) => {
         decision_types[type] = 0;
         return decision_types;
-    }, {} as {[key in DecisionType]: number});
+    }, {} as { [key in DecisionType]: number });
 
     Object.values(board.combatants).forEach(combatant => {
         species[combatant.species].push(combatant);
@@ -51,12 +51,12 @@ const SpeciesStats = () => {
                 }
 
                 species_array.push(
-                    <span 
+                    <span
                         key={`${c.id}`}
-                        className={selected_position === c.position ? "Selected" : ""} 
-                        onClick={() => { 
-                            Analytics.logEvent('button_clicked: Stats combatant of species selected');                           
-                            dispatch(select({position: c.position, follow_combatant: true}));
+                        className={selected_position === c.position ? "Selected" : ""}
+                        onClick={() => {
+                            Analytics.logEvent('button_clicked: Stats combatant of species selected');
+                            dispatch(select({ position: c.position, follow_combatant: true }));
                             dispatch(setActiveHudPanel(HudPanel.DETAILS));
 
                         }}
@@ -72,15 +72,15 @@ const SpeciesStats = () => {
                 if (idx === species[spec].length - 1) {
                     species_array.push(<span key={"]"}>{" ]"}</span>);
                 } else if (idx === subset.length - 1) {
-                    species_array.push(<span key={"...]"}>{ " ... ]"}</span>);
+                    species_array.push(<span key={"...]"}>{" ... ]"}</span>);
                 }
             });
         return (
             <div key={spec} className={'Species_group'}>
                 <span className={'Label'}>{`${spec}`}</span><span>{` (${species[spec].length}):`}</span>
                 <div className={classNames("Data_row", "Species", "Clickable")}>
-                    {species[spec].length < 1 ? 
-                        (<span>{"[ ]"}</span>) : 
+                    {species[spec].length < 1 ?
+                        (<span>{"[ ]"}</span>) :
                         species_array
                     }
                 </div>
@@ -100,15 +100,15 @@ const SpeciesStats = () => {
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
     const escape_button = (
-        <div style={{marginTop: '7px'}}>
-            <button 
-                className={classNames("Clickable", "Exit")} 
+        <div style={{ marginTop: '7px' }}>
+            <button
+                className={classNames("Clickable", "Exit")}
                 onClick={() => {
                     Analytics.logEvent('button_clicked: Stats\' "X"');
                     dispatch(setActiveHudPanel(HudPanel.NONE));
                 }}
             >
-            <span>{"X"}</span>
+                <span>{"X"}</span>
             </button>
         </div>
     );
@@ -117,7 +117,7 @@ const SpeciesStats = () => {
         <div className={classNames({
             'Species_stats_fullscreen': isFullScreen,
             'Species_stats': !isFullScreen,
-            'Flyout_panel': !isFullScreen, 
+            'Flyout_panel': !isFullScreen,
             'Right': !isFullScreen,
         })}>
             {isFullScreen && escape_button}

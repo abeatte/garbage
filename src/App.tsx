@@ -7,11 +7,11 @@ import Game from './components/Game';
 
 Analytics.init();
 
-function App() { 
+function App() {
   return (
-    <div className={'App'}> 
+    <div className={'App'}>
       <Provider store={store}>
-        <Game/>
+        <Game />
       </Provider>
     </div>
   );

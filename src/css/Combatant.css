@@ -2,7 +2,7 @@
     /* animation: play .8s steps(3) infinite; */
 }
 
-.Sprite.Dead {
+.Sprite.Dead { 
     -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
   filter: grayscale(100%);
 }

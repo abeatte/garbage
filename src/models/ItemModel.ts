@@ -26,7 +26,7 @@ function getFuseLength(type: Type): number {
     }
 }
 
-export function createItemModel({position, type}: {position: number, type: Type}): ItemModel {
+export function createItemModel({ position, type }: { position: number, type: Type }): ItemModel {
     return {
         id: uuid(),
         tick: 0,

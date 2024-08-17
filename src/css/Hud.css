@@ -61,7 +61,7 @@
     flex-direction: column;
     align-self: end;
     position: absolute;
-}
+} 
 
 .Hud .Button.Kill {
     background-color: red;

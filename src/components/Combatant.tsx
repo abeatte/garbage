@@ -13,9 +13,9 @@ const Unicorn = require('../images/combatants/unicorn.png');
 interface CharacterType {
     species: Character,
     color: string,
-    sheet?: any, 
-    height: string, 
-    width: string, 
+    sheet?: any,
+    height: string,
+    width: string,
     margin: string,
     placement: string,
     transformScale: number,
@@ -33,7 +33,7 @@ interface CharacterType {
         margin: string,
     }
 }
-const Characters: {[key in Character]: CharacterType} = {
+const Characters: { [key in Character]: CharacterType } = {
     Bunny: {
         species: Character.Bunny,
         color: "magenta",
@@ -202,22 +202,22 @@ const getCharacter = (species: Character) => {
     return character;
 }
 
-const Combatant = (props: {species: Character, state: State, purpose?: Purpose, draggable?: boolean}) => {
+const Combatant = (props: { species: Character, state: State, purpose?: Purpose, draggable?: boolean }) => {
     const char = getCharacter(props.species);
     const for_detail_view = props.purpose === Purpose.Detail;
     const for_paint_view = props.purpose === Purpose.Paint;
     if (!char.sheet) {
-        return (<span style={{fontWeight: "bold", marginLeft: "5px", color: char.color}}>{"X"}</span>);
+        return (<span style={{ fontWeight: "bold", marginLeft: "5px", color: char.color }}>{"X"}</span>);
     } else {
-        return (<div 
-            className={classNames({"Sprite" : true, "Dead" : props.state === State.Dead})}
+        return (<div
+            className={classNames({ "Sprite": true, "Dead": props.state === State.Dead })}
             draggable={props.draggable}
             style={
                 {
                     background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
                     transform: `scale(${for_detail_view ? char.detail.transformScale : for_paint_view ? char.paint.transformScale : char.transformScale})`,
                     width: for_detail_view ? char.detail.width : for_paint_view ? char.paint.width : char.width,
-                    height: for_detail_view ? char.detail.height : for_paint_view ? char.paint.height : char.height, 
+                    height: for_detail_view ? char.detail.height : for_paint_view ? char.paint.height : char.height,
                     margin: for_detail_view ? char.detail.margin : for_paint_view ? char.paint.margin : char.margin,
                 }
             }

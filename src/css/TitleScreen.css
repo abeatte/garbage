@@ -4,14 +4,14 @@
     width: 100%;
     text-align: -webkit-center;
 }
-
+ 
 .Logo {
-    width: 250px;
+    width: 250px; 
     height: 250px;
 }
 
 .Button_row {
-    display: flex;
+    display: flex; 
     flex-direction: row;
     align-items: center;
     width: fit-content;
