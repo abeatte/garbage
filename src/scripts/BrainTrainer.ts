@@ -3,7 +3,7 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
-import { DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
+import { GAME_DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
 import { DiagonalMoves, getSurroundings, LegalMoves, PosData } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
@@ -56,9 +56,9 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const trainer = createCombatant({ spawn_position: 0, species, use_genders: false, global_combatant_stats: undefined });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
-        const width = DEFAULTS.window_width;
-        const height = DEFAULTS.window_height;
-        const tiles = Maps[DEFAULTS.map].generate({ width, height });
+        const width = GAME_DEFAULTS.window_width;
+        const height = GAME_DEFAULTS.window_height;
+        const tiles = Maps[GAME_DEFAULTS.map].generate({ width, height });
 
         for (let position = 0; position < tiles.length; position++) {
             const combatants: { [position: number]: CombatantModel } = {};

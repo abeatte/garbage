@@ -28,7 +28,7 @@ export const PLAYER_HIGHLIGHT_COUNT: number = 6;
 export type Combatants = { [position: number]: CombatantModel };
 export type Items = { [position: number]: ItemModel[] };
 
-export const DEFAULTS = {
+export const GAME_DEFAULTS = {
     game_mode: GameMode.Title,
     player_highlight_count: 0,
     window_width: 26,
@@ -36,6 +36,9 @@ export const DEFAULTS = {
     num_combatants: 25,
     movement_logic: MovementLogic.DecisionTree,
     map: Maps['World'].name,
+}
+
+const SETTINGS_DEFAULTS = {
     use_genders: false,
     show_tile_potentials: false,
 }
@@ -48,9 +51,6 @@ interface BoardState {
     height: number,
     initial_num_combatants: number,
     tiles: TileModel[],
-    show_settings: boolean,
-    show_real_tile_images: boolean,
-    show_tile_potentials: boolean,
     player_highlight_count: number,
     player: CombatantModel | undefined,
     combatants: Combatants,
@@ -59,6 +59,12 @@ interface BoardState {
     follow_selected_combatant: boolean,
     movement_logic: MovementLogic,
     map: string,
+}
+
+interface SettingsState {
+    show_settings: boolean,
+    show_real_tile_images: boolean,
+    show_tile_potentials: boolean,
     use_genders: boolean,
 }
 
@@ -150,14 +156,14 @@ function initState(
         initial_num_combatants: number,
         use_genders: boolean
     }
-): BoardState {
+): BoardState & SettingsState {
     const { game_mode, map, width, height, initial_num_combatants, use_genders } =
         args ?? {
             map: Maps['World'].name,
-            width: DEFAULTS.window_width,
-            height: DEFAULTS.window_height,
-            use_genders: DEFAULTS.use_genders,
-            initial_num_combatants: DEFAULTS.num_combatants,
+            width: GAME_DEFAULTS.window_width,
+            height: GAME_DEFAULTS.window_height,
+            use_genders: SETTINGS_DEFAULTS.use_genders,
+            initial_num_combatants: GAME_DEFAULTS.num_combatants,
         };
     const tiles = Maps[map].generate({ width, height });
     const { player, combatants, global_combatant_stats } =
@@ -172,17 +178,114 @@ function initState(
         tiles,
         show_settings: false,
         show_real_tile_images: true,
-        show_tile_potentials: DEFAULTS.show_tile_potentials,
+        show_tile_potentials: SETTINGS_DEFAULTS.show_tile_potentials,
         player_highlight_count: game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
         player,
         combatants,
         items: {},
         selected_position: undefined,
         follow_selected_combatant: false,
-        movement_logic: DEFAULTS.movement_logic,
-        map: DEFAULTS.map,
+        movement_logic: GAME_DEFAULTS.movement_logic,
+        map: GAME_DEFAULTS.map,
         use_genders,
     };
+}
+
+const mapReducers = {
+    shrinkWidth: (state: BoardState & SettingsState) => {
+        if (state.width === 0) {
+            return;
+        }
+        const old_window_height = state.height;
+        const old_window_width = state.width;
+        state.width -= 1
+        handleResize({ state, old_window_width, old_window_height });
+    },
+    growWidth: (state: BoardState & SettingsState) => {
+        const old_window_height = state.height;
+        const old_window_width = state.width;
+        state.width += 1
+        handleResize({ state, old_window_width, old_window_height });
+    },
+    shrinkHeight: (state: BoardState & SettingsState) => {
+        if (state.height === 0) {
+            return;
+        }
+        const old_window_height = state.height;
+        const old_window_width = state.width;
+        state.height -= 1
+        handleResize({ state, old_window_width, old_window_height });
+    },
+    growHeight: (state: BoardState & SettingsState) => {
+        const old_window_height = state.height;
+        const old_window_width = state.width;
+        state.height += 1
+        handleResize({ state, old_window_width, old_window_height });
+    },
+    setMap: (state: BoardState & SettingsState, action: { payload: string }) => {
+        state.map = action.payload;
+        state.tiles = Maps[state.map].generate({ width: state.width, height: state.height });
+    },
+    paintTile: (state: BoardState & SettingsState, action: { payload: { position: number, type: PaintEntity } }) => {
+        const current_occupant = state.combatants[action.payload.position]
+        if (Object.keys(TileType).includes(action.payload.type)) {
+            state.tiles[action.payload.position] =
+                createTileModel({ index: action.payload.position, type: action.payload.type as TileType });
+            updateMapTileScorePotentials(state.tiles, state.width);
+        } else if (Object.keys(ItemType).includes(action.payload.type)) {
+            const new_item =
+                createItemModel({ position: action.payload.position, type: action.payload.type as ItemType });
+            addItemToBoard(new_item, state.items);
+        } else if (Object.keys(SpiderType).includes(action.payload.type)) {
+            const new_spider =
+                createSpiderModel({ position: action.payload.position, type: action.payload.type as SpiderType });
+            addItemToBoard(new_spider, state.items);
+            paintTileForSpider(new_spider, state.tiles, true, state.width);
+        } else if (Object.keys(Character).includes(action.payload.type)) {
+            state.combatants[action.payload.position] =
+                createCombatant({
+                    spawn_position: action.payload.position,
+                    species: action.payload.type as Character,
+                    use_genders: state.use_genders,
+                    global_combatant_stats: state.global_combatant_stats
+                });
+            if (!current_occupant) {
+                state.global_combatant_stats.num_combatants += 1;
+            }
+        } else if (Object.keys(Pointer).includes(action.payload.type)) {
+            if (current_occupant) {
+                state.combatants = killAndCopy({ positions: [action.payload.position], combatants: state.combatants });
+                state.global_combatant_stats.num_combatants -= 1;
+                state.global_combatant_stats.deaths += 1;
+            }
+        }
+    },
+};
+
+const settingsReducers = {
+    toggleShowTilePotentials: (state: BoardState & SettingsState) => {
+        state.show_tile_potentials = !state.show_tile_potentials;
+    },
+    toggleShowRealTileImages: (state: BoardState & SettingsState) => {
+        state.show_real_tile_images = !state.show_real_tile_images;
+    },
+    toggleUseGenders: (state: BoardState & SettingsState) => {
+        state.use_genders = !state.use_genders;
+        if (state.use_genders) {
+            Object.keys(state.combatants).forEach(c_pos => {
+                const c = state.combatants[parseInt(c_pos)];
+                if (c.gender === Gender.Unknown) {
+                    c.gender = getRandomGender();
+                }
+            });
+        }
+    },
+    setShowSettings: (state: BoardState & SettingsState, action: { payload: boolean }) => {
+        state.show_settings = action.payload;
+    },
+    setMovementLogic: (state: BoardState & SettingsState, action: { payload: MovementLogic }) => {
+        state.movement_logic = action.payload;
+    },
 }
 
 export const boardSlice = createSlice({
@@ -191,36 +294,8 @@ export const boardSlice = createSlice({
         return initState();
     },
     reducers: {
-        shrinkWidth: (state) => {
-            if (state.width === 0) {
-                return;
-            }
-            const old_window_height = state.height;
-            const old_window_width = state.width;
-            state.width -= 1
-            handleResize({ state, old_window_width, old_window_height });
-        },
-        growWidth: (state) => {
-            const old_window_height = state.height;
-            const old_window_width = state.width;
-            state.width += 1
-            handleResize({ state, old_window_width, old_window_height });
-        },
-        shrinkHeight: (state) => {
-            if (state.height === 0) {
-                return;
-            }
-            const old_window_height = state.height;
-            const old_window_width = state.width;
-            state.height -= 1
-            handleResize({ state, old_window_width, old_window_height });
-        },
-        growHeight: (state) => {
-            const old_window_height = state.height;
-            const old_window_width = state.width;
-            state.height += 1
-            handleResize({ state, old_window_width, old_window_height });
-        },
+        ...mapReducers,
+        ...settingsReducers,
         setGameMode: (state, action: { payload: GameMode }) => {
             if (state.game_mode === action.payload) {
                 return;
@@ -320,40 +395,6 @@ export const boardSlice = createSlice({
                 }
             }
         },
-        paintTile: (state, action: { payload: { position: number, type: PaintEntity } }) => {
-            const current_occupant = state.combatants[action.payload.position]
-            if (Object.keys(TileType).includes(action.payload.type)) {
-                state.tiles[action.payload.position] =
-                    createTileModel({ index: action.payload.position, type: action.payload.type as TileType });
-                updateMapTileScorePotentials(state.tiles, state.width);
-            } else if (Object.keys(ItemType).includes(action.payload.type)) {
-                const new_item =
-                    createItemModel({ position: action.payload.position, type: action.payload.type as ItemType });
-                addItemToBoard(new_item, state.items);
-            } else if (Object.keys(SpiderType).includes(action.payload.type)) {
-                const new_spider =
-                    createSpiderModel({ position: action.payload.position, type: action.payload.type as SpiderType });
-                addItemToBoard(new_spider, state.items);
-                paintTileForSpider(new_spider, state.tiles, true, state.width);
-            } else if (Object.keys(Character).includes(action.payload.type)) {
-                state.combatants[action.payload.position] =
-                    createCombatant({
-                        spawn_position: action.payload.position,
-                        species: action.payload.type as Character,
-                        use_genders: state.use_genders,
-                        global_combatant_stats: state.global_combatant_stats
-                    });
-                if (!current_occupant) {
-                    state.global_combatant_stats.num_combatants += 1;
-                }
-            } else if (Object.keys(Pointer).includes(action.payload.type)) {
-                if (current_occupant) {
-                    state.combatants = killAndCopy({ positions: [action.payload.position], combatants: state.combatants });
-                    state.global_combatant_stats.num_combatants -= 1;
-                    state.global_combatant_stats.deaths += 1;
-                }
-            }
-        },
         killSelected: (state) => {
             if (state.selected_position !== undefined) {
                 state.follow_selected_combatant = false;
@@ -382,34 +423,8 @@ export const boardSlice = createSlice({
                 state.global_combatant_stats.num_combatants += 1;
             }
         },
-        toggleShowTilePotentials: (state) => {
-            state.show_tile_potentials = !state.show_tile_potentials;
-        },
-        toggleShowRealTileImages: (state) => {
-            state.show_real_tile_images = !state.show_real_tile_images;
-        },
-        setMovementLogic: (state, action: { payload: MovementLogic }) => {
-            state.movement_logic = action.payload;
-        },
-        setMap: (state, action: { payload: string }) => {
-            state.map = action.payload;
-            state.tiles = Maps[state.map].generate({ width: state.width, height: state.height });
-        },
-        toggleUseGenders: (state) => {
-            state.use_genders = !state.use_genders;
-            if (!state.use_genders) {
-                return;
-            }
-            Object.keys(state.combatants).forEach(c_pos => {
-                const c = state.combatants[parseInt(c_pos)];
-                if (c.gender === Gender.Unknown) {
-                    c.gender = getRandomGender();
-                }
-            });
-        },
         setInitialNumCombatants: (state, action: { payload: number }) => {
-            action.payload = Math.min(action.payload, DEFAULTS.num_combatants * 40);
-
+            action.payload = Math.min(action.payload, GAME_DEFAULTS.num_combatants * 40);
             state.initial_num_combatants = action.payload;
 
             const { player, combatants, global_combatant_stats } = initCombatants({
@@ -424,9 +439,6 @@ export const boardSlice = createSlice({
             state.game_count += 1;
             state.combatants = combatants;
             state.global_combatant_stats = global_combatant_stats;
-        },
-        setShowSettings: (state, action: { payload: boolean }) => {
-            state.show_settings = action.payload;
         }
     }
 })
