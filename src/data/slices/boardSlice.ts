@@ -146,21 +146,23 @@ function handleResize(
 
 function initState(
     args?: {
-        game_mode: GameMode,
-        map: string,
-        width: number,
-        height: number,
-        initial_num_combatants: number,
-        use_genders: boolean
+        game_mode?: GameMode,
+        map?: string,
+        width?: number,
+        height?: number,
+        initial_num_combatants?: number,
+        use_genders?: boolean
     }
 ): BoardState & SettingsState {
     const { game_mode, map, width, height, initial_num_combatants, use_genders } =
-        args ?? {
+        args = {
+            game_mode: GAME_DEFAULTS.game_mode,
             map: Maps['World'].name,
             width: GAME_DEFAULTS.window_width,
             height: GAME_DEFAULTS.window_height,
             use_genders: SETTINGS_DEFAULTS.use_genders,
             initial_num_combatants: GAME_DEFAULTS.num_combatants,
+            ...args,
         };
     const tiles = Maps[map].generate({ width, height });
     const { player, combatants, global_combatant_stats } =
@@ -186,6 +188,20 @@ function initState(
         map: GAME_DEFAULTS.map,
         use_genders,
     };
+}
+
+function resetState(new_state: BoardState & SettingsState, state: BoardState & SettingsState) {
+    state.game_mode = new_state.game_mode;
+    state.tiles = new_state.tiles;
+    state.player = new_state.player;
+    state.player_highlight_count =
+        state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
+    state.combatants = new_state.combatants;
+    state.items = {};
+    state.selected_position = undefined;
+    state.follow_selected_combatant = false;
+    state.global_combatant_stats = new_state.global_combatant_stats;
+    state.game_count = new_state.game_count;
 }
 
 const mapReducers = {
@@ -297,8 +313,8 @@ export const boardSlice = createSlice({
             if (state.game_mode === action.payload) {
                 return;
             }
-
-            state.game_mode = action.payload;
+            const new_state = initState({ game_mode: action.payload });
+            resetState(new_state, state);
         },
         reset: (state) => {
             const new_state = initState({
@@ -309,17 +325,8 @@ export const boardSlice = createSlice({
                 initial_num_combatants: state.initial_num_combatants,
                 use_genders: state.use_genders
             });
-
-            state.tiles = new_state.tiles;
-            state.player = new_state.player;
-            state.player_highlight_count =
-                state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
-            state.combatants = new_state.combatants;
-            state.items = {};
-            state.selected_position = undefined;
-            state.follow_selected_combatant = false;
-            state.game_count += 1;
-            state.global_combatant_stats = new_state.global_combatant_stats;
+            new_state.game_count = state.game_count + 1;
+            resetState(new_state, state);
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
