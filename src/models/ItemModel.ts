@@ -3,11 +3,13 @@ import CombatantModel from "./CombatantModel";
 import { EntityModel } from "./EntityModel";
 
 export enum Type { Bomb = "Bomb", PokemonBall = "PokemonBall", MedPack = "MedPack", Spider = "Spider" };
+export enum State { Spent = "Spent", Live = "Live" };
 
 export const MAX_TILE_ITEM_COUNT = 4;
 
 export interface ItemModel extends EntityModel {
     type: Type;
+    state: State,
     fuse_length: number;
     kills: number;
     captured: CombatantModel[];
@@ -32,6 +34,7 @@ export function createItemModel({ position, type }: { position: number, type: Ty
         tick: 0,
         position,
         type,
+        state: State.Live,
         fuse_length: getFuseLength(type),
         kills: 0,
         captured: [],

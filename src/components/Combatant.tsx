@@ -40,7 +40,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: Bunny,
         height: "25px",
         width: "25px",
-        margin: "0px -5px -5px 0px",
+        margin: "0px -5px -2px 2px",
         placement: "-70px -10px",
         transformScale: 0.9,
         detail: {
@@ -63,7 +63,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: Turtle,
         height: "50px",
         width: "50px",
-        margin: "-0px -2px 0px -6px",
+        margin: "-13px -2px -13px -5px",
         placement: "90px 2105px",
         transformScale: 0.7,
         detail: {
@@ -86,7 +86,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: Lizard,
         height: "20px",
         width: "20px",
-        margin: "0px 0px 0px 0px",
+        margin: "1px 0px 2px 2px",
         placement: "40px 0px",
         transformScale: 1.1,
         detail: {
@@ -109,7 +109,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: Elephant,
         height: "45px",
         width: "45px",
-        margin: "0px -8px 0px -8px",
+        margin: "-10px -8px -10px -8px",
         placement: "-5px -2px",
         transformScale: 0.5,
         detail: {
@@ -132,7 +132,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: DogAndCat,
         height: "35px",
         width: "35px",
-        margin: "0px -3px 0px -3px",
+        margin: "-3px -3px -6px -3px",
         placement: "-338px -47px",
         transformScale: 0.6,
         detail: {
@@ -155,7 +155,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: DogAndCat,
         height: "35px",
         width: "35px",
-        margin: "0px -3px 0px -3px",
+        margin: "-5px -3px -5px -3px",
         placement: "-338px -334px",
         transformScale: 0.6,
         detail: {
@@ -178,7 +178,7 @@ const Characters: { [key in Character]: CharacterType } = {
         sheet: Unicorn,
         height: "50px",
         width: "50px",
-        margin: "-5px -15px -5px -15px",
+        margin: "-13px",
         placement: "-4px -48px",
         transformScale: 0.4,
         detail: {

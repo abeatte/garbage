@@ -180,6 +180,24 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 }
             });
 
+            const maybe_items_container_view = maybe_items_view.length > 0 &&
+                (<div className="Items_container_container">
+                    {maybe_items_view.length < 1 ? undefined : (
+                        <div className="Items_container">{maybe_items_view}</div>
+                    )}
+                    {maybe_items_view_2.length < 1 ? undefined : (
+                        <div className="Items_container">{maybe_items_view_2}</div>
+                    )}
+                </div>);
+
+            const child_view_container = (
+                <div style={{ display: "flex", width: "inherit", height: "inherit", alignItems: "flex-end" }}>
+                    {maybe_combatant_view}
+                    {maybe_items_container_view}
+                </div>
+            );
+
+
             tiles.push(
                 <div className="Tile_container"
                     key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
@@ -207,18 +225,8 @@ class Arena extends React.Component<AppState & DispatchProps> {
                         className={classNames({ "Clickable": maybe_combatant || (maybe_items?.length ?? 0) > 0 })}
                         isSelected={is_selected}
                     >
-                        {maybe_combatant_view}
+                        {child_view_container}
                     </Tile>
-                    {maybe_items_view.length > 0 &&
-                        (<div className="Items_container_container">
-                            {maybe_items_view.length < 1 ? undefined : (
-                                <div className="Items_container">{maybe_items_view}</div>
-                            )}
-                            {maybe_items_view_2.length < 1 ? undefined : (
-                                <div className="Items_container">{maybe_items_view_2}</div>
-                            )}
-                        </div>)
-                    }
                 </div>
             );
         });

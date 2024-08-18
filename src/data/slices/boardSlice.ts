@@ -2,8 +2,6 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import {
     initCombatantStartingPos,
     updateCombatantsPositionsAfterResize,
-    calculateCombatantMovements,
-    updateEntities,
     MIN_HEALTH,
     killAndCopy,
     addItemToBoard,
@@ -11,13 +9,14 @@ import {
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../../models/ItemModel';
 import CombatantModel, { Character, createCombatant, Gender, getNewPositionFromArrowKey, getRandomGender, getRandomSpecies } from '../../models/CombatantModel';
-import { getInitGlobalCombatantStatsModel, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
+import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
 import { Pointer } from '../../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../../models/SpiderModel';
 import Maps from '../Map';
 import { getCombatantAtTarget } from '../utils/TargetingUtils';
+import { processBoardTick } from '../utils/TurnProcessingUtils';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
@@ -73,7 +72,7 @@ function initCombatants(
         { tiles: TileModel[], num_combatants: number, init_player: boolean, use_genders: boolean }
 ): { player: CombatantModel | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
     const combatants = {} as Combatants;
-    const global_combatant_stats = getInitGlobalCombatantStatsModel();
+    const global_combatant_stats = { ...DEFAULT };
 
     let player = undefined;
     if (init_player) {
@@ -123,7 +122,7 @@ function handleResize(
         { state: BoardState, old_window_width: number, old_window_height: number }
 ) {
     state.tiles = Maps[state.map].generate({ width: state.width, height: state.height });
-    const combatants = updateCombatantsPositionsAfterResize(
+    const { combatants, deaths } = updateCombatantsPositionsAfterResize(
         {
             combatants: state.combatants,
             window_width: state.width,
@@ -139,11 +138,9 @@ function handleResize(
             window_height: state.height,
             old_window_width,
         });
-    const new_num_combatants = Object.values(combatants).length;
-    const deaths = Object.values(state.combatants).length - new_num_combatants;
     state.combatants = combatants;
     state.items = items;
-    state.global_combatant_stats.num_combatants = new_num_combatants;
+    state.global_combatant_stats.num_combatants = Object.values(combatants).length;
     state.global_combatant_stats.deaths += deaths;
 }
 
@@ -339,33 +336,21 @@ export const boardSlice = createSlice({
         },
         tick: (state) => {
             const combatant_id_to_follow = getCombatantAtTarget({ target: state.selected_position, player: state.player, combatants: state.combatants })?.id;
-            const movement_result = calculateCombatantMovements({
+            const movement_result = processBoardTick({
+                player: state.player,
+                items: state.items,
+                combatants: state.combatants,
+                window_width: state.width,
+                tiles: state.tiles,
                 movement_logic: state.movement_logic,
                 use_genders: state.use_genders,
-                player: state.player,
-                combatants: state.combatants,
-                global_combatant_stats: state.global_combatant_stats,
-                window_width: state.width,
-                tiles: state.tiles
+                global_combatant_stats: state.global_combatant_stats
             });
 
-            const old_global_combatant_stats = state.global_combatant_stats;
-            old_global_combatant_stats.births += movement_result.births;
-            old_global_combatant_stats.deaths += movement_result.deaths;
-
-            const entity_result = updateEntities({
-                player: state.player,
-                combatants: movement_result.combatants,
-                items: state.items,
-                global_combatant_stats: old_global_combatant_stats,
-                window_width: state.width,
-                tiles: state.tiles
-            });
-
-            state.combatants = entity_result.combatants;
-            state.items = entity_result.items;
-            state.tiles = entity_result.tiles;
-            state.global_combatant_stats = entity_result.globalCombatantStats;
+            state.combatants = movement_result.combatants;
+            state.items = movement_result.items;
+            state.tiles = movement_result.tiles;
+            state.global_combatant_stats = movement_result.global_combatant_stats;
 
             if (!!combatant_id_to_follow) {
                 const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);

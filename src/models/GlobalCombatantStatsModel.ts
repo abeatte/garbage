@@ -17,18 +17,16 @@ export interface GlobalCombatantStatsModel {
     deaths: number,
 }
 
-export function getInitGlobalCombatantStatsModel(existing_values: { births: number, deaths: number } = { births: 0, deaths: 0 }): GlobalCombatantStatsModel {
-    return {
-        min_fitness: 0,
-        average_fitness: 0,
-        max_fitness: 0,
-        weak_bar: 0,
-        average_bar: 0,
-        average_position: -1,
-        num_combatants: 0,
-        births: existing_values.births,
-        deaths: existing_values.deaths,
-    }
+export const DEFAULT = {
+    min_fitness: 0,
+    average_fitness: 0,
+    max_fitness: 0,
+    weak_bar: 0,
+    average_bar: 0,
+    average_position: -1,
+    num_combatants: 0,
+    births: 0,
+    deaths: 0,
 }
 
 export function getStrengthRating(args: { global_combatant_stats: GlobalCombatantStatsModel | undefined, fitness: number, immortal: boolean }): Strength {

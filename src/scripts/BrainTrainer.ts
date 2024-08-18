@@ -34,12 +34,16 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, posData: 
 
     const requested_position = requestMove(
         {
-            movement_logic: MovementLogic.DecisionTree,
-            brains: {},
+            movement_details: {
+                movement_logic: MovementLogic.DecisionTree,
+                brains: {}
+            },
             posData,
             self: combatant,
-            tiles,
-            window_width
+            map_details: {
+                tiles,
+                window_width
+            }
         }
     );
     const output = {} as Output;
@@ -64,7 +68,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
             const combatants: { [position: number]: CombatantModel } = {};
             trainer.position = position;
             combatants[position] = trainer;
-            const posData = getSurroundings({ species, position, window_width: width, tiles, combatants })
+            const posData = getSurroundings({ species, position, map_details: { window_width: width, tiles }, combatants })
             training_sets.push(getTrainingSet(species, trainer, posData, tiles, width));
         }
     }

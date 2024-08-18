@@ -1,27 +1,11 @@
-import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
+import { Combatants } from "../slices/boardSlice";
 import CombatantModel, {
     Character,
-    createCombatant,
-    DecisionType,
-    Gender,
-    getMapTileEffect,
-    getNewPositionFromClockFace,
-    getRandomDecisionType,
-    getRandomSpecies,
-    requestMove,
     State
 } from "../../models/CombatantModel";
-import {
-    getInitGlobalCombatantStatsModel,
-    getStrengthRating,
-    GlobalCombatantStatsModel
-} from "../../models/GlobalCombatantStatsModel";
-import { TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
-import Brain from "../../models/Brain";
-import { ItemModel, MAX_TILE_ITEM_COUNT, Type as ItemType } from "../../models/ItemModel";
-import { paintTileForSpider, SpiderModel } from "../../models/SpiderModel";
-import { Input, Output } from "../../scripts/BrainTrainer";
-import { NeuralNetwork } from "brain.js";
+import { TileModel } from "../../models/TileModel";
+import { ItemModel, MAX_TILE_ITEM_COUNT } from "../../models/ItemModel";
+import { MapDetails } from "./TurnProcessingUtils";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -83,8 +67,9 @@ export function updateCombatantsPositionsAfterResize(
             old_window_height: number,
             tiles: TileModel[]
         }
-) {
+): { combatants: Combatants, deaths: number } {
     const new_combatants = {} as Combatants;
+    let deaths = 0;
 
     const dif_row = window_width - old_window_width;
     const dif_col = window_height - old_window_height;
@@ -96,7 +81,7 @@ export function updateCombatantsPositionsAfterResize(
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const posData =
-                getSurroundings({ species: combatants[old_pos].species, position: old_pos, window_width: old_window_width, tiles, combatants });
+                getSurroundings({ species: combatants[old_pos].species, position: old_pos, map_details: { window_width: old_window_width, tiles }, combatants });
             const up_position = posData.surroundings[ClockFace.t];
             const up_left_position = posData.surroundings[ClockFace.tl];
             const left_position = posData.surroundings[ClockFace.l];
@@ -127,201 +112,15 @@ export function updateCombatantsPositionsAfterResize(
             new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[old_pos]) : combatants[old_pos];
             new_combatants[new_pos].position = new_pos;
             new_combatants[new_pos].visited_positions[new_pos] = new_pos;
-        }
-
-    })
-    return new_combatants;
-}
-
-function processCombatantMovement(
-    { combatant, movement_logic, brains, use_genders, working_combatants, global_combatant_stats, window_width, tiles }:
-        {
-            movement_logic: MovementLogic,
-            use_genders: boolean,
-            brains: { [species: string]: NeuralNetwork<Input, Output> },
-            combatant: CombatantModel | undefined,
-            working_combatants: { [position: number]: CombatantModel | undefined },
-            global_combatant_stats: GlobalCombatantStatsModel,
-            window_width: number,
-            tiles: TileModel[]
-        }
-): { combatant: CombatantModel | undefined, deaths: number } {
-    let deaths = 0;
-
-    if (combatant === undefined || combatant.taken_turn) {
-        return { combatant, deaths };
-    }
-
-    const current_position = combatant.position;
-
-    if (!evalHealth(combatant) || combatant.state === State.Dead) {
-        // you die
-        combatant.state = State.Dead;
-        working_combatants[current_position] = undefined;
-        deaths++;
-        return { combatant, deaths };
-    }
-
-    if (combatant.state === State.Mating) {
-        // do nothing; their turn is taken up by mating
-        return { combatant, deaths };
-    }
-
-    const posData = getSurroundings(
-        {
-            species: combatant.species,
-            position: current_position,
-            window_width,
-            tiles,
-            combatants: working_combatants,
-        }
-    );
-    let new_position = requestMove(
-        {
-            posData,
-            movement_logic,
-            brains,
-            self: combatant,
-            tiles,
-            window_width,
-        });
-
-    if (combatant.is_player && combatant.player_turn > -1) {
-        new_position = combatant.player_turn;
-        combatant.player_turn = -1;
-    }
-
-    combatant.taken_turn = true;
-
-    const occupant = working_combatants[new_position];
-    if (!occupant) {
-        // space is empty; OK to move
-        working_combatants[current_position] = undefined;
-        working_combatants[new_position] = combatant;
-        combatant.position = new_position;
-        combatant.visited_positions[new_position] = new_position;
-    } else if (combatant.id === occupant.id) {
-        // this combatant has decided not to move anywhere
-        // no-op
-    } else if (
-        occupant.species === combatant.species &&
-        // if a Fighter is here they're not here to mate!
-        combatant.decision_type !== DecisionType.Fighter
-    ) {
-        // space is occupied by a friendly
-        if (
-            // your not too young
-            combatant.tick > MAX_YOUNGLING_TICK &&
-            // they're not too young
-            occupant.tick > MAX_YOUNGLING_TICK &&
-            (
-                // they are the correct gender (so woke! LOL)
-                combatant.gender === Gender.Unknown ||
-                occupant.gender === Gender.Unknown ||
-                combatant.gender !== occupant.gender
-            )
-        ) {
-            occupant.state = State.Mating;
-            combatant.state = State.Mating;
-            combatant.spawn = createCombatant({ spawn_position: -1, use_genders, global_combatant_stats });
-        }
-    } else {
-        // space is occupied by a enemy (or an ally but with a Fighter incumbent)
-        working_combatants[current_position] = undefined;
-        working_combatants[new_position] = compete(combatant, occupant);
-        (working_combatants[new_position] as CombatantModel).position = new_position;
-        (working_combatants[new_position] as CombatantModel).visited_positions[new_position] = new_position;
-        deaths++;
-    }
-
-    return { combatant, deaths };
-}
-
-export function calculateCombatantMovements(
-    { movement_logic, use_genders, player, combatants, global_combatant_stats, window_width, tiles }:
-        {
-            movement_logic: MovementLogic,
-            use_genders: boolean,
-            player: CombatantModel | undefined,
-            combatants: Combatants,
-            global_combatant_stats: GlobalCombatantStatsModel,
-            window_width: number,
-            tiles: TileModel[]
-        }
-): { player: CombatantModel | undefined, combatants: Combatants, births: number, deaths: number } {
-    const brains = Brain.init();
-    const working_combatants = combatants as { [position: number]: CombatantModel | undefined };
-    let births = 0, deaths = 0;
-
-    if (player && player.state !== State.Dead) {
-        working_combatants[player.position] = player;
-    }
-
-    Object.keys(working_combatants).forEach((p) => {
-        const current_position = parseInt(p);
-        const combatant = working_combatants[current_position];
-        const values = processCombatantMovement({
-            movement_logic,
-            use_genders,
-            combatant,
-            working_combatants,
-            global_combatant_stats,
-            window_width,
-            brains,
-            tiles
-        });
-
-        deaths += values.deaths;
-    });
-
-    Object.values(working_combatants)
-        .filter(c => c?.state === State.Mating)
-        .forEach(c => {
-            const parent = c as CombatantModel;
-            const spawn = parent.spawn as CombatantModel;
-            parent.state = State.Alive;
-            if (spawn === undefined) {
-                // congrats, dad... get lost
-                parent.children += 1;
-                return;
+            if (occupient) {
+                deaths++;
             }
-            parent.spawn = undefined;
-            birthSpawn({
-                posData:
-                    getSurroundings({
-                        species: spawn.species,
-                        position: parent.position,
-                        window_width,
-                        tiles,
-                        combatants: working_combatants,
-                    }),
-                spawn,
-                parent,
-                arena_size: tiles.length
-            });
-            if (spawn.position > -1) {
-                working_combatants[spawn.position] = spawn;
-                spawn.state = State.Alive;
-                spawn.taken_turn = true;
-                parent.children += 1;
-                births++
-            }
-        });
-
-    // This step is crucial as without copying the Redux store will 
-    // duplicate the now undefined combatants 
-    const ret_combatants = {} as Combatants;
-    Object.values(working_combatants).forEach(c => {
-        if (c === undefined) return;
-        c.taken_turn = false;
-        if (c.is_player) {
-            player = c;
         } else {
-            ret_combatants[c.position] = c;
+            deaths++;
         }
-    })
 
-    return { player, combatants: ret_combatants, births, deaths };
+    })
+    return { combatants: new_combatants, deaths };
 }
 
 /**
@@ -337,224 +136,6 @@ export function killAndCopy({ positions, combatants }: { positions: number[], co
     }, {} as Combatants);
 }
 
-export function updateEntities({ player, combatants, items, global_combatant_stats, window_width, tiles }:
-    { player: CombatantModel | undefined, combatants: Combatants, items: Items, global_combatant_stats: GlobalCombatantStatsModel, window_width: number, tiles: TileModel[] })
-    : { combatants: Combatants, items: Items, tiles: TileModel[], globalCombatantStats: GlobalCombatantStatsModel } {
-    const working_global_combatant_stats = getInitGlobalCombatantStatsModel(global_combatant_stats);
-    const working_combatants = combatants as { [position: number]: CombatantModel | undefined };
-    if (player && player.state !== State.Dead) {
-        working_combatants[player.position] = player;
-    }
-    const working_items = items as { [position: number]: ItemModel[] | undefined };
-    let deaths = 0;
-
-    const item_keys = Object.keys(items);
-    item_keys.forEach(key => {
-        const position = key as unknown as number;
-        const items = working_items[position];
-
-        if (items === undefined || items.length < 1) {
-            return;
-        }
-
-        items.forEach(item => {
-            if (item === undefined) {
-                return;
-            }
-
-            switch (item.type) {
-                case ItemType.Bomb:
-                    if (item.fuse_length > 0 && item.tick === item.fuse_length) {
-                        // time to blow
-                        const posData = getSurroundings(
-                            {
-                                species: undefined,
-                                position: item.position,
-                                window_width,
-                                tiles,
-                                combatants: working_combatants,
-                            }
-                        );
-                        posData.surroundings.forEach(surrounding => {
-                            if (surrounding === undefined) {
-                                return;
-                            }
-
-                            const c_to_die = surrounding.occupant;
-                            if (c_to_die !== undefined) {
-                                c_to_die.state = State.Dead;
-                                working_combatants[c_to_die.position] = undefined;
-                                deaths++;
-                                item.kills += 1;
-                            }
-                            const items_to_die = working_items[surrounding.position];
-                            if ((items_to_die?.length ?? 0) > 0) {
-                                working_items[surrounding.position] = undefined;
-                            }
-                        });
-                        removeItemFromBoard(item, working_items);
-                    }
-                    break;
-                case ItemType.PokemonBall:
-                    const posData = getSurroundings(
-                        {
-                            species: undefined,
-                            position: item.position,
-                            window_width,
-                            tiles,
-                            combatants: working_combatants,
-                        }
-                    );
-                    const valid_surroundings = posData.surroundings.filter(sur => sur !== undefined);
-                    const capacity = valid_surroundings.length;
-
-                    if (item.fuse_length > 0 && item.tick === item.fuse_length) {
-                        // time to blow
-                        const captives = item.captured;
-                        item.captured = [];
-                        while (captives.length > 0) {
-                            const captive = captives.pop();
-                            const surrounding = valid_surroundings.pop();
-                            const occupant = surrounding?.occupant;
-                            if (captive === undefined || surrounding === undefined) {
-                                return;
-                            }
-
-                            if (occupant === undefined) {
-                                working_combatants[surrounding.position] = captive
-                                captive.position = surrounding.position;
-                                captive.visited_positions[surrounding.position] = surrounding.position;
-                            } else {
-                                working_combatants[surrounding.position] = compete(occupant, captive);
-                                (working_combatants[surrounding.position] as CombatantModel)
-                                    .position = surrounding.position;
-                                (working_combatants[surrounding.position] as CombatantModel)
-                                    .visited_positions[surrounding.position] = surrounding.position;
-                                deaths++;
-                            }
-                        }
-                        removeItemFromBoard(item, working_items);
-                    } else if (item.captured.length < capacity) {
-                        // can only store as many tiles as it can disgorge into
-                        posData.surroundings.forEach(surrounding => {
-                            const c_to_capture = surrounding?.occupant;
-                            if (c_to_capture) {
-                                item.captured.push(c_to_capture);
-                                working_combatants[c_to_capture.position] = undefined;
-                                c_to_capture.position = -1;
-                            }
-                        });
-
-                        item.captured.forEach(c => {
-                            c.tick += 1;
-                        });
-                    }
-                    break;
-                case ItemType.MedPack:
-                    const occupant = working_combatants[position];
-                    if (occupant) {
-                        occupant.fitness += -MIN_HEALTH;
-                        removeItemFromBoard(item, working_items);
-                    }
-                    break;
-                case ItemType.Spider:
-                    const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
-                    const new_position = getNewPositionFromClockFace(
-                        item.position,
-                        clockFace,
-                        window_width,
-                        tiles.length,
-                    );
-                    removeItemFromBoard(item, working_items);
-                    if (item.fuse_length > 0 && item.tick < item.fuse_length) {
-                        item.position = new_position;
-                        addItemToBoard(item, working_items);
-                        paintTileForSpider(item as SpiderModel, tiles, false);
-                    }
-                    break;
-            }
-            item.tick += 1;
-        });
-    })
-
-    const combatant_keys = Object.keys(working_combatants);
-    combatant_keys.forEach(key => {
-        const position = key as unknown as number;
-        const combatant = working_combatants[position];
-
-        if (combatant === undefined) {
-            return;
-        }
-
-        if (!combatant.immortal) {
-            combatant.fitness += getMapTileEffect({ species: combatant.species, tileType: tiles[position].type });
-        }
-        combatant.strength = getStrengthRating({
-            global_combatant_stats,
-            fitness: combatant.fitness,
-            immortal: combatant.immortal
-        });
-
-        working_global_combatant_stats.average_position += position;
-        if (working_global_combatant_stats.min_fitness > combatant.fitness) {
-            working_global_combatant_stats.min_fitness = combatant.fitness;
-        }
-        working_global_combatant_stats.average_fitness += combatant.fitness;
-        if (working_global_combatant_stats.max_fitness < combatant.fitness) {
-            working_global_combatant_stats.max_fitness = combatant.fitness;
-        }
-
-        combatant.tick += 1;
-    });
-
-    working_global_combatant_stats.deaths += deaths;
-
-    const number_of_new_combatants = combatant_keys.length;
-    working_global_combatant_stats.num_combatants =
-        number_of_new_combatants;
-    working_global_combatant_stats.average_position =
-        working_global_combatant_stats.average_position / number_of_new_combatants;
-    working_global_combatant_stats.average_fitness =
-        working_global_combatant_stats.average_fitness / number_of_new_combatants;
-    working_global_combatant_stats.weak_bar =
-        (working_global_combatant_stats.average_fitness + working_global_combatant_stats.min_fitness) / 2;;
-    working_global_combatant_stats.average_bar =
-        (working_global_combatant_stats.average_fitness + working_global_combatant_stats.max_fitness) / 2;
-
-    // This step is crucial as without copying the Redux store will 
-    // duplicate the now undefined combatants 
-    const ret_combatants = {} as Combatants;
-    Object.values(working_combatants).forEach(c => {
-        if (c !== undefined && !c.is_player) {
-            ret_combatants[c.position] = c;
-        }
-    })
-
-    // This step is crucial as without copying the Redux store will 
-    // duplicate the now undefined items 
-    const ret_items = {} as Items;
-    Object.values(working_items).forEach(is => {
-        if (is !== undefined && is.length > 0) {
-            const ret_is = [] as ItemModel[];
-            is.forEach(i => ret_is.push(i));
-            ret_items[ret_is[0].position] = ret_is;
-        }
-    })
-
-    updateMapTileScorePotentials(tiles, window_width);
-    return { combatants: ret_combatants, items: ret_items, tiles: tiles, globalCombatantStats: working_global_combatant_stats };
-}
-
-function removeItemFromBoard(item: ItemModel, working_items: { [position: number]: ItemModel[] | undefined }) {
-    const items = working_items[item.position];
-    if (items !== undefined && items.length > 1) {
-        const idx_to_remove = items.indexOf(item);
-        working_items[item.position]?.splice(idx_to_remove, 1);
-    } else {
-        working_items[item.position] = undefined;
-    }
-}
-
 export function addItemToBoard(item: ItemModel, working_items: { [position: number]: ItemModel[] | undefined }) {
     if (working_items[item.position] === undefined) {
         working_items[item.position] = [];
@@ -568,63 +149,12 @@ export function addItemToBoard(item: ItemModel, working_items: { [position: numb
 }
 
 /**
- * @param {*} c combatant
- * @returns true if combatant should live
- */
-function evalHealth(c: CombatantModel) {
-    return c.fitness > MIN_HEALTH;
-};
-
-function birthSpawn({ posData, spawn, parent, arena_size }:
-    { posData: PosData, spawn: CombatantModel, parent: CombatantModel, arena_size: number }) {
-    const { surroundings } = posData;
-    const friendly_positions = [],
-        enemy_positions = [],
-        empty_positions = [] as number[];
-
-    surroundings.forEach((surrounding, idx, s_arr) => {
-        if (!surrounding) {
-            return;
-        }
-
-        const { position, occupant: c } = surrounding;
-
-        if (!c) {
-            if (position > -1 && position < arena_size) {
-                empty_positions.push(position)
-            }
-        } else if (c.species === parent.species) {
-            friendly_positions.push(c);
-        } else {
-            enemy_positions.push(c);
-        }
-    });
-
-    if (enemy_positions.length > 1) {
-        // spawn dies; too dangerous
-    } else {
-        // safe, let's do it!
-        const spawn_pos = empty_positions.length > 0 ?
-            empty_positions[Math.round(Math.random() * (empty_positions.length - 1))] :
-            -1;
-        if (spawn_pos > -1) {
-            spawn.position = spawn_pos;
-            spawn.visited_positions[spawn_pos] = spawn_pos;
-            // too many of my kind here, let's diverge
-            spawn.species = friendly_positions.length < 4 ? parent.species : getRandomSpecies();
-            // 1:4 chance of a different decision_type from the parent
-            spawn.decision_type = Math.random() > 0.25 ? parent.decision_type : getRandomDecisionType();
-        }
-    }
-}
-
-/**
  * Ties go to the a_combatant (the attacker)
  * @param {*} a the attacking combatant
  * @param {*} b the defending combatant
  * @returns the fitter combatant
  */
-function compete(a: CombatantModel, b: CombatantModel) {
+export function compete(a: CombatantModel, b: CombatantModel) {
     const a_fitness = a.immortal ? Infinity : a.fitness;
     const b_fitness = b.immortal ? Infinity : b.fitness;
     if (b_fitness > a_fitness) {
@@ -639,12 +169,11 @@ function compete(a: CombatantModel, b: CombatantModel) {
 }
 
 export function getSurroundings(
-    { species, position, window_width, tiles, combatants }:
+    { species, position, map_details: { window_width, tiles }, combatants }:
         {
-            species: Character | undefined,
+            species?: Character | undefined,
             position: number,
-            window_width: number,
-            tiles: TileModel[],
+            map_details: MapDetails,
             // the Player should already be in the combatants array at this point in evaluation
             combatants: { [position: number]: CombatantModel | undefined }
         }

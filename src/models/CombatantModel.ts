@@ -6,7 +6,7 @@ import {
     IllegalMoves,
     LegalMoves,
 } from "../data/utils/CombatantUtils";
-import { TileModel, Type as TileType } from "./TileModel";
+import { Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 import { ArrowKey, MovementLogic } from "../data/slices/boardSlice";
 import Brain from "./Brain";
@@ -14,9 +14,10 @@ import { NeuralNetwork } from "brain.js/dist/src";
 import { Input, Output } from "../scripts/BrainTrainer";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "./EntityModel";
+import { MapDetails } from "../data/utils/TurnProcessingUtils";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
-export enum State { Spawning = "spawning", Alive = "alive", Mating = "mating", Dead = "dead" };
+export enum State { Alive = "alive", Mating = "mating", Dead = "dead", Captured = "Captured" };
 export enum Character {
     Bunny = "Bunny",
     Turtle = "Turtle",
@@ -32,7 +33,6 @@ export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
     is_player: boolean;
-    taken_turn: boolean;
     player_turn: number;
     state: State;
     visited_positions: { [position: number]: number };
@@ -68,7 +68,6 @@ export function createCombatant(
         id: uuid(),
         name: getRandomCombatantName(),
         is_player: false,
-        taken_turn: false,
         player_turn: -1,
         state: State.Alive,
         kills: 0,
@@ -200,14 +199,14 @@ function getBestMatePosition(
     return best_mate_position;
 }
 
-export function requestMove({ movement_logic, brains, posData, self, tiles, window_width }:
+export type MovementDetails = { movement_logic: MovementLogic, brains: { [species: string]: NeuralNetwork<Input, Output> } };
+
+export function requestMove({ movement_details: { movement_logic, brains }, posData, self, map_details }:
     {
-        movement_logic: MovementLogic,
-        brains: { [species: string]: NeuralNetwork<Input, Output> },
+        movement_details: MovementDetails,
         posData: PosData,
         self: CombatantModel,
-        tiles: TileModel[],
-        window_width: number,
+        map_details: MapDetails,
     }): number {
     const bucketed_enemy_strengths = {} as { [key: string]: number[] };
     const bucketed_ally_strengths = {} as { [key: string]: number[] };
@@ -333,12 +332,12 @@ export function requestMove({ movement_logic, brains, posData, self, tiles, wind
                 position = getNewPositionFromClockFace(
                     self.position,
                     clockFace,
-                    window_width,
-                    tiles.length);
+                    map_details.window_width,
+                    map_details.tiles.length);
             }
             attempts--;
             // avoid fire if you can
-        } while (getMapTileEffect({ species: self.species, tileType: tiles[position].type }) < 0 && attempts > 0);
+        } while (getMapTileEffect({ species: self.species, tileType: map_details.tiles[position].type }) < 0 && attempts > 0);
     }
 
     return position;
