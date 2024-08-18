@@ -371,8 +371,12 @@ function processCombatantMovement(
     }
 
     let new_position;
-    if (combatant.is_player && combatant.player_turn > -1) {
-        new_position = combatant.player_turn;
+    if (combatant.is_player) {
+        if (combatant.player_turn > -1) {
+            new_position = combatant.player_turn;
+        } else {
+            new_position = current_position;
+        }
         combatant.player_turn = -1;
     } else {
         const posData = getSurroundings(

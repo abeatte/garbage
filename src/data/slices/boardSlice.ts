@@ -161,7 +161,7 @@ function initState(
             width: GAME_DEFAULTS.window_width,
             height: GAME_DEFAULTS.window_height,
             use_genders: SETTINGS_DEFAULTS.use_genders,
-            initial_num_combatants: GAME_DEFAULTS.num_combatants,
+            initial_num_combatants: args?.game_mode === GameMode.Adventure ? 0 : GAME_DEFAULTS.num_combatants,
             ...args,
         };
     const tiles = Maps[map].generate({ width, height });
@@ -202,6 +202,17 @@ function resetState(new_state: BoardState & SettingsState, state: BoardState & S
     state.follow_selected_combatant = false;
     state.global_combatant_stats = new_state.global_combatant_stats;
     state.game_count = new_state.game_count;
+}
+
+function spawnAt(position: number, state: BoardState & SettingsState) {
+    state.combatants[position] = createCombatant(
+        {
+            spawn_position: position,
+            use_genders: state.use_genders,
+            global_combatant_stats: state.global_combatant_stats
+        }
+    );
+    state.global_combatant_stats.num_combatants += 1;
 }
 
 const mapReducers = {
@@ -405,15 +416,12 @@ export const boardSlice = createSlice({
         spawnAtSelected: (state) => {
             if (state.selected_position !== undefined) {
                 state.follow_selected_combatant = true;
-                state.combatants[state.selected_position] = createCombatant(
-                    {
-                        spawn_position: state.selected_position,
-                        use_genders: state.use_genders,
-                        global_combatant_stats: state.global_combatant_stats
-                    }
-                );
-                state.global_combatant_stats.num_combatants += 1;
+                spawnAt(state.selected_position, state);
             }
+        },
+        spawnAtRandom: (state) => {
+            const position = initCombatantStartingPos({ tiles: state.tiles, player: state.player, combatants: state.combatants });
+            spawnAt(position, state);
         },
         setInitialNumCombatants: (state, action: PayloadAction<number>) => {
             action.payload = Math.min(action.payload, GAME_DEFAULTS.num_combatants * 40);
@@ -450,6 +458,7 @@ export const {
     paintTile,
     killSelected,
     spawnAtSelected,
+    spawnAtRandom,
     toggleShowTilePotentials,
     toggleShowRealTileImages,
     setMovementLogic,

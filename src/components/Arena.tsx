@@ -20,7 +20,8 @@ import {
     GameMode,
     ArrowKey,
     togglePlayerHighlight,
-    PLAYER_HIGHLIGHT_COUNT
+    PLAYER_HIGHLIGHT_COUNT,
+    spawnAtRandom
 } from '../data/slices/boardSlice'
 import Combatant from "./Combatant";
 import Dashboard from "./Dashboard";
@@ -37,7 +38,6 @@ import Analytics from "../analytics";
 import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
 import Controls from "./Controls";
 import { mapStateToProps } from "../data/utils/ReactUtils";
-import { State } from "../models/CombatantModel";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {
@@ -52,6 +52,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     interval: NodeJS.Timer | undefined = undefined;
     highlightInterval: NodeJS.Timer | undefined = undefined;
+    combatantSpawnInterval: NodeJS.Timer | undefined = undefined;
 
     auxFunctions = (event: KeyboardEvent) => {
         const key = event.key.toUpperCase();
@@ -100,11 +101,12 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentDidMount() {
         document.addEventListener("keydown", this.auxFunctions, false);
-        if (this.props.board.game_mode === GameMode.God || this.props.board.player?.state === State.Dead) {
-            const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
-            if (tick_interval > 0) {
-                this.interval = setInterval(() => this.props.performTick(), tick_interval);
-            }
+        const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
+        if (tick_interval > 0) {
+            this.interval = setInterval(() => this.props.performTick(), tick_interval);
+        }
+        if (this.props.board.game_mode === GameMode.Adventure) {
+            this.combatantSpawnInterval = setInterval(() => this.props.spawnAtRandom(), 10000);
         }
 
         this.highlightPlayerPosition(this.props.board.player_highlight_count);
@@ -112,14 +114,12 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentDidUpdate(prevProps: AppState, prevState: AppState) {
         // handle tick_speed updates
-        if (this.props.board.game_mode === GameMode.God || this.props.board.player?.state === State.Dead) {
-            const playerJustDied = prevProps.board.player?.state !== this.props.board.player?.state;
-            if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed || playerJustDied) {
-                const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
-                clearInterval(this.interval);
-                if (tick_interval > 0) {
-                    this.interval = setInterval(() => this.props.performTick(), tick_interval);
-                }
+        const playerJustDied = prevProps.board.player?.state !== this.props.board.player?.state;
+        if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed || playerJustDied) {
+            const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
+            clearInterval(this.interval);
+            if (tick_interval > 0) {
+                this.interval = setInterval(() => this.props.performTick(), tick_interval);
             }
         }
 
@@ -132,7 +132,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
         if (
             Object.keys(this.props.board.combatants).length < 1 &&
             Object.keys(this.props.board.items).length < 1 &&
-            !!this.props.board.player
+            !this.props.board.player
         ) {
             this.props.pause();
             clearInterval(this.interval);
@@ -141,6 +141,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentWillUnmount() {
         clearInterval(this.interval);
+        clearInterval(this.combatantSpawnInterval);
         document.removeEventListener("keydown", this.auxFunctions, false);
     }
 
@@ -254,6 +255,7 @@ interface DispatchProps {
     pauseUnpause: () => void,
     killSelected: () => void,
     spawnAtSelected: () => void,
+    spawnAtRandom: () => void,
     togglePlayerHighlight: () => void,
     movePlayer: (key: ArrowKey) => void,
     pause: () => void,
@@ -276,6 +278,7 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         pauseUnpause: () => dispatch(pauseUnpause()),
         killSelected: () => dispatch(killSelected()),
         spawnAtSelected: () => dispatch(spawnAtSelected()),
+        spawnAtRandom: () => dispatch(spawnAtRandom()),
         togglePlayerHighlight: () => dispatch(togglePlayerHighlight()),
         movePlayer: (key: ArrowKey) => dispatch(movePlayer(key)),
         clickOnTile: (select_args) => {
