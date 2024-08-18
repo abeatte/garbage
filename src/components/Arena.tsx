@@ -52,7 +52,6 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     interval: NodeJS.Timer | undefined = undefined;
     highlightInterval: NodeJS.Timer | undefined = undefined;
-    combatantSpawnInterval: NodeJS.Timer | undefined = undefined;
 
     auxFunctions = (event: KeyboardEvent) => {
         const key = event.key.toUpperCase();
@@ -78,7 +77,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                 Analytics.logEvent(`key_pressed: ${key}`);
                 event.preventDefault();
                 this.props.movePlayer(key);
-                this.props.performTick();
+                this.props.performTick(this.props.ticker.tick);
             }
         }
     }
@@ -103,10 +102,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
         document.addEventListener("keydown", this.auxFunctions, false);
         const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
         if (tick_interval > 0) {
-            this.interval = setInterval(() => this.props.performTick(), tick_interval);
-        }
-        if (this.props.board.game_mode === GameMode.Adventure) {
-            this.combatantSpawnInterval = setInterval(() => this.props.spawnAtRandom(), 10000);
+            this.interval = setInterval(() => this.props.performTick(this.props.ticker.tick), tick_interval);
         }
 
         this.highlightPlayerPosition(this.props.board.player_highlight_count);
@@ -119,7 +115,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
             const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
             clearInterval(this.interval);
             if (tick_interval > 0) {
-                this.interval = setInterval(() => this.props.performTick(), tick_interval);
+                this.interval = setInterval(() => this.props.performTick(this.props.ticker.tick), tick_interval);
             }
         }
 
@@ -141,7 +137,6 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
     componentWillUnmount() {
         clearInterval(this.interval);
-        clearInterval(this.combatantSpawnInterval);
         document.removeEventListener("keydown", this.auxFunctions, false);
     }
 
@@ -251,7 +246,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
 interface DispatchProps {
     reset: () => void,
-    performTick: () => void,
+    performTick: (tick_count: number) => void,
     pauseUnpause: () => void,
     killSelected: () => void,
     spawnAtSelected: () => void,
@@ -270,9 +265,12 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
             dispatch(resetTicker());
             dispatch(setActiveHudPanel(HudPanel.NONE))
         },
-        performTick: () => {
+        performTick: (tick_count: number) => {
             dispatch(tick());
             dispatch(combatantTick());
+            if (tick_count > 0 && tick_count % 25 === 0) {
+                dispatch(spawnAtRandom());
+            }
         },
         pause: () => dispatch(pause()),
         pauseUnpause: () => dispatch(pauseUnpause()),
