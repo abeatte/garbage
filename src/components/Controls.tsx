@@ -4,10 +4,10 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Analytics from "../analytics";
 import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
-import { ArrowKey, movePlayer, tick, togglePlayerHighlight } from "../data/slices/boardSlice";
+import { ArrowKey, togglePlayerHighlight } from "../data/slices/boardSlice";
 import { AppState } from "../data/store";
 
-const Controls = (props: { playerHighlight: boolean }) => {
+const Controls = (props: { playerMovementFunction: (direction: ArrowKey) => boolean, playerHighlight: boolean }) => {
     const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch();
 
@@ -20,9 +20,9 @@ const Controls = (props: { playerHighlight: boolean }) => {
                     <FontAwesomeIcon
                         id="arrow_up"
                         onClick={() => {
-                            Analytics.logEvent('button_clicked: Controls Flyout up arrow');
-                            dispatch(movePlayer(ArrowKey.ARROWUP));
-                            dispatch(tick());
+                            if (props.playerMovementFunction(ArrowKey.ARROWUP)) {
+                                Analytics.logEvent('button_clicked: Controls Flyout up arrow');
+                            }
                         }}
                         icon={faArrowUp}
                         color='dark'
@@ -36,8 +36,7 @@ const Controls = (props: { playerHighlight: boolean }) => {
                             id="arrow_left"
                             onClick={() => {
                                 Analytics.logEvent('button_clicked: Controls Flyout left arrow');
-                                dispatch(movePlayer(ArrowKey.ARROWLEFT));
-                                dispatch(tick());
+                                props.playerMovementFunction(ArrowKey.ARROWLEFT);
                             }}
                             icon={faArrowLeft}
                             color='dark'
@@ -72,8 +71,7 @@ const Controls = (props: { playerHighlight: boolean }) => {
                             id="arrow_right"
                             onClick={() => {
                                 Analytics.logEvent('button_clicked: Controls Flyout right arrow');
-                                dispatch(movePlayer(ArrowKey.ARROWRIGHT));
-                                dispatch(tick());
+                                props.playerMovementFunction(ArrowKey.ARROWRIGHT);
                             }}
                             icon={faArrowRight}
                             color='dark'
@@ -87,8 +85,7 @@ const Controls = (props: { playerHighlight: boolean }) => {
                         id="arrow_down"
                         onClick={() => {
                             Analytics.logEvent('button_clicked: Controls Flyout down arrow');
-                            dispatch(movePlayer(ArrowKey.ARROWDOWN));
-                            dispatch(tick());
+                            props.playerMovementFunction(ArrowKey.ARROWDOWN);
                         }}
                         icon={faArrowDown}
                         color='dark'
