@@ -182,18 +182,12 @@ const PaintPalette = () => {
             "Left": true,
             "Bottom": true,
         })}>
-            <div style={{ display: 'flex', marginRight: '8px', marginTop: '8px' }}>
-                <FontAwesomeIcon
-                    id="paint_roller"
-                    onClick={() => {
-                        Analytics.logEvent('button_clicked: Paint Palette display toggled');
-                        dispatch(togglePalettsDisplayed())
-                    }}
-                    icon={faPaintRoller}
-                    color='dark'
-                    size='lg'
-                    style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
-                />
+            <div className="Control_button" style={{ alignSelf: "center" }}
+                onClick={() => {
+                    Analytics.logEvent('button_clicked: Paint Palette display toggled');
+                    dispatch(togglePalettsDisplayed())
+                }}>
+                <FontAwesomeIcon id="paint_roller" icon={faPaintRoller} color='dark' size='lg' />
             </div>
             {
                 paintPalette.palette_displayed && (

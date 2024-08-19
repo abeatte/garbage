@@ -6,6 +6,7 @@ import Analytics from "../analytics";
 import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { ArrowKey, togglePlayerHighlight } from "../data/slices/boardSlice";
 import { AppState } from "../data/store";
+import '../css/Controls.css';
 
 const Controls = (props: { playerMovementFunction: (direction: ArrowKey) => boolean, playerHighlight: boolean }) => {
     const board = useSelector((state: AppState) => state.board);
@@ -16,82 +17,45 @@ const Controls = (props: { playerMovementFunction: (direction: ArrowKey) => bool
     return (
         <div className={classNames("Flyout_panel", "Right", "Bottom")}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ display: 'flex', marginRight: '8px', marginTop: '8px' }}>
-                    <FontAwesomeIcon
-                        id="arrow_up"
-                        onClick={() => {
-                            if (props.playerMovementFunction(ArrowKey.ARROWUP)) {
-                                Analytics.logEvent('button_clicked: Controls Flyout up arrow');
-                            }
-                        }}
-                        icon={faArrowUp}
-                        color='dark'
-                        size='lg'
-                        style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
-                    />
+                <div className="Control_button"
+                    onClick={() => {
+                        if (props.playerMovementFunction(ArrowKey.ARROWUP)) {
+                            Analytics.logEvent('button_clicked: Controls Flyout up arrow');
+                        }
+                    }}>
+                    <FontAwesomeIcon id="arrow_up" icon={faArrowUp} color='dark' size='lg' />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <div style={{ display: 'flex', marginRight: '16px', marginTop: '8px' }}>
-                        <FontAwesomeIcon
-                            id="arrow_left"
-                            onClick={() => {
-                                Analytics.logEvent('button_clicked: Controls Flyout left arrow');
-                                props.playerMovementFunction(ArrowKey.ARROWLEFT);
-                            }}
-                            icon={faArrowLeft}
-                            color='dark'
-                            size='lg'
-                            style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
-                        />
+                    <div className="Control_button"
+                        onClick={() => {
+                            Analytics.logEvent('button_clicked: Controls Flyout left arrow');
+                            props.playerMovementFunction(ArrowKey.ARROWLEFT);
+                        }}>
+                        <FontAwesomeIcon id="arrow_left" icon={faArrowLeft} color='dark' size='lg' />
                     </div>
-                    <div style={{
-                        display: 'flex',
-                        backgroundColor: targetHighlightColor,
-                        paddingRight: '8px',
-                        marginRight: '-8px',
-                        marginLeft: '2px',
-                        paddingTop: '9px'
-                    }}>
-                        <FontAwesomeIcon
-                            id="target"
-                            onClick={() => {
-                                Analytics.logEvent('button_clicked: Controls Flyout target');
-                                if (board.player_highlight_count === 0) {
-                                    dispatch(togglePlayerHighlight());
-                                }
-                            }}
-                            icon={faLocationCrosshairs}
-                            color='dark'
-                            size='lg'
-                            style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
-                        />
+                    <div className="Control_button" style={{ backgroundColor: targetHighlightColor }}
+                        onClick={() => {
+                            Analytics.logEvent('button_clicked: Controls Flyout target');
+                            if (board.player_highlight_count === 0) {
+                                dispatch(togglePlayerHighlight());
+                            }
+                        }}>
+                        <FontAwesomeIcon id="target" icon={faLocationCrosshairs} color='dark' size='lg' />
                     </div>
-                    <div style={{ display: 'flex', marginRight: '8px', marginLeft: '18px', marginTop: '8px' }}>
-                        <FontAwesomeIcon
-                            id="arrow_right"
-                            onClick={() => {
-                                Analytics.logEvent('button_clicked: Controls Flyout right arrow');
-                                props.playerMovementFunction(ArrowKey.ARROWRIGHT);
-                            }}
-                            icon={faArrowRight}
-                            color='dark'
-                            size='lg'
-                            style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
-                        />
+                    <div className="Control_button"
+                        onClick={() => {
+                            Analytics.logEvent('button_clicked: Controls Flyout right arrow');
+                            props.playerMovementFunction(ArrowKey.ARROWRIGHT);
+                        }}>
+                        <FontAwesomeIcon id="arrow_right" icon={faArrowRight} color='dark' size='lg' />
                     </div>
                 </div>
-                <div style={{ display: 'flex', marginRight: '8px', marginTop: '8px' }}>
-                    <FontAwesomeIcon
-                        id="arrow_down"
-                        onClick={() => {
-                            Analytics.logEvent('button_clicked: Controls Flyout down arrow');
-                            props.playerMovementFunction(ArrowKey.ARROWDOWN);
-                        }}
-                        icon={faArrowDown}
-                        color='dark'
-                        size='lg'
-                        style={{ alignSelf: 'center', margin: '0px 0px 8px 8px' }}
-                    />
+                <div className="Control_button"
+                    onClick={() => {
+                        Analytics.logEvent('button_clicked: Controls Flyout down arrow');
+                        props.playerMovementFunction(ArrowKey.ARROWDOWN);
+                    }}>
+                    <FontAwesomeIcon id="arrow_down" icon={faArrowDown} color='dark' size='lg' />
                 </div>
             </div>
         </div>
