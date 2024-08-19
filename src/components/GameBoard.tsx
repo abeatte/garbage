@@ -12,12 +12,11 @@ import SpeciesStats from './SpeciesStats';
 import { mapStateToProps } from '../data/utils/ReactUtils';
 
 class Game extends React.Component<AppState & DispatchProps> {
-    handleWindowWidthResize = (
-        setScreenSize: (dimens: { width: number, height: number }) => void,
+    handleWindowWidthResize: any = (
         dimens: { innerWidth: number, innerHeight: number }
     ) => {
-        setScreenSize({ width: dimens.innerWidth, height: dimens.innerHeight });
-    }
+        this.props.setScreenSize({ width: dimens.innerWidth, height: dimens.innerHeight });
+    };
 
     escFunction = (event: { key: string; }) => {
         if (event.key === "Escape") {
@@ -40,7 +39,7 @@ class Game extends React.Component<AppState & DispatchProps> {
         this.handleWindowWidthResize(this.props.setScreenSize, window);
         window.addEventListener(
             'resize',
-            () => this.handleWindowWidthResize(this.props.setScreenSize, window)
+            () => this.handleWindowWidthResize(window)
         );
     }
 
