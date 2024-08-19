@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import Analytics from '../analytics';
 import { select, setShowSettings } from '../data/slices/boardSlice';
-import { HudDisplayMode, HudPanel, setActiveHudPanel, setScreenSize } from '../data/slices/hudSlice';
+import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/slices/hudSlice';
 import { setSelectedPaint } from '../data/slices/paintPaletteSlice';
 import { AppDispatch, AppState } from '../data/store';
 import { Pointer } from '../models/PointerModel';
@@ -12,12 +12,6 @@ import SpeciesStats from './SpeciesStats';
 import { mapStateToProps } from '../data/utils/ReactUtils';
 
 class Game extends React.Component<AppState & DispatchProps> {
-    handleWindowWidthResize: any = (
-        dimens: { innerWidth: number, innerHeight: number }
-    ) => {
-        this.props.setScreenSize({ width: dimens.innerWidth, height: dimens.innerHeight });
-    };
-
     escFunction = (event: { key: string; }) => {
         if (event.key === "Escape") {
             Analytics.logEvent('key_pressed: Escape');
@@ -36,16 +30,10 @@ class Game extends React.Component<AppState & DispatchProps> {
 
     componentDidMount() {
         document.addEventListener("keydown", this.escFunction, false);
-        this.handleWindowWidthResize(this.props.setScreenSize, window);
-        window.addEventListener(
-            'resize',
-            () => this.handleWindowWidthResize(window)
-        );
     }
 
     componentWillUnmount() {
         document.removeEventListener("keydown", this.escFunction, false);
-        window.removeEventListener('resize', () => this.handleWindowWidthResize);
     }
 
     render() {
@@ -82,7 +70,6 @@ interface DispatchProps {
     setNoActiveHudPanel: () => void,
     setNotShowSettings: () => void,
     setNoPaintSelected: () => void,
-    setScreenSize: (dimens: { width: number, height: number }) => void,
 }
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
@@ -91,8 +78,6 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         setNoActiveHudPanel: () => dispatch(setActiveHudPanel(HudPanel.NONE)),
         setNotShowSettings: () => dispatch(setShowSettings(false)),
         setNoPaintSelected: () => dispatch(setSelectedPaint(Pointer.Target)),
-        setScreenSize: (dimens: { width: number, height: number }) =>
-            dispatch(setScreenSize({ width: dimens.width, height: dimens.height }))
     }
 }
 
