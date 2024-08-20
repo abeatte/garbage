@@ -154,98 +154,103 @@ class Arena extends React.Component<AppState & DispatchProps> {
     }
 
     render() {
-        const width = this.props.board.width;
+        const view_port = this.props.board.view_port;
         const selected_paint = this.props.paintPalette.selected;
         const selected_position = this.props.board.selected_position;
         const shouldHighlightPlayer =
             this.props.board.player_highlight_count > 0 &&
             this.props.board.player_highlight_count % 2 === 0;
+
         const tiles = [] as JSX.Element[];
-        this.props.board.tiles.forEach((tile, idx) => {
-            const maybe_combatant = getCombatantAtTarget({ target: idx, player: this.props.board.player, combatants: this.props.board.combatants });
-            const is_player_tile = maybe_combatant?.is_player;
-            const maybe_items = this.props.board.items[idx];
-            const is_selected = selected_position === idx;
-            const select_args = is_selected ? undefined : { position: idx, follow_combatant: !!maybe_combatant }
+        for (let row = 0; row < view_port.height; row++) {
+            for (let col = 0; col < view_port.width; col++) {
+                const idx = row * this.props.board.arena.width + col + view_port.start;
+                const tile = this.props.board.tiles[idx];
+                const maybe_combatant = getCombatantAtTarget({ target: idx, player: this.props.board.player, combatants: this.props.board.combatants });
+                const is_player_tile = maybe_combatant?.is_player;
+                const maybe_items = this.props.board.items[idx];
+                const is_selected = selected_position === idx;
+                const select_args = is_selected ? undefined : { position: idx, follow_combatant: !!maybe_combatant }
 
-            const maybe_combatant_view = maybe_combatant ? (<Combatant
-                key={is_player_tile ? 'player' : 'combatant'}
-                draggable={Object.keys(TileType).includes(selected_paint)}
-                species={maybe_combatant.species}
-                state={maybe_combatant.state}
-            />) : undefined;
-            const maybe_items_view: JSX.Element[] = [];
-            const maybe_items_view_2: JSX.Element[] = [];
-            maybe_items?.forEach((item, idx) => {
-                const view = (<Item
-                    key={`item_${idx}`}
-                    item={item}
-                    purpose={Purpose.Tile}
-                />);
-                if (idx < 2) {
-                    maybe_items_view.push(view);
-                } else {
-                    maybe_items_view_2.push(view);
-                }
-            });
+                const maybe_combatant_view = maybe_combatant ? (<Combatant
+                    key={is_player_tile ? 'player' : 'combatant'}
+                    draggable={Object.keys(TileType).includes(selected_paint)}
+                    species={maybe_combatant.species}
+                    state={maybe_combatant.state}
+                />) : undefined;
+                const maybe_items_view: JSX.Element[] = [];
+                const maybe_items_view_2: JSX.Element[] = [];
+                maybe_items?.forEach((item, idx) => {
+                    const view = (<Item
+                        key={`item_${idx}`}
+                        item={item}
+                        purpose={Purpose.Tile}
+                    />);
+                    if (idx < 2) {
+                        maybe_items_view.push(view);
+                    } else {
+                        maybe_items_view_2.push(view);
+                    }
+                });
 
-            const maybe_items_container_view = maybe_items_view.length > 0 &&
-                (<div className="Items_container_container">
-                    {maybe_items_view.length < 1 ? undefined : (
-                        <div className="Items_container">{maybe_items_view}</div>
-                    )}
-                    {maybe_items_view_2.length < 1 ? undefined : (
-                        <div className="Items_container">{maybe_items_view_2}</div>
-                    )}
-                </div>);
+                const maybe_items_container_view = maybe_items_view.length > 0 &&
+                    (<div className="Items_container_container">
+                        {maybe_items_view.length < 1 ? undefined : (
+                            <div className="Items_container">{maybe_items_view}</div>
+                        )}
+                        {maybe_items_view_2.length < 1 ? undefined : (
+                            <div className="Items_container">{maybe_items_view_2}</div>
+                        )}
+                    </div>);
 
-            const child_view_container = (
-                <div style={{ display: "flex", width: "inherit", height: "inherit", alignItems: "flex-end" }}>
-                    {maybe_combatant_view}
-                    {maybe_items_container_view}
-                </div>
-            );
+                const child_view_container = (
+                    <div style={{ display: "flex", width: "inherit", height: "inherit", alignItems: "flex-end" }}>
+                        {maybe_combatant_view}
+                        {maybe_items_container_view}
+                    </div>
+                );
 
 
-            tiles.push(
-                <div className="Tile_container"
-                    key={`${idx}_${width}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
-                    onClick={() => {
-                        if (selected_paint !== Pointer.Target) {
-                            Analytics.logEvent('tap_on_board: Paint');
-                            this.props.paintOnTile({ position: idx, type: selected_paint });
-                        } else {
-                            Analytics.logEvent('tap_on_board: Select');
-                            this.props.clickOnTile(select_args);
-                        }
-                    }}
-                    onDragEnter={() => {
-                        Analytics.logEvent('drag_on_board');
-                        if (Object.keys(TileType).includes(selected_paint)) {
-                            this.props.paintOnTile({ position: idx, type: selected_paint });
-                        }
-                    }}>
-                    <Tile
-                        id={idx}
-                        tile={tile}
-                        showPotential={this.props.board.show_tile_potentials}
-                        showRealTileImages={this.props.board.show_real_tile_images}
-                        highlight={is_player_tile && shouldHighlightPlayer}
-                        className={classNames({ "Clickable": maybe_combatant || (maybe_items?.length ?? 0) > 0 })}
-                        isSelected={is_selected}
-                    >
-                        {child_view_container}
-                    </Tile>
-                </div>
-            );
-        });
+                tiles.push(
+                    <div className="Tile_container"
+                        key={`${idx}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}
+                        onClick={() => {
+                            if (selected_paint !== Pointer.Target) {
+                                Analytics.logEvent('tap_on_board: Paint');
+                                this.props.paintOnTile({ position: idx, type: selected_paint });
+                            } else {
+                                Analytics.logEvent('tap_on_board: Select');
+                                this.props.clickOnTile(select_args);
+                            }
+                        }}
+                        onDragEnter={() => {
+                            Analytics.logEvent('drag_on_board');
+                            if (Object.keys(TileType).includes(selected_paint)) {
+                                this.props.paintOnTile({ position: idx, type: selected_paint });
+                            }
+                        }}>
+                        <Tile
+                            id={idx}
+                            tile={tile}
+                            showPotential={this.props.board.show_tile_potentials}
+                            showRealTileImages={this.props.board.show_real_tile_images}
+                            highlight={is_player_tile && shouldHighlightPlayer}
+                            className={classNames({ "Clickable": maybe_combatant || (maybe_items?.length ?? 0) > 0 })}
+                            isSelected={is_selected}
+                        >
+                            {child_view_container}
+                        </Tile>
+                    </div>
+                );
+            };
+        };
 
         return (
             <div className={classNames("Arena_container")}>
                 <Dashboard onReset={this.props.reset} />
                 <div style={{ display: "flex", overflow: "scroll", border: '4px solid black' }}>
                     <div className="Arena_inner_container">
-                        <div className="Arena" style={{ gridTemplateColumns: `${"auto ".repeat(width)}` }}>
+                        <div className="Arena" style={{ gridTemplateColumns: `${"auto ".repeat(view_port.width)}` }}>
                             {tiles}
                         </div>
                     </div>

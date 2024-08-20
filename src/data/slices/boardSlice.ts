@@ -46,8 +46,15 @@ interface BoardState {
     game_mode: GameMode,
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
-    width: number,
-    height: number,
+    view_port: {
+        start: number,
+        width: number,
+        height: number,
+    },
+    arena: {
+        width: number,
+        height: number,
+    },
     initial_num_combatants: number,
     tiles: TileModel[],
     player_highlight_count: number,
@@ -121,12 +128,12 @@ function handleResize(
     { state, old_window_width, old_window_height }:
         { state: BoardState, old_window_width: number, old_window_height: number }
 ) {
-    state.tiles = Maps[state.map].generate({ width: state.width, height: state.height });
+    state.tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     const { combatants, deaths } = updateCombatantsPositionsAfterResize(
         {
             combatants: state.combatants,
-            window_width: state.width,
-            window_height: state.height,
+            window_width: state.arena.width,
+            window_height: state.arena.height,
             old_window_width,
             old_window_height,
             tiles: state.tiles,
@@ -134,8 +141,8 @@ function handleResize(
     const items = updateItemsAfterResize(
         {
             items: state.items,
-            window_width: state.width,
-            window_height: state.height,
+            window_width: state.arena.width,
+            window_height: state.arena.height,
             old_window_width,
         });
     state.combatants = combatants;
@@ -171,8 +178,15 @@ function initState(
         game_mode: game_mode ?? GameMode.Title,
         game_count: 1,
         global_combatant_stats,
-        width,
-        height,
+        arena: {
+            width,
+            height
+        },
+        view_port: {
+            start: 0,
+            width,
+            height
+        },
         initial_num_combatants,
         tiles,
         show_settings: false,
@@ -217,45 +231,45 @@ function spawnAt(position: number, state: BoardState & SettingsState) {
 
 const mapReducers = {
     shrinkWidth: (state: BoardState & SettingsState) => {
-        if (state.width === 0) {
+        if (state.arena.width === 0) {
             return;
         }
-        const old_window_height = state.height;
-        const old_window_width = state.width;
-        state.width -= 1
+        const old_window_height = state.arena.height;
+        const old_window_width = state.arena.width;
+        state.arena.width -= 1
         handleResize({ state, old_window_width, old_window_height });
     },
     growWidth: (state: BoardState & SettingsState) => {
-        const old_window_height = state.height;
-        const old_window_width = state.width;
-        state.width += 1
+        const old_window_height = state.arena.height;
+        const old_window_width = state.arena.width;
+        state.arena.width += 1
         handleResize({ state, old_window_width, old_window_height });
     },
     shrinkHeight: (state: BoardState & SettingsState) => {
-        if (state.height === 0) {
+        if (state.arena.height === 0) {
             return;
         }
-        const old_window_height = state.height;
-        const old_window_width = state.width;
-        state.height -= 1
+        const old_window_height = state.arena.height;
+        const old_window_width = state.arena.width;
+        state.arena.height -= 1
         handleResize({ state, old_window_width, old_window_height });
     },
     growHeight: (state: BoardState & SettingsState) => {
-        const old_window_height = state.height;
-        const old_window_width = state.width;
-        state.height += 1
+        const old_window_height = state.arena.height;
+        const old_window_width = state.arena.width;
+        state.arena.height += 1
         handleResize({ state, old_window_width, old_window_height });
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
-        state.tiles = Maps[state.map].generate({ width: state.width, height: state.height });
+        state.tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     },
     paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
         const current_occupant = state.combatants[action.payload.position]
         if (Object.keys(TileType).includes(action.payload.type)) {
             state.tiles[action.payload.position] =
                 createTileModel({ index: action.payload.position, type: action.payload.type as TileType });
-            updateMapTileScorePotentials(state.tiles, state.width);
+            updateMapTileScorePotentials(state.tiles, state.arena.width);
         } else if (Object.keys(ItemType).includes(action.payload.type)) {
             const new_item =
                 createItemModel({ position: action.payload.position, type: action.payload.type as ItemType });
@@ -264,7 +278,7 @@ const mapReducers = {
             const new_spider =
                 createSpiderModel({ position: action.payload.position, type: action.payload.type as SpiderType });
             addItemToBoard(new_spider, state.items);
-            paintTileForSpider(new_spider, state.tiles, true, state.width);
+            paintTileForSpider(new_spider, state.tiles, true, state.arena.width);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] =
                 createCombatant({
@@ -331,8 +345,8 @@ export const boardSlice = createSlice({
             const new_state = initState({
                 game_mode: state.game_mode,
                 map: state.map,
-                width: state.width,
-                height: state.height,
+                width: state.arena.width,
+                height: state.arena.height,
                 initial_num_combatants: state.initial_num_combatants,
                 use_genders: state.use_genders
             });
@@ -349,7 +363,7 @@ export const boardSlice = createSlice({
         movePlayer: (state, action: PayloadAction<ArrowKey>) => {
             if (state.player) {
                 state.player.player_turn =
-                    getNewPositionFromArrowKey(state.player.position, action.payload, state.width, state.tiles.length);
+                    getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.length);
             }
         },
         tick: (state) => {
@@ -358,7 +372,7 @@ export const boardSlice = createSlice({
                 player: state.player,
                 items: state.items,
                 combatants: state.combatants,
-                window_width: state.width,
+                window_width: state.arena.width,
                 tiles: state.tiles,
                 movement_logic: state.movement_logic,
                 use_genders: state.use_genders,
@@ -369,6 +383,33 @@ export const boardSlice = createSlice({
             state.items = movement_result.items;
             state.tiles = movement_result.tiles;
             state.global_combatant_stats = movement_result.global_combatant_stats;
+
+            if (state.player && state.player.position > -1) {
+                let new_start = state.player.position;
+                // snap to fit horizontal
+                new_start -= Math.max(
+                    // check right bounds
+                    state.view_port.width - (state.arena.width - state.player.position % state.arena.width),
+                    Math.min(
+                        // check left bounds
+                        state.player.position % state.arena.width,
+                        // everything in the middle
+                        Math.floor(state.view_port.width / 2),
+                    ));
+                // snap to fit vertical
+                new_start -= state.arena.width *
+                    Math.max(
+                        // check bottom bounds
+                        Math.floor(state.view_port.height - (state.arena.height - Math.floor(state.player.position / state.arena.width))),
+                        Math.min(
+                            // check top bounds
+                            Math.floor(state.player.position / state.arena.width),
+                            // everything in the middle
+                            state.view_port.height / 2,
+                        ));
+
+                state.view_port.start = new_start;
+            }
 
             if (!!combatant_id_to_follow) {
                 const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
