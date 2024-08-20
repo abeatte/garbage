@@ -400,7 +400,8 @@ export const boardSlice = createSlice({
                         state.player.position % state.arena.width,
                         // everything in the middle
                         Math.floor(state.view_port.width / 2),
-                    ));
+                    )
+                );
                 // snap to fit vertical
                 new_start -= state.arena.width *
                     Math.max(
@@ -410,8 +411,9 @@ export const boardSlice = createSlice({
                             // check top bounds
                             Math.floor(state.player.position / state.arena.width),
                             // everything in the middle
-                            state.view_port.height / 2,
-                        ));
+                            Math.floor(state.view_port.height / 2),
+                        )
+                    );
 
                 state.view_port.start = new_start;
             }
