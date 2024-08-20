@@ -17,6 +17,7 @@ import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../..
 import Maps from '../Map';
 import { getCombatantAtTarget } from '../utils/TargetingUtils';
 import { processBoardTick } from '../utils/TurnProcessingUtils';
+import { TILE_SIZE } from '../../components/Tile';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
@@ -180,12 +181,12 @@ function initState(
         global_combatant_stats,
         arena: {
             width,
-            height
+            height,
         },
         view_port: {
             start: 0,
             width,
-            height
+            height,
         },
         initial_num_combatants,
         tiles,
@@ -259,6 +260,10 @@ const mapReducers = {
         const old_window_width = state.arena.width;
         state.arena.height += 1
         handleResize({ state, old_window_width, old_window_height });
+    },
+    setViewPortSize: (state: BoardState & SettingsState, action: PayloadAction<{ width: number, height: number }>) => {
+        state.view_port.height = Math.min(state.arena.height, Math.floor(action.payload.height / TILE_SIZE));
+        state.view_port.width = Math.min(state.arena.width, Math.floor(action.payload.width / TILE_SIZE));
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
@@ -490,6 +495,7 @@ export const {
     growWidth,
     shrinkHeight,
     growHeight,
+    setViewPortSize,
     reset,
     togglePlayerHighlight,
     movePlayer,

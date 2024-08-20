@@ -1,7 +1,7 @@
 import React from "react";
 import { AppDispatch, AppState } from "../data/store";
 import { connect } from "react-redux";
-import { GameMode } from "../data/slices/boardSlice";
+import { GameMode, setViewPortSize } from "../data/slices/boardSlice";
 import GameBoard from "./GameBoard";
 import TitleScreen from "./TitleScreen";
 import { mapStateToProps } from "../data/utils/ReactUtils";
@@ -10,14 +10,12 @@ import { setScreenSize } from "../data/slices/hudSlice";
 /* eslint-disable no-fallthrough */
 
 class Game extends React.Component<AppState & DispatchProps> {
-    handleWindowWidthResize: any = (
-        dimens: { innerWidth: number, innerHeight: number }
-    ) => {
+    handleWindowWidthResize = (dimens: { innerWidth: number, innerHeight: number }) => {
         this.props.setScreenSize({ width: dimens.innerWidth, height: dimens.innerHeight });
     };
 
     componentDidMount() {
-        this.handleWindowWidthResize(this.props.setScreenSize, window);
+        this.handleWindowWidthResize(window);
         window.addEventListener(
             'resize',
             () => this.handleWindowWidthResize(window)
@@ -54,8 +52,10 @@ interface DispatchProps {
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
-        setScreenSize: (dimens: { width: number, height: number }) =>
-            dispatch(setScreenSize({ width: dimens.width, height: dimens.height })),
+        setScreenSize: (dimens: { width: number, height: number }) => {
+            dispatch(setScreenSize(dimens));
+            dispatch(setViewPortSize(dimens));
+        }
     };
 }
 

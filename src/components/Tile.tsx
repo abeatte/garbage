@@ -13,6 +13,8 @@ const Sand = require('../images/terrain/sand.png');
 const Lava = require('../images/terrain/lava.png');
 const Stone = require('../images/terrain/stone.png');
 
+export const TILE_SIZE = 25;
+
 const TileImages: { [key in TileType]: any } = {
   Void: undefined,
   Fire: Lava,
