@@ -5,7 +5,8 @@ import { Pointer } from "../../models/PointerModel";
 import { Type as TileType } from "../../models/TileModel";
 import { Type as SpiderType } from "../../models/SpiderModel";
 
-export type PaintEntity = Pointer | TileType | ItemType | Character | SpiderType;
+export type PaintEntity = PlayerUsablePaintEntities | TileType | Character;
+export type PlayerUsablePaintEntities = Pointer | ItemType | SpiderType;
 
 type PaintPaletteState = {
     palette_displayed: boolean,

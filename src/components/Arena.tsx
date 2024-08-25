@@ -255,7 +255,11 @@ class Arena extends React.Component<AppState & DispatchProps> {
                         </div>
                     </div>
                 </div>
-                {this.props.board.game_mode === GameMode.Adventure && <Controls playerMovementFunction={this.playerMovementFunction} playerHighlight={shouldHighlightPlayer} />}
+                {this.props.board.game_mode === GameMode.Adventure &&
+                    <Controls paintOnTile={this.props.paintOnTile}
+                        playerMovementFunction={this.playerMovementFunction}
+                        playerHighlight={shouldHighlightPlayer}
+                    />}
                 <PaintPalette />
             </div>
         );
