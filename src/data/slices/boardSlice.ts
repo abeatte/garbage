@@ -419,7 +419,11 @@ export const boardSlice = createSlice({
         killSelected: (state) => {
             if (state.selected_position !== undefined) {
                 state.follow_selected_combatant = false;
-                const selected = state.combatants[state.selected_position];
+                let selected = state.combatants[state.selected_position];
+                if (selected === undefined && state.selected_position === state.player?.position) {
+                    selected = state.player;
+                }
+
                 if (selected) {
                     selected.immortal = false;
                     selected.strength = getStrengthRating({
@@ -428,6 +432,10 @@ export const boardSlice = createSlice({
                         immortal: selected.immortal
                     })
                     selected.state = State.Dead;
+                    if (selected !== state.player) {
+                        // must reassign to list to get state to notice the update. 
+                        state.combatants[state.selected_position] = selected;
+                    }
                 }
             }
         },

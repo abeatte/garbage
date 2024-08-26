@@ -392,6 +392,7 @@ function processCombatantMovement(
             });
 
         // this fixes a type error below
+        /* eslint-disable-next-line no-self-assign */
         combatant = combatant;
     }
 

@@ -7,8 +7,6 @@ import TitleScreen from "./TitleScreen";
 import { mapStateToProps } from "../data/utils/ReactUtils";
 import { setScreenSize } from "../data/slices/hudSlice";
 
-/* eslint-disable no-fallthrough */
-
 class Game extends React.Component<AppState & DispatchProps> {
     handleWindowWidthResize = (dimens: { innerWidth: number, innerHeight: number }) => {
         this.props.setScreenSize({ width: dimens.innerWidth, height: dimens.innerHeight });
@@ -32,11 +30,13 @@ class Game extends React.Component<AppState & DispatchProps> {
         switch (this.props.board.game_mode) {
             case GameMode.Adventure:
             // fall-through
+            /* eslint-disable-next-line no-fallthrough */
             case GameMode.God:
                 screen = (<GameBoard />);
                 break;
             case GameMode.Title:
             // fall-through
+            /* eslint-disable-next-line no-fallthrough */
             default:
                 screen = (
                     <TitleScreen />

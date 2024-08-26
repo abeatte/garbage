@@ -22,7 +22,7 @@ import { MIN_HEALTH } from '../data/utils/CombatantUtils';
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/slices/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
-import { Character, DecisionType, Gender, getRandomCombatantName } from '../models/CombatantModel';
+import { Character, DecisionType, Gender, getRandomCombatantName, State } from '../models/CombatantModel';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
@@ -130,7 +130,7 @@ const Hud = () => {
         </div>
     );
 
-    const kill_spawn_button = selected_position > -1 && (
+    const kill_spawn_button = selected_position > -1 && combatant?.state !== State.Dead && (
         <div className={classNames(
             { 'Spawn_button_container': !combatant, 'Kill_button_container': !!combatant }
         )}>
