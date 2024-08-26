@@ -210,7 +210,6 @@ class Arena extends React.Component<AppState & DispatchProps> {
                     </div>
                 );
 
-
                 tiles.push(
                     <div className="Tile_container"
                         key={`${idx}_${tile}_${maybe_combatant?.id ?? 0}_${maybe_items?.length ?? 0}`}

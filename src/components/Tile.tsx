@@ -46,6 +46,7 @@ const Tile = (
   const paintRoller = document.getElementById('paint_roller') as HTMLElement;
   const image = tile?.type && getImage(tile.type);
   const typeClass = tile?.type ?? TileType.Void;
+
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -66,7 +67,7 @@ const Tile = (
         }
         {/* TODO: show tile potential for each species (since they are different now.) */}
         {
-          showPotential && tile && !children &&
+          showPotential && tile &&
           <span style={{ position: "absolute", color: !showRealTileImages ? "black" : "red" }} className='Tile_potential'>
             {getMapTileEffect({ species: undefined, tileType: tile.type })}
           </span>
