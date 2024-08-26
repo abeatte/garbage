@@ -6,6 +6,7 @@ import Analytics from '../analytics';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import { mapStateToProps } from '../data/utils/ReactUtils';
+import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, speedChange } from '../data/slices/tickerSlice';
 
 const logo = require('../images/icon.png');
 
@@ -62,6 +63,9 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
         setGameMode: (gameMode: GameMode) => {
             dispatch(setGameMode(gameMode));
+            dispatch(speedChange({
+                value: gameMode === GameMode.Adventure ? DEFAULT_TICK_SPEED : MAX_TICK_SPEED, respectPause: true
+            }));
         }
     }
 }
