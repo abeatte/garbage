@@ -166,6 +166,11 @@ function initState(
             width: number,
             height: number,
         },
+        view_port?: {
+            start: number,
+            width: number,
+            height: number,
+        },
         initial_num_combatants?: number,
         use_genders?: boolean,
         show_settings?: boolean,
@@ -185,20 +190,21 @@ function initState(
     state.show_settings = args?.show_settings ?? state.show_settings;
     state.show_real_tile_images = args?.show_real_tile_images ?? state.show_real_tile_images;
 
-    state.initial_num_combatants = args?.game_mode === GameMode.Adventure ? 0 : state.initial_num_combatants;
+    state.initial_num_combatants = state.game_mode === GameMode.Adventure ? 0 : state.initial_num_combatants;
     state.player_highlight_count = state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
 
+
+    state.view_port = args?.view_port ?? state.view_port ?? {
+        start: 0,
+        width: state.arena.width,
+        height: state.arena.height,
+    };
 
     const tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     const { player, combatants, global_combatant_stats } =
         initCombatants({ tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure });
 
     state.global_combatant_stats = global_combatant_stats;
-    state.view_port = {
-        start: 0,
-        width: state.arena.width,
-        height: state.arena.height,
-    };
     state.tiles = tiles;
     state.player = player;
     state.combatants = combatants;
@@ -325,8 +331,8 @@ export const boardSlice = createSlice({
             initState({ game_mode: action.payload, }, state);
         },
         reset: (state) => {
-            initState(state, state);
             state.game_count += 1;
+            initState(state, state);
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
