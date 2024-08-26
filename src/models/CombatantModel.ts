@@ -10,8 +10,6 @@ import { Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 import { ArrowKey, MovementLogic } from "../data/slices/boardSlice";
 import Brain from "./Brain";
-import { NeuralNetwork } from "brain.js/dist/src";
-import { Input, Output } from "../scripts/BrainTrainer";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "./EntityModel";
 import { MapDetails } from "../data/utils/TurnProcessingUtils";
@@ -46,6 +44,8 @@ export interface CombatantModel extends EntityModel {
     spawn: CombatantModel | undefined;
     children: number,
 }
+
+const Brains = Brain.init();
 
 const uniqueNamesConfig: UniqueNamesConfig = {
     dictionaries: [colors, names, adjectives],
@@ -199,11 +199,9 @@ function getBestMatePosition(
     return best_mate_position;
 }
 
-export type MovementDetails = { movement_logic: MovementLogic, brains: { [species: string]: NeuralNetwork<Input, Output> } };
-
-export function requestMove({ movement_details: { movement_logic, brains }, posData, self, map_details }:
+export function requestMove({ movement_logic, posData, self, map_details }:
     {
-        movement_details: MovementDetails,
+        movement_logic: MovementLogic,
         posData: PosData,
         self: CombatantModel,
         map_details: MapDetails,
@@ -268,7 +266,7 @@ export function requestMove({ movement_details: { movement_logic, brains }, posD
     if (movement_logic === MovementLogic.NeuralNetwork) {
         // TODO: the Neural Network is blind to mating situations. 
         // this causes combatants to just sit in one spot when near others. 
-        const brain = brains[self.species];
+        const brain = Brains[self.species];
         position = Brain.move(brain, self, posData);
     } else {
         const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;

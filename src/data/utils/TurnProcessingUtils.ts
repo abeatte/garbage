@@ -1,13 +1,10 @@
-import Brain from "../../models/Brain";
-import CombatantModel, { DecisionType, Gender, MovementDetails, State, createCombatant, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
+import CombatantModel, { DecisionType, Gender, State, createCombatant, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
 import { DirectionalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH, PosData, addItemToBoard, compete, getSurroundings } from "./CombatantUtils";
 import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
 import { SpiderModel, paintTileForSpider } from "../../models/SpiderModel";
-
-const Brains = Brain.init();
 
 export type MapDetails = {
     window_width: Readonly<number>,
@@ -226,7 +223,6 @@ function processCombatantTick(
     { combatants, map_details, movement_logic, use_genders, global_combatant_stats }:
         { combatants: Combatants, map_details: MapDetails, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
 ): { player: CombatantModel | undefined, combatants: Readonly<Combatants>, births: number, deaths: number } {
-    const movement_details: MovementDetails = { movement_logic, brains: Brains };
     const working_combatants: Combatants = {};
     const mating_combatants: Combatants = {};
     let player;
@@ -247,7 +243,7 @@ function processCombatantTick(
             combatants,
             global_combatant_stats,
             map_details,
-            movement_details,
+            movement_logic,
         });
 
         deaths += newDeaths;
@@ -351,14 +347,14 @@ function birthSpawn({ posData, spawn, parent, arena_size }:
 }
 
 function processCombatantMovement(
-    { combatant, use_genders, combatants, global_combatant_stats, map_details, movement_details }:
+    { combatant, use_genders, combatants, global_combatant_stats, map_details, movement_logic }:
         {
             use_genders: boolean,
             combatant: CombatantModel,
             combatants: Readonly<{ [position: number]: CombatantModel }>,
             global_combatant_stats: GlobalCombatantStatsModel,
             map_details: MapDetails,
-            movement_details: MovementDetails,
+            movement_logic: MovementLogic,
         }
 ): { combatant: CombatantModel, deaths: number } {
     let deaths = 0;
@@ -390,7 +386,7 @@ function processCombatantMovement(
         new_position = requestMove(
             {
                 posData,
-                movement_details,
+                movement_logic,
                 self: combatant,
                 map_details,
             });

@@ -34,10 +34,7 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, posData: 
 
     const requested_position = requestMove(
         {
-            movement_details: {
-                movement_logic: MovementLogic.DecisionTree,
-                brains: {}
-            },
+            movement_logic: MovementLogic.DecisionTree,
             posData,
             self: combatant,
             map_details: {
