@@ -31,11 +31,18 @@ export type Items = { [position: number]: ItemModel[] };
 export const GAME_DEFAULTS = {
     game_mode: GameMode.Title,
     player_highlight_count: 0,
-    window_width: 26,
-    window_height: 30,
-    num_combatants: 50,
+    game_count: 1,
+    arena: {
+        width: 26,
+        height: 30,
+    },
+    initial_num_combatants: 50,
     movement_logic: MovementLogic.DecisionTree,
     map: Maps['World'].name,
+    use_genders: false,
+    show_settings: false,
+    show_real_tile_images: true,
+    follow_selected_combatant: false,
 }
 
 const SETTINGS_DEFAULTS = {
@@ -153,69 +160,52 @@ function handleResize(
 
 function initState(
     args?: {
-        game_mode?: GameMode,
+        game_mode: GameMode,
         map?: string,
-        width?: number,
-        height?: number,
+        arena?: {
+            width: number,
+            height: number,
+        },
         initial_num_combatants?: number,
-        use_genders?: boolean
-    }
+        use_genders?: boolean,
+        show_settings?: boolean,
+        show_real_tile_images?: boolean,
+    }, state?: BoardState & SettingsState,
 ): BoardState & SettingsState {
-    const { game_mode, map, width, height, initial_num_combatants, use_genders } =
-        args = {
-            game_mode: GAME_DEFAULTS.game_mode,
-            map: Maps['World'].name,
-            width: GAME_DEFAULTS.window_width,
-            height: GAME_DEFAULTS.window_height,
-            use_genders: SETTINGS_DEFAULTS.use_genders,
-            initial_num_combatants: args?.game_mode === GameMode.Adventure ? 0 : GAME_DEFAULTS.num_combatants,
-            ...args,
-        };
-    const tiles = Maps[map].generate({ width, height });
-    const { player, combatants, global_combatant_stats } =
-        initCombatants({ tiles, num_combatants: initial_num_combatants, init_player: game_mode === GameMode.Adventure });
-    return {
-        game_mode: game_mode ?? GameMode.Title,
-        game_count: 1,
-        global_combatant_stats,
-        arena: {
-            width,
-            height,
-        },
-        view_port: {
-            start: 0,
-            width,
-            height,
-        },
-        initial_num_combatants,
-        tiles,
-        show_settings: false,
-        show_real_tile_images: true,
-        show_tile_potentials: SETTINGS_DEFAULTS.show_tile_potentials,
-        player_highlight_count: game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
-        player,
-        combatants,
-        items: {},
-        selected_position: undefined,
-        follow_selected_combatant: false,
-        movement_logic: GAME_DEFAULTS.movement_logic,
-        map: GAME_DEFAULTS.map,
-        use_genders,
-    };
-}
+    state = state ?? {
+        ...GAME_DEFAULTS,
+        ...SETTINGS_DEFAULTS,
+    } as BoardState & SettingsState;
 
-function resetState(new_state: BoardState & SettingsState, state: BoardState & SettingsState) {
-    state.game_mode = new_state.game_mode;
-    state.tiles = new_state.tiles;
-    state.player = new_state.player;
-    state.player_highlight_count =
-        state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
-    state.combatants = new_state.combatants;
+    // populate with args
+    state.game_mode = args?.game_mode ?? state.game_mode;
+    state.arena = args?.arena ?? state.arena;
+    state.map = args?.map ?? state.map;
+    state.use_genders = args?.use_genders ?? state.use_genders;
+    state.show_settings = args?.show_settings ?? state.show_settings;
+    state.show_real_tile_images = args?.show_real_tile_images ?? state.show_real_tile_images;
+
+    state.initial_num_combatants = args?.game_mode === GameMode.Adventure ? 0 : state.initial_num_combatants;
+    state.player_highlight_count = state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
+
+
+    const tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
+    const { player, combatants, global_combatant_stats } =
+        initCombatants({ tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure });
+
+    state.global_combatant_stats = global_combatant_stats;
+    state.view_port = {
+        start: 0,
+        width: state.arena.width,
+        height: state.arena.height,
+    };
+    state.tiles = tiles;
+    state.player = player;
+    state.combatants = combatants;
     state.items = {};
     state.selected_position = undefined;
-    state.follow_selected_combatant = false;
-    state.global_combatant_stats = new_state.global_combatant_stats;
-    state.game_count = new_state.game_count;
+
+    return state;
 }
 
 function spawnAt(position: number, state: BoardState & SettingsState) {
@@ -332,20 +322,11 @@ export const boardSlice = createSlice({
             if (state.game_mode === action.payload) {
                 return;
             }
-            const new_state = initState({ game_mode: action.payload });
-            resetState(new_state, state);
+            initState({ game_mode: action.payload, }, state);
         },
         reset: (state) => {
-            const new_state = initState({
-                game_mode: state.game_mode,
-                map: state.map,
-                width: state.arena.width,
-                height: state.arena.height,
-                initial_num_combatants: state.initial_num_combatants,
-                use_genders: state.use_genders
-            });
-            new_state.game_count = state.game_count + 1;
-            resetState(new_state, state);
+            initState(state, state);
+            state.game_count += 1;
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
@@ -461,7 +442,7 @@ export const boardSlice = createSlice({
             spawnAt(position, state);
         },
         setInitialNumCombatants: (state, action: PayloadAction<number>) => {
-            action.payload = Math.min(action.payload, GAME_DEFAULTS.num_combatants * 40);
+            action.payload = Math.min(action.payload, GAME_DEFAULTS.initial_num_combatants * 20);
             state.initial_num_combatants = action.payload;
 
             const { player, combatants, global_combatant_stats } = initCombatants({

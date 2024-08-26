@@ -57,8 +57,8 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const trainer = createCombatant({ spawn_position: 0, species, global_combatant_stats: undefined });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
-        const width = GAME_DEFAULTS.window_width;
-        const height = GAME_DEFAULTS.window_height;
+        const width = GAME_DEFAULTS.arena.width;
+        const height = GAME_DEFAULTS.arena.height;
         const tiles = Maps[GAME_DEFAULTS.map].generate({ width, height });
 
         for (let position = 0; position < tiles.length; position++) {
