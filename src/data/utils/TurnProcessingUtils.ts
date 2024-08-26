@@ -368,12 +368,12 @@ function processCombatantMovement(
 
     let new_position;
     if (combatant.is_player) {
-        if (combatant.player_turn > -1) {
-            new_position = combatant.player_turn;
+        if (combatant.target_destination > -1) {
+            new_position = combatant.target_destination;
         } else {
             new_position = current_position;
         }
-        combatant.player_turn = -1;
+        combatant.target_destination = -1;
     } else {
         const posData = getSurroundings(
             {
@@ -435,6 +435,13 @@ function processCombatantMovement(
         combatant.position = new_position;
         combatant.visited_positions[new_position] = new_position;
         deaths++;
+    }
+
+    if (
+        !combatant.is_player &&
+        combatant.decision_type === DecisionType.Seeker &&
+        new_position === combatant.target_destination) {
+        combatant.target_destination = Math.floor(Math.random() * (map_details.tiles.length - 1));
     }
 
     return { combatant, deaths };

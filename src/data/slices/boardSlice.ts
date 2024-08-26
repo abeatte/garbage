@@ -8,7 +8,7 @@ import {
 } from '../utils/CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../../models/ItemModel';
-import CombatantModel, { Character, createCombatant, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
+import CombatantModel, { Character, createCombatant, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
@@ -343,7 +343,7 @@ export const boardSlice = createSlice({
         },
         movePlayer: (state, action: PayloadAction<ArrowKey>) => {
             if (state.player) {
-                state.player.player_turn =
+                state.player.target_destination =
                     getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.length);
             }
         },
@@ -419,6 +419,8 @@ export const boardSlice = createSlice({
                         fitness: selected.fitness,
                         immortal: selected.immortal
                     })
+                } else if (action.payload.field === "decision_type" && action.payload.value === DecisionType.Seeker) {
+                    selected.target_destination = selected.position;
                 }
             }
         },

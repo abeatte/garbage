@@ -29,6 +29,7 @@ export enum DecisionType {
     Fighter = "Fighter",
     Lover = "Lover",
     Neutral = "Neutral",
+    Seeker = "Seeker",
     Wanderer = "Wanderer"
 };
 export enum Gender { Male = "Male", Female = "Female" };
@@ -36,7 +37,7 @@ export enum Gender { Male = "Male", Female = "Female" };
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
     is_player: boolean;
-    player_turn: number;
+    target_destination: number;
     state: State;
     visited_positions: { [position: number]: number };
     kills: number;
@@ -70,16 +71,17 @@ export function createCombatant(
     const visited_positions = {} as { [position: number]: number };
     visited_positions[args.spawn_position] = args.spawn_position;
     const decisions = Object.values(DecisionType);
+    const decision_type = args.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)];
     return {
         id: uuid(),
         name: getRandomCombatantName(),
         is_player: false,
-        player_turn: -1,
+        target_destination: decision_type === DecisionType.Seeker ? args.spawn_position : -1,
         state: State.Alive,
         kills: 0,
         fitness: 0,
         strength: getStrengthRating({ global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false }),
-        decision_type: args.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)],
+        decision_type,
         immortal: false,
         species: args.species ?? getRandomSpecies(),
         gender: Math.random() < .5 ? Gender.Male : Gender.Female,
@@ -252,6 +254,24 @@ export function requestMove({ movement_logic, posData, self, map_details }:
                 map_details.tiles.length);
             break;
         case MovementLogic.DecisionTree:
+
+            // seekers go directly toward their target. 
+            if (self.decision_type === DecisionType.Seeker) {
+                const col_diff =
+                    (self.target_destination % map_details.window_width) -
+                    (self.position % map_details.window_width);
+                const row_diff =
+                    Math.floor(self.target_destination / map_details.window_width) -
+                    Math.floor(self.position / map_details.window_width);
+
+                if (Math.abs(col_diff) > Math.abs(row_diff)) {
+                    position = self.position + (col_diff < 0 ? -1 : 1);
+                } else {
+                    position = self.position + (row_diff < 0 ? -map_details.window_width : map_details.window_width);
+                }
+                break;
+            }
+
             // position based on best prey (enemy) space
             let best_target_position = getBestTargetPosition(self, bucketed_enemy_strengths);
 
