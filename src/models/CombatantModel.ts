@@ -25,7 +25,12 @@ export enum Character {
     Cat = "Cat",
     Unicorn = "Unicorn",
 };
-export enum DecisionType { Neutral = "Neutral", Lover = "Lover", Fighter = "Fighter", Adventurer = "Adventurer" };
+export enum DecisionType {
+    Fighter = "Fighter",
+    Lover = "Lover",
+    Neutral = "Neutral",
+    Wanderer = "Wanderer"
+};
 export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
 
 export interface CombatantModel extends EntityModel {
@@ -64,6 +69,7 @@ export function createCombatant(
 ): CombatantModel {
     const visited_positions = {} as { [position: number]: number };
     visited_positions[args.spawn_position] = args.spawn_position;
+    const decisions = Object.values(DecisionType);
     return {
         id: uuid(),
         name: getRandomCombatantName(),
@@ -73,7 +79,7 @@ export function createCombatant(
         kills: 0,
         fitness: 0,
         strength: getStrengthRating({ global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false }),
-        decision_type: DecisionType.Neutral,
+        decision_type: decisions[Math.floor(Math.random() * decisions.length)],
         immortal: false,
         species: args.species ?? getRandomSpecies(),
         gender: !!args.use_genders ? getRandomGender() : Gender.Unknown,
@@ -142,61 +148,30 @@ function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): numb
     }
 };
 
-// Lovers do not fight;
-function getBestEnemyPosition(
-    { self, bucketed_enemy_strengths }:
-        { self: CombatantModel, bucketed_enemy_strengths: { [key: string]: number[] } }
+function getBestTargetPosition(
+    self: CombatantModel, bucketed_target_strengths: { [key: string]: number[] }
 ): number {
     // position based on best prey (enemy) space
-    const best_hunter_bucket = bucketed_enemy_strengths[Object.keys(bucketed_enemy_strengths)
+    const best_target_bucket = bucketed_target_strengths[Object.keys(bucketed_target_strengths)
         .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
         .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
-    const best_hunter_position = best_hunter_bucket?.length > 0 ?
-        best_hunter_bucket[Math.floor(Math.random() * best_hunter_bucket.length)] : -1;
+    const best_target_position = best_target_bucket?.length > 0 ?
+        best_target_bucket[Math.floor(Math.random() * best_target_bucket.length)] : -1;
 
-    return best_hunter_position;
-}
-
-// Allies of the given self;
-function getBestAllyPosition(
-    { self, bucketed_ally_strengths }:
-        { self: CombatantModel, bucketed_ally_strengths: { [key: string]: number[] } }
-): number {
-    // position based on best prey (enemy) space
-    const best_ally_bucket = bucketed_ally_strengths[Object.keys(bucketed_ally_strengths)
-        .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-        .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
-    const best_hunter_position = best_ally_bucket?.length > 0 ?
-        best_ally_bucket[Math.floor(Math.random() * best_ally_bucket.length)] : -1;
-
-    return best_hunter_position;
+    return best_target_position;
 }
 
 // All types like open spaces;
 function getBestOpenPosition(
-    { self, movement_logic, bucketed_empty_tiles }:
-        { self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: { [key: string]: number[] } }): number {
+    self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: { [key: string]: number[] }
+): number {
     // position based on best safe space
-    const best_safe_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
+    const best_empty_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
         .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
-    const best_safe_position = best_safe_bucket?.length > 0 ?
-        best_safe_bucket[Math.floor(Math.random() * best_safe_bucket.length)] : -1;
+    const best_safe_position = best_empty_bucket?.length > 0 ?
+        best_empty_bucket[Math.floor(Math.random() * best_empty_bucket.length)] : -1;
 
     return best_safe_position;
-}
-
-// Fighters do not mate; 
-function getBestMatePosition(
-    { self, bucketed_mate_strengths }:
-        { self: CombatantModel, bucketed_mate_strengths: { [key: string]: number[] } }): number {
-    // position based on best mate space
-    const best_mate_bucket = bucketed_mate_strengths[Object.keys(bucketed_mate_strengths)
-        .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-        .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) >= 0)[0]];
-    const best_mate_position = best_mate_bucket?.length > 0 ?
-        best_mate_bucket[Math.floor(Math.random() * best_mate_bucket.length)] : -1;
-
-    return best_mate_position;
 }
 
 export function requestMove({ movement_logic, posData, self, map_details }:
@@ -263,45 +238,45 @@ export function requestMove({ movement_logic, posData, self, map_details }:
     });
 
     let position: number;
-    if (movement_logic === MovementLogic.NeuralNetwork) {
-        // TODO: the Neural Network is blind to mating situations. 
-        // this causes combatants to just sit in one spot when near others. 
-        const brain = Brains[self.species];
-        position = Brain.move(brain, self, posData);
-    } else {
-        const random_walk_enabled = movement_logic === MovementLogic.RandomWalk;
-
-        let attempts = 3;
-        do {
+    switch (movement_logic) {
+        case MovementLogic.NeuralNetwork:
+            // TODO: the Neural Network is blind to mating situations. 
+            // this causes combatants to just sit in one spot when near others. 
+            position = Brain.move(Brains[self.species], self, posData);
+            break;
+        case MovementLogic.RandomWalk:
+            position = getNewPositionFromClockFace(
+                self.position,
+                LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)],
+                map_details.window_width,
+                map_details.tiles.length);
+            break;
+        case MovementLogic.DecisionTree:
             // position based on best prey (enemy) space
             let best_enemy_position = -1;
-            if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Lover) {
-                best_enemy_position = getBestEnemyPosition({ self, bucketed_enemy_strengths });
+            if (self.decision_type !== DecisionType.Lover) {
+                best_enemy_position = getBestTargetPosition(self, bucketed_enemy_strengths);
             }
 
             // if a fighter has no enemy to fight then they fight an ally
             if (
                 best_enemy_position === -1 &&
-                movement_logic === MovementLogic.DecisionTree &&
                 self.decision_type === DecisionType.Fighter
             ) {
-                best_enemy_position = getBestAllyPosition({ self, bucketed_ally_strengths });
+                best_enemy_position = getBestTargetPosition(self, bucketed_ally_strengths);
             }
 
             // position based on best safe space
-            let best_safe_position = getBestOpenPosition({ self, movement_logic, bucketed_empty_tiles });
+            let best_safe_position = getBestOpenPosition(self, movement_logic, bucketed_empty_tiles);
 
             // position based on best mate space
             let best_mate_position = -1;
-            if (movement_logic !== MovementLogic.DecisionTree || self.decision_type !== DecisionType.Fighter) {
-                best_mate_position = getBestMatePosition({ self, bucketed_mate_strengths });
+            if (self.decision_type !== DecisionType.Fighter) {
+                best_mate_position = getBestTargetPosition(self, bucketed_mate_strengths);
             }
 
-            if (
-                // Adventurers are disinterested in places they have been before
-                movement_logic === MovementLogic.DecisionTree &&
-                self.decision_type === DecisionType.Adventurer
-            ) {
+            // Wanderers are disinterested in places they have been before
+            if (self.decision_type === DecisionType.Wanderer) {
                 if (self.visited_positions[best_enemy_position] !== undefined) {
                     best_enemy_position = -1;
                 }
@@ -313,29 +288,28 @@ export function requestMove({ movement_logic, posData, self, map_details }:
                 }
             }
 
-            if (best_enemy_position !== -1 && !random_walk_enabled) {
+            if (best_enemy_position !== -1) {
                 position = best_enemy_position;
-                // % chance you'll choose to mate
-            } else if (
+            }
+
+            if (
                 best_mate_position !== -1 &&
-                !random_walk_enabled &&
-                self.decision_type !== DecisionType.Fighter &&
-                (self.decision_type === DecisionType.Lover || Math.random() > 0.5)
+                (self.decision_type === DecisionType.Lover ||
+                    // % chance you'll choose to mate
+                    (self.decision_type !== DecisionType.Fighter || Math.random() > 0.5))
             ) {
                 position = best_mate_position;
-            } else if (best_safe_position !== -1 && !random_walk_enabled) {
+            } else if (best_safe_position !== -1) {
                 position = best_safe_position;
             } else {
-                const clockFace = LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)];
+                // when all else fails, random walk
                 position = getNewPositionFromClockFace(
                     self.position,
-                    clockFace,
+                    LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)],
                     map_details.window_width,
                     map_details.tiles.length);
-            }
-            attempts--;
-            // avoid fire if you can
-        } while (getMapTileEffect({ species: self.species, tileType: map_details.tiles[position].type }) < 0 && attempts > 0);
+            };
+            break;
     }
 
     return position;
