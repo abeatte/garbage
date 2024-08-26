@@ -31,7 +31,7 @@ export enum DecisionType {
     Neutral = "Neutral",
     Wanderer = "Wanderer"
 };
-export enum Gender { Male = "Male", Female = "Female", Unknown = "Unknown" };
+export enum Gender { Male = "Male", Female = "Female" };
 
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
@@ -65,7 +65,7 @@ export function getRandomCombatantName(): string {
 }
 
 export function createCombatant(
-    args: { spawn_position: number, species?: Character, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel | undefined },
+    args: { spawn_position: number, species?: Character, decision_type?: DecisionType, global_combatant_stats: GlobalCombatantStatsModel | undefined },
 ): CombatantModel {
     const visited_positions = {} as { [position: number]: number };
     visited_positions[args.spawn_position] = args.spawn_position;
@@ -79,10 +79,10 @@ export function createCombatant(
         kills: 0,
         fitness: 0,
         strength: getStrengthRating({ global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false }),
-        decision_type: decisions[Math.floor(Math.random() * decisions.length)],
+        decision_type: args.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)],
         immortal: false,
         species: args.species ?? getRandomSpecies(),
-        gender: !!args.use_genders ? getRandomGender() : Gender.Unknown,
+        gender: Math.random() < .5 ? Gender.Male : Gender.Female,
         tick: 0,
         position: args.spawn_position,
         visited_positions,
@@ -253,54 +253,49 @@ export function requestMove({ movement_logic, posData, self, map_details }:
             break;
         case MovementLogic.DecisionTree:
             // position based on best prey (enemy) space
-            let best_enemy_position = -1;
-            if (self.decision_type !== DecisionType.Lover) {
-                best_enemy_position = getBestTargetPosition(self, bucketed_enemy_strengths);
-            }
+            let best_target_position = getBestTargetPosition(self, bucketed_enemy_strengths);
 
             // if a fighter has no enemy to fight then they fight an ally
             if (
-                best_enemy_position === -1 &&
+                best_target_position === -1 &&
                 self.decision_type === DecisionType.Fighter
             ) {
-                best_enemy_position = getBestTargetPosition(self, bucketed_ally_strengths);
+                best_target_position = getBestTargetPosition(self, bucketed_ally_strengths);
             }
-
-            // position based on best safe space
-            let best_safe_position = getBestOpenPosition(self, movement_logic, bucketed_empty_tiles);
 
             // position based on best mate space
-            let best_mate_position = -1;
-            if (self.decision_type !== DecisionType.Fighter) {
-                best_mate_position = getBestTargetPosition(self, bucketed_mate_strengths);
-            }
+            let best_mate_position = getBestTargetPosition(self, bucketed_mate_strengths);
+
+            // position based on best safe space
+            let best_open_position = getBestOpenPosition(self, movement_logic, bucketed_empty_tiles);
 
             // Wanderers are disinterested in places they have been before
             if (self.decision_type === DecisionType.Wanderer) {
-                if (self.visited_positions[best_enemy_position] !== undefined) {
-                    best_enemy_position = -1;
-                }
-                if (self.visited_positions[best_safe_position] !== undefined) {
-                    best_safe_position = -1;
+                if (self.visited_positions[best_target_position] !== undefined) {
+                    best_target_position = -1;
                 }
                 if (self.visited_positions[best_mate_position] !== undefined) {
                     best_mate_position = -1;
                 }
+                if (self.visited_positions[best_open_position] !== undefined) {
+                    best_open_position = -1;
+                }
             }
 
-            if (best_enemy_position !== -1) {
-                position = best_enemy_position;
+            if (best_target_position !== -1) {
+                position = best_target_position;
             }
 
             if (
                 best_mate_position !== -1 &&
                 (self.decision_type === DecisionType.Lover ||
                     // % chance you'll choose to mate
-                    (self.decision_type !== DecisionType.Fighter || Math.random() > 0.5))
+                    Math.random() > 0.5)
             ) {
                 position = best_mate_position;
-            } else if (best_safe_position !== -1) {
-                position = best_safe_position;
+                self.state = State.Mating;
+            } else if (best_open_position !== -1) {
+                position = best_open_position;
             } else {
                 // when all else fails, random walk
                 position = getNewPositionFromClockFace(
@@ -371,11 +366,6 @@ export function getNewPositionFromClockFace(current_position: number, clockFace:
 export function getRandomSpecies(): Character {
     const set = Object.keys(Character);
     return set[Math.round(Math.random() * (set.length - 1))] as Character;
-}
-
-export function getRandomGender(): Gender {
-    const set = [Gender.Male, Gender.Female];
-    return set[Math.round(Math.random() * (set.length - 1))] as Gender;
 }
 
 export function getRandomDecisionType(): DecisionType {

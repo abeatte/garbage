@@ -8,7 +8,7 @@ import {
 } from '../utils/CombatantUtils';
 import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../../models/ItemModel';
-import CombatantModel, { Character, createCombatant, Gender, getNewPositionFromArrowKey, getRandomGender, getRandomSpecies } from '../../models/CombatantModel';
+import CombatantModel, { Character, createCombatant, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
@@ -76,8 +76,8 @@ interface SettingsState {
 }
 
 function initCombatants(
-    { tiles, num_combatants, init_player, use_genders }:
-        { tiles: TileModel[], num_combatants: number, init_player: boolean, use_genders: boolean }
+    { tiles, num_combatants, init_player }:
+        { tiles: TileModel[], num_combatants: number, init_player: boolean }
 ): { player: CombatantModel | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
     const combatants = {} as Combatants;
     const global_combatant_stats = { ...DEFAULT };
@@ -87,7 +87,6 @@ function initCombatants(
         player = createCombatant({
             species: getRandomSpecies(),
             spawn_position: initCombatantStartingPos({ tiles, player, combatants }),
-            use_genders,
             global_combatant_stats,
         });
         player.is_player = true;
@@ -102,7 +101,7 @@ function initCombatants(
             continue;
         }
 
-        combatants[c_pos] = createCombatant({ species, spawn_position: c_pos, use_genders, global_combatant_stats });
+        combatants[c_pos] = createCombatant({ species, spawn_position: c_pos, global_combatant_stats });
 
         const c_fit = combatants[c_pos].fitness;
         global_combatant_stats.average_position += c_pos;
@@ -174,7 +173,7 @@ function initState(
         };
     const tiles = Maps[map].generate({ width, height });
     const { player, combatants, global_combatant_stats } =
-        initCombatants({ tiles, num_combatants: initial_num_combatants, init_player: game_mode === GameMode.Adventure, use_genders });
+        initCombatants({ tiles, num_combatants: initial_num_combatants, init_player: game_mode === GameMode.Adventure });
     return {
         game_mode: game_mode ?? GameMode.Title,
         game_count: 1,
@@ -223,7 +222,6 @@ function spawnAt(position: number, state: BoardState & SettingsState) {
     state.combatants[position] = createCombatant(
         {
             spawn_position: position,
-            use_genders: state.use_genders,
             global_combatant_stats: state.global_combatant_stats
         }
     );
@@ -289,7 +287,6 @@ const mapReducers = {
                 createCombatant({
                     spawn_position: action.payload.position,
                     species: action.payload.type as Character,
-                    use_genders: state.use_genders,
                     global_combatant_stats: state.global_combatant_stats
                 });
             if (!current_occupant) {
@@ -314,14 +311,6 @@ const settingsReducers = {
     },
     toggleUseGenders: (state: BoardState & SettingsState) => {
         state.use_genders = !state.use_genders;
-        if (state.use_genders) {
-            Object.keys(state.combatants).forEach(c_pos => {
-                const c = state.combatants[parseInt(c_pos)];
-                if (c.gender === Gender.Unknown) {
-                    c.gender = getRandomGender();
-                }
-            });
-        }
     },
     setShowSettings: (state: BoardState & SettingsState, action: PayloadAction<boolean>) => {
         state.show_settings = action.payload;
@@ -457,7 +446,7 @@ export const boardSlice = createSlice({
                         fitness: selected.fitness,
                         immortal: selected.immortal
                     })
-                    selected.fitness = MIN_HEALTH
+                    selected.state = State.Dead;
                 }
             }
         },
@@ -479,7 +468,6 @@ export const boardSlice = createSlice({
                 tiles: state.tiles,
                 num_combatants: state.initial_num_combatants,
                 init_player: state.game_mode === GameMode.Adventure,
-                use_genders: state.use_genders
             });
             state.player = player;
             state.selected_position = undefined;

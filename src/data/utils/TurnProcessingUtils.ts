@@ -1,4 +1,4 @@
-import CombatantModel, { DecisionType, Gender, State, createCombatant, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
+import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
@@ -25,7 +25,7 @@ export function processBoardTick(
     global_combatant_stats.deaths += combatant_result.deaths;
 
     // process items and tile effects
-    const item_result = processEnvironmentEffects({ combatants: combatant_result.combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats });
+    const item_result = processEnvironmentEffects({ combatants: combatant_result.combatants, items, window_width, tiles, movement_logic, global_combatant_stats });
 
     // This step is crucial as without copying the Redux store will 
     // duplicate the now undefined combatants 
@@ -39,8 +39,8 @@ export function processBoardTick(
 }
 
 function processEnvironmentEffects(
-    { combatants, items, tiles, window_width, movement_logic, use_genders, global_combatant_stats }:
-        { combatants: Combatants, items: Items, tiles: TileModel[], window_width: number, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
+    { combatants, items, tiles, window_width, movement_logic, global_combatant_stats }:
+        { combatants: Combatants, items: Items, tiles: TileModel[], window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: TileModel[], global_combatant_stats: GlobalCombatantStatsModel } {
     const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths } as GlobalCombatantStatsModel;
     const working_combatants: Combatants = {};
@@ -390,6 +390,9 @@ function processCombatantMovement(
                 self: combatant,
                 map_details,
             });
+
+        // this fixes a type error below
+        combatant = combatant;
     }
 
     const occupant = combatants[new_position];
@@ -402,8 +405,8 @@ function processCombatantMovement(
         // no-op
     } else if (
         occupant.species === combatant.species &&
-        // if a Fighter is here they're not here to mate!
-        combatant.decision_type !== DecisionType.Fighter
+        // if a Fighter is here they're not necessarily here to mate!
+        (combatant.decision_type !== DecisionType.Fighter || combatant.state === State.Mating)
     ) {
         // space is occupied by a friendly
         if (
@@ -412,15 +415,18 @@ function processCombatantMovement(
             // they're not too young
             occupant.tick > MAX_YOUNGLING_TICK &&
             (
-                // they are the correct gender (so woke! LOL)
-                combatant.gender === Gender.Unknown ||
-                occupant.gender === Gender.Unknown ||
+                !use_genders ||
                 combatant.gender !== occupant.gender
             )
         ) {
             occupant.state = State.Mating;
             combatant.state = State.Mating;
-            combatant.spawn = createCombatant({ spawn_position: -1, use_genders, global_combatant_stats });
+            combatant.spawn = createCombatant({
+                species: occupant.species,
+                decision_type: Math.random() < .5 ? occupant.decision_type : combatant.decision_type,
+                spawn_position: -1,
+                global_combatant_stats
+            });
         }
     } else {
         // space is occupied by a enemy (or an ally but with a Fighter incumbent)

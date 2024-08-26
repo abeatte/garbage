@@ -54,7 +54,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
     // TODO: finish creating this so that the posData will have a Clockface.C combataint to use for species. 
-    const trainer = createCombatant({ spawn_position: 0, species, use_genders: false, global_combatant_stats: undefined });
+    const trainer = createCombatant({ spawn_position: 0, species, global_combatant_stats: undefined });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
         const width = GAME_DEFAULTS.window_width;
