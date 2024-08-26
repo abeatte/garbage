@@ -33,7 +33,7 @@ export const GAME_DEFAULTS = {
     player_highlight_count: 0,
     window_width: 26,
     window_height: 30,
-    num_combatants: 25,
+    num_combatants: 50,
     movement_logic: MovementLogic.DecisionTree,
     map: Maps['World'].name,
 }

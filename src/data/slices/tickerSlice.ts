@@ -7,7 +7,7 @@ export const tickerSlice = createSlice({
   name: 'ticker',
   initialState: {
     tick: 0,
-    tick_speed: DEFAULT_TICK_SPEED,
+    tick_speed: MAX_TICK_SPEED,
     prev_tick_speed: 0,
   },
   reducers: {
