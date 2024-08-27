@@ -6,7 +6,8 @@ import React from 'react';
 import '../css/Tile.css';
 import classNames from 'classnames';
 import { TileModel, Type as TileType } from '../models/TileModel';
-import { getMapTileEffect } from '../models/CombatantModel';
+import { Character, getMapTileEffect } from '../models/CombatantModel';
+import { GameMode } from '../data/slices/boardSlice';
 const Water = require('../images/terrain/water.png');
 const Trees = require('../images/terrain/trees.png');
 const Sand = require('../images/terrain/sand.png');
@@ -30,13 +31,14 @@ const getImage = (tileType: TileType) => {
 }
 
 const Tile = (
-  { id, children, className, tile, highlight, isSelected, showPotential, showRealTileImages, onClick, onDragEnter }: {
+  { id, children, className, tile, highlight, isSelected, playerSpecies, showPotential, showRealTileImages, onClick, onDragEnter }: {
     id?: number,
     children?: JSX.Element,
     className?: string,
     tile: TileModel | undefined,
     highlight?: boolean,
     isSelected?: boolean,
+    playerSpecies?: Character,
     showPotential?: boolean,
     showRealTileImages?: boolean,
     onClick?: () => void,
@@ -69,7 +71,7 @@ const Tile = (
         {
           showPotential && tile &&
           <span style={{ position: "absolute", color: !showRealTileImages ? "black" : "red" }} className='Tile_potential'>
-            {getMapTileEffect({ species: undefined, tileType: tile.type })}
+            {playerSpecies ? tile.score_potential[playerSpecies] : getMapTileEffect({ species: undefined, tileType: tile.type })}
           </span>
         }
         {children}

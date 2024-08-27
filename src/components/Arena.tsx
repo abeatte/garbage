@@ -231,6 +231,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
                         <Tile
                             id={idx}
                             tile={tile}
+                            playerSpecies={this.props.board.player?.species}
                             showPotential={this.props.board.show_tile_potentials}
                             showRealTileImages={this.props.board.show_real_tile_images}
                             highlight={is_player_tile && shouldHighlightPlayer}
