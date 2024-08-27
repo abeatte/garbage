@@ -343,6 +343,9 @@ function birthSpawn({ posData, spawn, parent, arena_size }:
             spawn.species = friendly_positions.length < 4 ? parent.species : getRandomSpecies();
             // 1:4 chance of a different decision_type from the parent
             spawn.decision_type = Math.random() > 0.25 ? parent.decision_type : getRandomDecisionType();
+            if (spawn.decision_type === DecisionType.Seeker) {
+                spawn.target_destination = spawn.position;
+            }
         }
     }
 }
