@@ -204,6 +204,11 @@ function initState(
     state.initial_num_combatants = state.game_mode === GameMode.Adventure ? 0 : state.initial_num_combatants;
     state.player_highlight_count = state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
 
+    if (
+        state.game_mode === GameMode.Adventure) {
+        state.arena.height *= 5;
+        state.arena.width *= 5;
+    }
 
     state.view_port = args?.view_port ?? state.view_port ?? {
         start: 0,
