@@ -58,6 +58,8 @@ interface BoardState {
         start: number,
         width: number,
         height: number,
+        width_measurement: number,
+        height_measurement: number,
     },
     arena: {
         width: number,
@@ -131,6 +133,11 @@ function initCombatants(
     return { player, combatants, global_combatant_stats };
 }
 
+function setViewPortTileDimens(state: BoardState) {
+    state.view_port.height = Math.min(state.arena.height, Math.floor(state.view_port.height_measurement / TILE_SIZE));
+    state.view_port.width = Math.min(state.arena.width, Math.floor(state.view_port.width_measurement / TILE_SIZE));
+}
+
 function handleResize(
     { state, old_window_width, old_window_height }:
         { state: BoardState, old_window_width: number, old_window_height: number }
@@ -156,6 +163,8 @@ function handleResize(
     state.items = items;
     state.global_combatant_stats.num_combatants = Object.values(combatants).length;
     state.global_combatant_stats.deaths += deaths;
+
+    setViewPortTileDimens(state);
 }
 
 function initState(
@@ -170,6 +179,8 @@ function initState(
             start: number,
             width: number,
             height: number,
+            width_measurement: number,
+            height_measurement: number,
         },
         initial_num_combatants?: number,
         use_genders?: boolean,
@@ -198,7 +209,10 @@ function initState(
         start: 0,
         width: state.arena.width,
         height: state.arena.height,
+        height_measurement: 0,
+        width_measurement: 0,
     };
+    setViewPortTileDimens(state);
 
     const tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     const { player, combatants, global_combatant_stats } =
@@ -256,8 +270,9 @@ const mapReducers = {
         handleResize({ state, old_window_width, old_window_height });
     },
     setViewPortSize: (state: BoardState & SettingsState, action: PayloadAction<{ width: number, height: number }>) => {
-        state.view_port.height = Math.min(state.arena.height, Math.floor(action.payload.height / TILE_SIZE));
-        state.view_port.width = Math.min(state.arena.width, Math.floor(action.payload.width / TILE_SIZE));
+        state.view_port.height_measurement = action.payload.height;
+        state.view_port.width_measurement = action.payload.width;
+        setViewPortTileDimens(state);
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
@@ -328,7 +343,7 @@ export const boardSlice = createSlice({
             if (state.game_mode === action.payload) {
                 return;
             }
-            initState({ game_mode: action.payload, }, state);
+            initState({ game_mode: action.payload, view_port: state.view_port }, state);
         },
         reset: (state) => {
             state.game_count += 1;
