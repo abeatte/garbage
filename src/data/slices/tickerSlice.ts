@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 export const DEFAULT_TICK_SPEED = 1000;
-export const MAX_TICK_SPEED = 2000;
+export const MAX_TICK_SPEED = 1500;
 
 export const tickerSlice = createSlice({
   name: 'ticker',
