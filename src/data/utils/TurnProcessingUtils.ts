@@ -45,7 +45,6 @@ function processEnvironmentEffects(
     const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths } as GlobalCombatantStatsModel;
     const working_combatants: Combatants = {};
     const working_items: Items = [];
-    // const working_tiles = {};
     let deaths = 0;
     let player;
 
@@ -435,13 +434,6 @@ function processCombatantMovement(
         combatant.position = new_position;
         combatant.visited_positions[new_position] = new_position;
         deaths++;
-    }
-
-    if (
-        !combatant.is_player &&
-        combatant.decision_type === DecisionType.Seeker &&
-        new_position === combatant.target_destination) {
-        combatant.target_destination = Math.floor(Math.random() * (map_details.tiles.length - 1));
     }
 
     return { combatant, deaths };

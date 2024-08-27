@@ -257,6 +257,10 @@ export function requestMove({ movement_logic, posData, self, map_details }:
 
             // seekers go directly toward their target. 
             if (self.decision_type === DecisionType.Seeker) {
+                if (self.target_destination === self.position) {
+                    self.target_destination = Math.floor(Math.random() * (map_details.tiles.length - 1));
+                }
+
                 const col_diff =
                     (self.target_destination % map_details.window_width) -
                     (self.position % map_details.window_width);
@@ -269,6 +273,7 @@ export function requestMove({ movement_logic, posData, self, map_details }:
                 } else {
                     position = self.position + (row_diff < 0 ? -map_details.window_width : map_details.window_width);
                 }
+
                 break;
             }
 
