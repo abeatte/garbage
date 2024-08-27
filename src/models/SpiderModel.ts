@@ -1,5 +1,5 @@
 import { createItemModel, ItemModel } from "./ItemModel";
-import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "./TileModel";
+import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "./TileModel";
 import { Type as ItemType } from "./ItemModel";
 
 export enum Type { WaterSpider = "WaterSpider", FireSpider = "FireSpider", RockSpider = "RockSpider", SandSpider = "SandSpider", GrassSpider = "GrassSpider" };
@@ -31,11 +31,8 @@ export function createSpiderModel({ position, type }: { position: number, type: 
     return ret;
 }
 
-export function paintTileForSpider(spider: SpiderModel, tiles: TileModel[], update_tile_potentials?: boolean, window_width?: number) {
+export function paintTileForSpider(spider: SpiderModel, tiles: TileModel[], window_width: number) {
     tiles[spider.position] =
         createTileModel({ index: spider.position, type: spider.tile_action });
-
-    if (update_tile_potentials && window_width) {
-        updateMapTileScorePotentials(tiles, window_width);
-    }
+    clearMapTileScorePotentials({ position: spider.position, tiles, window_width });
 }

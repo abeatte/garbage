@@ -6,13 +6,12 @@ import {
     IllegalMoves,
     LegalMoves,
 } from "../data/utils/CombatantUtils";
-import { Type as TileType } from "./TileModel";
+import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
 import { ArrowKey, MovementLogic } from "../data/slices/boardSlice";
 import Brain from "./Brain";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "./EntityModel";
-import { MapDetails } from "../data/utils/TurnProcessingUtils";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Alive = "alive", Mating = "mating", Dead = "dead", Captured = "Captured" };
@@ -176,12 +175,13 @@ function getBestOpenPosition(
     return best_safe_position;
 }
 
-export function requestMove({ movement_logic, posData, self, map_details }:
+export function requestMove({ movement_logic, posData, self, tiles, window_width }:
     {
         movement_logic: MovementLogic,
         posData: PosData,
         self: CombatantModel,
-        map_details: MapDetails,
+        tiles: Readonly<TileModel[]>,
+        window_width: number,
     }): number {
     const bucketed_enemy_strengths = {} as { [key: string]: number[] };
     const bucketed_ally_strengths = {} as { [key: string]: number[] };
@@ -250,28 +250,28 @@ export function requestMove({ movement_logic, posData, self, map_details }:
             position = getNewPositionFromClockFace(
                 self.position,
                 LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)],
-                map_details.window_width,
-                map_details.tiles.length);
+                window_width,
+                tiles.length);
             break;
         case MovementLogic.DecisionTree:
 
             // seekers go directly toward their target. 
             if (self.decision_type === DecisionType.Seeker) {
                 if (self.target_destination === self.position) {
-                    self.target_destination = Math.floor(Math.random() * (map_details.tiles.length - 1));
+                    self.target_destination = Math.floor(Math.random() * (tiles.length - 1));
                 }
 
                 const col_diff =
-                    (self.target_destination % map_details.window_width) -
-                    (self.position % map_details.window_width);
+                    (self.target_destination % window_width) -
+                    (self.position % window_width);
                 const row_diff =
-                    Math.floor(self.target_destination / map_details.window_width) -
-                    Math.floor(self.position / map_details.window_width);
+                    Math.floor(self.target_destination / window_width) -
+                    Math.floor(self.position / window_width);
 
                 if (Math.abs(col_diff) > Math.abs(row_diff)) {
                     position = self.position + (col_diff < 0 ? -1 : 1);
                 } else {
-                    position = self.position + (row_diff < 0 ? -map_details.window_width : map_details.window_width);
+                    position = self.position + (row_diff < 0 ? - window_width : window_width);
                 }
 
                 break;
@@ -326,8 +326,8 @@ export function requestMove({ movement_logic, posData, self, map_details }:
                 position = getNewPositionFromClockFace(
                     self.position,
                     LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)],
-                    map_details.window_width,
-                    map_details.tiles.length);
+                    window_width,
+                    tiles.length);
             };
             break;
     }

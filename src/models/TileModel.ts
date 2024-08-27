@@ -1,4 +1,4 @@
-import { LegalMoves } from "../data/utils/CombatantUtils";
+import { DirectionalMoves } from "../data/utils/CombatantUtils";
 import { Character, getMapTileEffect } from "./CombatantModel";
 
 export enum Type { Void = "Void", Water = "Water", Fire = "Fire", Rock = "Rock", Sand = "Sand", Grass = "Grass" };
@@ -17,11 +17,31 @@ export function createTileModel(args: { index: number, type: Type }): TileModel 
     }
 }
 
-export function updateMapTileScorePotentials(tiles: TileModel[], window_width: number) {
+export function clearMapTileScorePotentials(args: { position: number, tiles: TileModel[], window_width: number }): void {
+    const { position, tiles, window_width } = args;
 
-    tiles.forEach((t, idx) => {
-        t.score_potential = getMapTileScorePotentials({ position: idx, tiles, window_width });
-    });
+    // center
+    tiles[position].score_potential = {};
+    let bounds = position % window_width;
+    // left
+    if (bounds > 0) {
+        tiles[position - 1].score_potential = {};
+    }
+    bounds = position - window_width;
+    // up
+    if (bounds > -1) {
+        tiles[position - window_width].score_potential = {};
+    }
+    bounds = position % window_width;
+    // right
+    if (bounds < window_width - 1) {
+        tiles[position + 1].score_potential = {};
+    }
+    bounds = position + window_width;
+    // down
+    if (bounds < tiles.length) {
+        tiles[position + window_width].score_potential = {};
+    }
 }
 
 /**
@@ -31,7 +51,13 @@ export function updateMapTileScorePotentials(tiles: TileModel[], window_width: n
 export function getMapTileScorePotentials(args: { position: number, tiles: TileModel[], window_width: number }): { [key in Character]: number } {
     const { position, tiles, window_width } = args;
 
-    let possible_directions = Object.values(LegalMoves).length - 2;
+    const tile = tiles[position];
+
+    if (tile?.score_potential[Character.Bunny]) {
+        return tile.score_potential as { [key in Character]: number };
+    }
+
+    let possible_directions = Object.values(DirectionalMoves).length;
     let position_potential = 0;
 
     const potentials = {} as { [key in Character]: number };
@@ -66,5 +92,8 @@ export function getMapTileScorePotentials(args: { position: number, tiles: TileM
 
         potentials[species] = Math.round(getMapTileEffect({ species, tileType: tiles[position].type }) + (position_potential / possible_directions));
     }
+
+    tile.score_potential = potentials;
+
     return potentials;
 }

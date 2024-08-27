@@ -6,7 +6,7 @@ import {
     killAndCopy,
     addItemToBoard,
 } from '../utils/CombatantUtils';
-import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../../models/TileModel";
+import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../../models/ItemModel';
 import CombatantModel, { Character, createCombatant, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
@@ -268,7 +268,7 @@ const mapReducers = {
         if (Object.keys(TileType).includes(action.payload.type)) {
             state.tiles[action.payload.position] =
                 createTileModel({ index: action.payload.position, type: action.payload.type as TileType });
-            updateMapTileScorePotentials(state.tiles, state.arena.width);
+            clearMapTileScorePotentials({ position: action.payload.position, tiles: state.tiles, window_width: state.arena.width });
         } else if (Object.keys(ItemType).includes(action.payload.type)) {
             const new_item =
                 createItemModel({ position: action.payload.position, type: action.payload.type as ItemType });
@@ -277,7 +277,7 @@ const mapReducers = {
             const new_spider =
                 createSpiderModel({ position: action.payload.position, type: action.payload.type as SpiderType });
             addItemToBoard(new_spider, state.items);
-            paintTileForSpider(new_spider, state.tiles, true, state.arena.width);
+            paintTileForSpider(new_spider, state.tiles, state.arena.width);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] =
                 createCombatant({

@@ -1,4 +1,4 @@
-import { createTileModel, TileModel, Type as TileType, updateMapTileScorePotentials } from "../models/TileModel";
+import { createTileModel, TileModel, Type as TileType } from "../models/TileModel";
 
 export interface MapType {
     name: string;
@@ -30,9 +30,6 @@ const Maps: { [name: string]: MapType } = {
                     idx++;
                 }
             }
-
-            updateMapTileScorePotentials(tiles, width);
-
             return tiles;
         }
     },
@@ -43,8 +40,6 @@ const Maps: { [name: string]: MapType } = {
             for (let idx = 0; idx < tiles.length; idx++) {
                 tiles[idx] = createTileModel({ index: idx, type: TileType.Water });
             }
-
-            updateMapTileScorePotentials(tiles, width);
 
             return tiles;
         }
@@ -57,8 +52,6 @@ const Maps: { [name: string]: MapType } = {
                 tiles[idx] = createTileModel({ index: idx, type: TileType.Sand });
             }
 
-            updateMapTileScorePotentials(tiles, width);
-
             return tiles;
         }
     },
@@ -69,8 +62,6 @@ const Maps: { [name: string]: MapType } = {
             for (let idx = 0; idx < tiles.length; idx++) {
                 tiles[idx] = createTileModel({ index: idx, type: TileType.Grass });
             }
-
-            updateMapTileScorePotentials(tiles, width);
 
             return tiles;
         }
@@ -83,8 +74,6 @@ const Maps: { [name: string]: MapType } = {
                 tiles[idx] = createTileModel({ index: idx, type: TileType.Rock });
             }
 
-            updateMapTileScorePotentials(tiles, width);
-
             return tiles;
         }
     },
@@ -95,8 +84,6 @@ const Maps: { [name: string]: MapType } = {
             for (let idx = 0; idx < tiles.length; idx++) {
                 tiles[idx] = createTileModel({ index: idx, type: TileType.Fire });
             }
-
-            updateMapTileScorePotentials(tiles, width);
 
             return tiles;
         }

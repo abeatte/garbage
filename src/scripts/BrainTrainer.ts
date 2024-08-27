@@ -8,7 +8,7 @@ import { DiagonalMoves, getSurroundings, LegalMoves, PosData } from "../data/uti
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
-import { TileModel } from "../models/TileModel";
+import { getMapTileScorePotentials, TileModel } from "../models/TileModel";
 
 export type Input = { [position: string]: number };
 export type Output = { [direction: string]: number };
@@ -37,10 +37,8 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, posData: 
             movement_logic: MovementLogic.DecisionTree,
             posData,
             self: combatant,
-            map_details: {
-                tiles,
-                window_width
-            }
+            tiles,
+            window_width
         }
     );
     const output = {} as Output;
@@ -60,12 +58,16 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
         const width = GAME_DEFAULTS.arena.width;
         const height = GAME_DEFAULTS.arena.height;
         const tiles = Maps[GAME_DEFAULTS.map].generate({ width, height });
+        tiles.forEach((t, idx) => {
+            getMapTileScorePotentials({ position: idx, tiles, window_width: width });
+        });
+        debugger; // TODO: make sure tiles have score_potential setup at this point. 
 
         for (let position = 0; position < tiles.length; position++) {
             const combatants: { [position: number]: CombatantModel } = {};
             trainer.position = position;
             combatants[position] = trainer;
-            const posData = getSurroundings({ species, position, map_details: { window_width: width, tiles }, combatants })
+            const posData = getSurroundings({ species, position, tiles, window_width: width, combatants })
             training_sets.push(getTrainingSet(species, trainer, posData, tiles, width));
         }
     }

@@ -3,9 +3,8 @@ import CombatantModel, {
     Character,
     State
 } from "../../models/CombatantModel";
-import { TileModel } from "../../models/TileModel";
+import { getMapTileScorePotentials, TileModel } from "../../models/TileModel";
 import { ItemModel, MAX_TILE_ITEM_COUNT } from "../../models/ItemModel";
-import { MapDetails } from "./TurnProcessingUtils";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -81,7 +80,7 @@ export function updateCombatantsPositionsAfterResize(
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const posData =
-                getSurroundings({ species: combatants[old_pos].species, position: old_pos, map_details: { window_width: old_window_width, tiles }, combatants });
+                getSurroundings({ species: combatants[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants });
             const up_position = posData.surroundings[ClockFace.t];
             const up_left_position = posData.surroundings[ClockFace.tl];
             const left_position = posData.surroundings[ClockFace.l];
@@ -169,11 +168,12 @@ export function compete(a: CombatantModel, b: CombatantModel) {
 }
 
 export function getSurroundings(
-    { species, position, map_details: { window_width, tiles }, combatants }:
+    { species, position, tiles, window_width, combatants }:
         {
             species?: Character | undefined,
             position: number,
-            map_details: MapDetails,
+            tiles: TileModel[],
+            window_width: number,
             // the Player should already be in the combatants array at this point in evaluation
             combatants: { [position: number]: CombatantModel | undefined }
         }
@@ -191,7 +191,10 @@ export function getSurroundings(
     ret.max_potential = Number.MIN_VALUE;
 
     const setSurrounding = (position: number) => {
-        const score_potential = !species ? -1 : tiles[position]?.score_potential[species];
+        const score_potential =
+            !species ? -1 :
+                getMapTileScorePotentials({ position, tiles, window_width })[species];
+
         if (score_potential < ret.min_potential) {
             ret.min_potential = score_potential;
         }

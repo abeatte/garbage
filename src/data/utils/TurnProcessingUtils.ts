@@ -1,15 +1,10 @@
 import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
-import { TileModel, updateMapTileScorePotentials } from "../../models/TileModel";
+import { TileModel } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
 import { DirectionalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH, PosData, addItemToBoard, compete, getSurroundings } from "./CombatantUtils";
 import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
 import { SpiderModel, paintTileForSpider } from "../../models/SpiderModel";
-
-export type MapDetails = {
-    window_width: Readonly<number>,
-    tiles: Readonly<Readonly<TileModel>[]>,
-};
 
 export function processBoardTick(
     { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:
@@ -20,7 +15,7 @@ export function processBoardTick(
     }
 
     // process combatants (including player) 
-    const combatant_result = processCombatantTick({ combatants, map_details: { window_width, tiles }, movement_logic, use_genders, global_combatant_stats });
+    const combatant_result = processCombatantTick({ combatants, tiles, window_width, movement_logic, use_genders, global_combatant_stats });
     global_combatant_stats.births += combatant_result.births;
     global_combatant_stats.deaths += combatant_result.deaths;
 
@@ -61,7 +56,7 @@ function processEnvironmentEffects(
                 case ItemType.Bomb:
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
                         // time to blow
-                        const posData = getSurroundings({ position: item.position, map_details: { window_width, tiles }, combatants });
+                        const posData = getSurroundings({ position: item.position, tiles, window_width, combatants });
                         posData.surroundings.forEach(surrounding => {
                             if (surrounding === undefined) {
                                 return;
@@ -81,7 +76,7 @@ function processEnvironmentEffects(
                     addItemToBoard(item, working_items);
                     break;
                 case ItemType.PokemonBall:
-                    const posData = getSurroundings({ position: item.position, map_details: { window_width, tiles }, combatants });
+                    const posData = getSurroundings({ position: item.position, tiles, window_width, combatants });
                     const valid_surroundings = posData.surroundings.filter(sur => sur !== undefined);
                     const capacity = valid_surroundings.length;
 
@@ -148,7 +143,7 @@ function processEnvironmentEffects(
                     if (item.fuse_length > 0 && item.tick < item.fuse_length) {
                         item.position = new_position;
                         addItemToBoard(item, working_items);
-                        paintTileForSpider(item as SpiderModel, tiles);
+                        paintTileForSpider(item as SpiderModel, tiles, window_width);
                     }
                     break;
             }
@@ -213,14 +208,19 @@ function processEnvironmentEffects(
     working_global_combatant_stats.average_bar =
         (working_global_combatant_stats.average_fitness + working_global_combatant_stats.max_fitness) / 2;
 
-    updateMapTileScorePotentials(tiles, window_width);
-
     return { player, combatants: working_combatants, items: working_items, tiles, global_combatant_stats: working_global_combatant_stats };
 }
 
 function processCombatantTick(
-    { combatants, map_details, movement_logic, use_genders, global_combatant_stats }:
-        { combatants: Combatants, map_details: MapDetails, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
+    { combatants, movement_logic, tiles, window_width, use_genders, global_combatant_stats }:
+        {
+            combatants: Combatants,
+            movement_logic: MovementLogic,
+            tiles: TileModel[],
+            window_width: number,
+            use_genders: boolean,
+            global_combatant_stats: Readonly<GlobalCombatantStatsModel>
+        }
 ): { player: CombatantModel | undefined, combatants: Readonly<Combatants>, births: number, deaths: number } {
     const working_combatants: Combatants = {};
     const mating_combatants: Combatants = {};
@@ -241,7 +241,8 @@ function processCombatantTick(
             combatant: combatants[current_position],
             combatants,
             global_combatant_stats,
-            map_details,
+            tiles,
+            window_width,
             movement_logic,
         });
 
@@ -278,12 +279,13 @@ function processCombatantTick(
                 getSurroundings({
                     species: spawn.species,
                     position: parent.position,
-                    map_details,
+                    tiles,
+                    window_width,
                     combatants: working_combatants,
                 }),
             spawn,
             parent,
-            arena_size: map_details.tiles.length
+            arena_size: tiles.length
         });
 
         if (spawn.position > -1) {
@@ -346,13 +348,14 @@ function birthSpawn({ posData, spawn, parent, arena_size }:
 }
 
 function processCombatantMovement(
-    { combatant, use_genders, combatants, global_combatant_stats, map_details, movement_logic }:
+    { combatant, use_genders, combatants, global_combatant_stats, tiles, window_width, movement_logic }:
         {
             use_genders: boolean,
             combatant: CombatantModel,
             combatants: Readonly<{ [position: number]: CombatantModel }>,
             global_combatant_stats: GlobalCombatantStatsModel,
-            map_details: MapDetails,
+            tiles: TileModel[],
+            window_width: number,
             movement_logic: MovementLogic,
         }
 ): { combatant: CombatantModel, deaths: number } {
@@ -378,7 +381,8 @@ function processCombatantMovement(
             {
                 species: combatant.species,
                 position: current_position,
-                map_details,
+                tiles,
+                window_width,
                 combatants,
             }
         );
@@ -387,7 +391,8 @@ function processCombatantMovement(
                 posData,
                 movement_logic,
                 self: combatant,
-                map_details,
+                tiles,
+                window_width,
             });
 
         // this fixes a type error below

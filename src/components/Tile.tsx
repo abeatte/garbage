@@ -7,7 +7,6 @@ import '../css/Tile.css';
 import classNames from 'classnames';
 import { TileModel, Type as TileType } from '../models/TileModel';
 import { Character, getMapTileEffect } from '../models/CombatantModel';
-import { GameMode } from '../data/slices/boardSlice';
 const Water = require('../images/terrain/water.png');
 const Trees = require('../images/terrain/trees.png');
 const Sand = require('../images/terrain/sand.png');
@@ -67,7 +66,6 @@ const Tile = (
             alt={tile.type}
           />
         }
-        {/* TODO: show tile potential for each species (since they are different now.) */}
         {
           showPotential && tile &&
           <span style={{ position: "absolute", color: !showRealTileImages ? "black" : "red" }} className='Tile_potential'>
