@@ -9,6 +9,8 @@ import { HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
 import { faChartBar } from "@fortawesome/free-solid-svg-icons";
 import Analytics from "../analytics";
 
+export const DASHBOARD_HEIGHT = 57;
+
 const Dashboard = ({ onReset }: { onReset: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
@@ -62,13 +64,13 @@ const Dashboard = ({ onReset }: { onReset: () => void }) => {
     );
 
     return (
-        <div className={'Dashboard'}>
+        <div className={'Dashboard'} style={{ height: `${DASHBOARD_HEIGHT}px` }}>
             <div style={{ display: "flex", flexDirection: "row", flexGrow: "1", position: "unset", backgroundColor: "peru" }}>
                 <Settings onReset={onReset} />
                 {game_stats_section}
                 {show_stats_button}
             </div>
-        </div>
+        </div >
     )
 };
 

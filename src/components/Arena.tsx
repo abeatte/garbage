@@ -248,7 +248,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
         return (
             <div className={classNames("Arena_container")}>
                 <Dashboard onReset={this.props.reset} />
-                <div style={{ display: "flex", overflow: "scroll", border: '4px solid black' }}>
+                <div className={classNames("Arena_border_container")}>
                     <div className="Arena_inner_container">
                         <div className="Arena" style={{ gridTemplateColumns: `${"auto ".repeat(view_port.width)}` }}>
                             {tiles}

@@ -18,6 +18,7 @@ import Maps from '../Map';
 import { getCombatantAtTarget } from '../utils/TargetingUtils';
 import { processBoardTick } from '../utils/TurnProcessingUtils';
 import { TILE_SIZE } from '../../components/Tile';
+import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
@@ -134,8 +135,8 @@ function initCombatants(
 }
 
 function setViewPortTileDimens(state: BoardState) {
-    state.view_port.height = Math.min(state.arena.height, Math.floor(state.view_port.height_measurement / TILE_SIZE));
-    state.view_port.width = Math.min(state.arena.width, Math.floor(state.view_port.width_measurement / TILE_SIZE));
+    state.view_port.height = Math.min(state.arena.height, Math.ceil((state.view_port.height_measurement - DASHBOARD_HEIGHT) / TILE_SIZE));
+    state.view_port.width = Math.min(state.arena.width, Math.ceil(state.view_port.width_measurement / TILE_SIZE));
 }
 
 function handleResize(

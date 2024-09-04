@@ -1,12 +1,22 @@
 .Arena_container {
-    overflow: scroll;
     display: flex;
     flex-direction: column;
 }
 
+.Arena_border_container {
+    display: flex;
+    overflow: hidden;
+    border: 2px solid black;
+    width: 100vw; 
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
 .Arena_container .Arena_inner_container {
     display: flex;
-    overflow-x: scroll;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
