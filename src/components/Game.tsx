@@ -1,7 +1,7 @@
 import React from "react";
 import { AppDispatch, AppState } from "../data/store";
 import { connect } from "react-redux";
-import { GameMode, setViewPortSize } from "../data/slices/boardSlice";
+import { GameMode, setGeoLocation, setViewPortSize } from "../data/slices/boardSlice";
 import GameBoard from "./GameBoard";
 import TitleScreen from "./TitleScreen";
 import { mapStateToProps } from "../data/utils/ReactUtils";
@@ -18,6 +18,9 @@ class Game extends React.Component<AppState & DispatchProps> {
             'resize',
             () => this.handleWindowWidthResize(window)
         );
+        navigator.geolocation.getCurrentPosition((position: any) => {
+            this.props.setGeoLocation(position.toJSON());
+        });
     }
 
     componentWillUnmount() {
@@ -48,6 +51,7 @@ class Game extends React.Component<AppState & DispatchProps> {
 
 interface DispatchProps {
     setScreenSize: (dimens: { width: number, height: number }) => void,
+    setGeoLocation: (position: GeolocationPosition) => void,
 }
 
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
@@ -55,8 +59,9 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
         setScreenSize: (dimens: { width: number, height: number }) => {
             dispatch(setScreenSize(dimens));
             dispatch(setViewPortSize(dimens));
-        }
-    };
-}
+        },
+        setGeoLocation: (position: GeolocationPosition) => dispatch(setGeoLocation(position)),
+    }
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Game);

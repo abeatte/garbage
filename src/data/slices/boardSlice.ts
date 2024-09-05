@@ -52,6 +52,7 @@ const SETTINGS_DEFAULTS = {
 }
 
 interface BoardState {
+    geolocation: GeolocationPosition,
     game_mode: GameMode,
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
@@ -245,6 +246,9 @@ function spawnAt(position: number, state: BoardState & SettingsState) {
 }
 
 const mapReducers = {
+    setGeoLocation: (state: BoardState & SettingsState, action: PayloadAction<GeolocationPosition>) => {
+        state.geolocation = action.payload;
+    },
     shrinkWidth: (state: BoardState & SettingsState) => {
         if (state.arena.width === 0) {
             return;
@@ -500,6 +504,7 @@ export const boardSlice = createSlice({
 export const {
     setGameMode,
     shrinkWidth,
+    setGeoLocation,
     growWidth,
     shrinkHeight,
     growHeight,
