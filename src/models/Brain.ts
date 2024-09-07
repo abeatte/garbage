@@ -1,5 +1,5 @@
 import { NeuralNetwork } from "brain.js/dist/src";
-import { ClockFace, LegalMoves, MIN_HEALTH, PosData } from "../data/utils/CombatantUtils";
+import { ClockFace, LegalMoves, MIN_HEALTH, Sight } from "../data/utils/CombatantUtils";
 import { Input, Output } from "../scripts/BrainTrainer";
 import CombatantModel, { Character, getNewPositionFromClockFace } from "./CombatantModel";
 
@@ -49,11 +49,11 @@ const init = (): { [species: string]: NeuralNetwork<Input, Output> } => {
     return nets;
 }
 
-const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, posData: PosData): number => {
+const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, sight: Sight): number => {
     // keys are ClockFace values (b, t, l, r); values are potentials (53, -2, ...)
     const move_potentials = LegalMoves.reduce((move_potentials, direction) => {
         move_potentials[Object.keys(ClockFace)[direction]] =
-            posData.surroundings[direction]?.tile?.score_potential[Character.Bunny] ?? MIN_HEALTH
+            sight.surroundings[direction]?.tile?.score_potential[Character.Bunny] ?? MIN_HEALTH
         return move_potentials;
     }, {} as { [direction: string]: number });
 
@@ -68,8 +68,8 @@ const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, po
     const new_position = getNewPositionFromClockFace(
         combatant.position,
         clockFace,
-        posData.window_width,
-        posData.tile_count
+        sight.window_width,
+        sight.tile_count
     );
 
     return new_position;

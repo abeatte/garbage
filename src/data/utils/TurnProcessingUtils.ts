@@ -2,7 +2,7 @@ import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect,
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
-import { DirectionalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH, PosData, addItemToBoard, compete, getSurroundings } from "./CombatantUtils";
+import { DirectionalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH, Sight, addItemToBoard, compete, getSurroundings } from "./CombatantUtils";
 import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
 import { SpiderModel, paintTileForSpider } from "../../models/SpiderModel";
 
@@ -56,8 +56,8 @@ function processEnvironmentEffects(
                 case ItemType.Bomb:
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
                         // time to blow
-                        const posData = getSurroundings({ position: item.position, tiles, window_width, combatants });
-                        posData.surroundings.forEach(surrounding => {
+                        const sight = getSurroundings({ position: item.position, tiles, window_width, combatants });
+                        sight.surroundings.forEach(surrounding => {
                             if (surrounding === undefined) {
                                 return;
                             }
@@ -76,8 +76,8 @@ function processEnvironmentEffects(
                     addItemToBoard(item, working_items);
                     break;
                 case ItemType.PokemonBall:
-                    const posData = getSurroundings({ position: item.position, tiles, window_width, combatants });
-                    const valid_surroundings = posData.surroundings.filter(sur => sur !== undefined);
+                    const sight = getSurroundings({ position: item.position, tiles, window_width, combatants });
+                    const valid_surroundings = sight.surroundings.filter(sur => sur !== undefined);
                     const capacity = valid_surroundings.length;
 
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
@@ -112,7 +112,7 @@ function processEnvironmentEffects(
                     } else {
                         if (item.captured.length < capacity) {
                             // can only store as many tiles as it can disgorge into
-                            posData.surroundings.forEach(surrounding => {
+                            sight.surroundings.forEach(surrounding => {
                                 const c_to_capture = surrounding?.occupant;
                                 if (c_to_capture) {
                                     item.captured.push(c_to_capture);
@@ -275,7 +275,7 @@ function processCombatantTick(
 
         parent.spawn = undefined;
         birthSpawn({
-            posData:
+            sight:
                 getSurroundings({
                     species: spawn.species,
                     position: parent.position,
@@ -304,9 +304,9 @@ function processCombatantTick(
 }
 
 
-function birthSpawn({ posData, spawn, parent, arena_size }:
-    { posData: PosData, spawn: CombatantModel, parent: CombatantModel, arena_size: number }) {
-    const { surroundings } = posData;
+function birthSpawn({ sight, spawn, parent, arena_size }:
+    { sight: Sight, spawn: CombatantModel, parent: CombatantModel, arena_size: number }) {
+    const { surroundings } = sight;
     const friendly_positions = [],
         enemy_positions = [],
         empty_positions = [] as number[];
@@ -380,7 +380,7 @@ function processCombatantMovement(
         }
         combatant.target_destination = -1;
     } else {
-        const posData = getSurroundings(
+        const sight = getSurroundings(
             {
                 species: combatant.species,
                 position: current_position,
@@ -391,7 +391,7 @@ function processCombatantMovement(
         );
         new_position = requestMove(
             {
-                posData,
+                sight,
                 movement_logic,
                 self: combatant,
                 tiles,

@@ -4,7 +4,7 @@ import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
 import { GAME_DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
-import { DiagonalMoves, getSurroundings, LegalMoves, PosData } from "../data/utils/CombatantUtils";
+import { DiagonalMoves, getSurroundings, LegalMoves, Sight } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
@@ -21,12 +21,12 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/nets/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
 const NUM_TRAINING_MAPS = 1;
 
-const getTrainingSet = (species: Character, combatant: CombatantModel, posData: PosData, tiles: TileModel[], window_width: number,): TrainingSet => {
+const getTrainingSet = (species: Character, combatant: CombatantModel, sight: Sight, tiles: TileModel[], window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
-        const sur = posData.surroundings[clockFace];
+        const sur = sight.surroundings[clockFace];
         if (sur !== undefined) {
-            const positive_shifted_potential = sur.tile.score_potential[species] + Math.abs(posData.min_potential);
-            let range = Math.abs(posData.min_potential) + posData.max_potential;
+            const positive_shifted_potential = sur.tile.score_potential[species] + Math.abs(sight.min_potential);
+            let range = Math.abs(sight.min_potential) + sight.max_potential;
             move_potentials[clockFace] = positive_shifted_potential * 1.0 / range;
         }
         return move_potentials;
@@ -35,14 +35,14 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, posData: 
     const requested_position = requestMove(
         {
             movement_logic: MovementLogic.DecisionTree,
-            posData,
+            sight,
             self: combatant,
             tiles,
             window_width
         }
     );
     const output = {} as Output;
-    output[posData.surroundings.findIndex(sur => sur?.position === requested_position)] = 1;
+    output[sight.surroundings.findIndex(sur => sur?.position === requested_position)] = 1;
     // console.log('input:', input, 'output:', output);
 
     return { input, output };
@@ -51,7 +51,7 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, posData: 
 const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
-    // TODO: finish creating this so that the posData will have a Clockface.C combataint to use for species. 
+    // TODO: finish creating this so that the sight will have a Clockface.C combataint to use for species. 
     const trainer = createCombatant({ spawn_position: 0, species, global_combatant_stats: undefined });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
@@ -67,8 +67,8 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
             const combatants: { [position: number]: CombatantModel } = {};
             trainer.position = position;
             combatants[position] = trainer;
-            const posData = getSurroundings({ species, position, tiles, window_width: width, combatants })
-            training_sets.push(getTrainingSet(species, trainer, posData, tiles, width));
+            const sight = getSurroundings({ species, position, tiles, window_width: width, combatants })
+            training_sets.push(getTrainingSet(species, trainer, sight, tiles, width));
         }
     }
     return training_sets;

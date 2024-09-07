@@ -2,7 +2,7 @@ import uuid from "react-uuid";
 import {
     MAX_YOUNGLING_TICK,
     ClockFace,
-    PosData,
+    Sight,
     IllegalMoves,
     LegalMoves,
 } from "../data/utils/CombatantUtils";
@@ -175,10 +175,10 @@ function getBestOpenPosition(
     return best_safe_position;
 }
 
-export function requestMove({ movement_logic, posData, self, tiles, window_width }:
+export function requestMove({ movement_logic, sight, self, tiles, window_width }:
     {
         movement_logic: MovementLogic,
-        posData: PosData,
+        sight: Sight,
         self: CombatantModel,
         tiles: Readonly<TileModel[]>,
         window_width: number,
@@ -188,7 +188,7 @@ export function requestMove({ movement_logic, posData, self, tiles, window_width
     const bucketed_mate_strengths = {} as { [key: string]: number[] };
     const bucketed_empty_tiles = {} as { [key: number]: number[] };
 
-    posData.surroundings.forEach((surrounding, idx, s_arr) => {
+    sight.surroundings.forEach((surrounding, idx, s_arr) => {
         if (!surrounding) {
             return;
         }
@@ -244,7 +244,7 @@ export function requestMove({ movement_logic, posData, self, tiles, window_width
         case MovementLogic.NeuralNetwork:
             // TODO: the Neural Network is blind to mating situations. 
             // this causes combatants to just sit in one spot when near others. 
-            position = Brain.move(Brains[self.species], self, posData);
+            position = Brain.move(Brains[self.species], self, sight);
             break;
         case MovementLogic.RandomWalk:
             position = getNewPositionFromClockFace(
