@@ -1,7 +1,7 @@
 import { NeuralNetwork } from "brain.js/dist/src";
 import { ClockFace, LegalMoves, MIN_HEALTH, Sight } from "../data/utils/CombatantUtils";
 import { Input, Output } from "../scripts/BrainTrainer";
-import CombatantModel, { Character, getNewPositionFromClockFace } from "./CombatantModel";
+import CombatantModel, { Character } from "./CombatantModel";
 
 const bunnyNeuralNetworkJSONPath = require('../data/nets/Bunny_NeuralNetwork.json');
 const turtleNeuralNetworkJSONPath = require('../data/nets/Turtle_NeuralNetwork.json');
@@ -65,14 +65,7 @@ const move = (brain: NeuralNetwork<Input, Output>, combatant: CombatantModel, si
         }
         return clockFace;
     }, 0);
-    const new_position = getNewPositionFromClockFace(
-        combatant.position,
-        clockFace,
-        sight.window_width,
-        sight.tile_count
-    );
-
-    return new_position;
+    return sight.surroundings[clockFace]?.position ?? combatant.position;
 }
 
 const Brain = {

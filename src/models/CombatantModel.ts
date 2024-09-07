@@ -4,7 +4,6 @@ import {
     ClockFace,
     Sight,
     IllegalMoves,
-    LegalMoves,
 } from "../data/utils/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
 import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
@@ -247,11 +246,7 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
             position = Brain.move(Brains[self.species], self, sight);
             break;
         case MovementLogic.RandomWalk:
-            position = getNewPositionFromClockFace(
-                self.position,
-                LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)],
-                window_width,
-                tiles.length);
+            position = sight.getNewRandomPosition();
             break;
         case MovementLogic.DecisionTree:
 
@@ -323,11 +318,7 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
                 position = best_open_position;
             } else {
                 // when all else fails, random walk
-                position = getNewPositionFromClockFace(
-                    self.position,
-                    LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)],
-                    window_width,
-                    tiles.length);
+                position = sight.getNewRandomPosition();
             };
             break;
     }
@@ -353,10 +344,10 @@ export function getNewPositionFromArrowKey(current_position: number, arrowKey: A
         default:
             clockFace = ClockFace.c;
     }
-    return getNewPositionFromClockFace(current_position, clockFace, window_width, tile_count);
+    return validateNewPositionFromClockFace(current_position, clockFace, window_width, tile_count);
 }
 
-export function getNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
+function validateNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
     let new_position = current_position;
     switch (clockFace) {
         case ClockFace.l:

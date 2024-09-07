@@ -30,15 +30,11 @@ export interface Surroundings {
 
 export interface Sight {
     coord: { x: number, y: number },
-    can_go_left: boolean,
-    can_go_up: boolean,
-    can_go_right: boolean,
-    can_go_down: boolean,
-    window_width: number,
-    tile_count: number,
     min_potential: number,
     max_potential: number,
+    center: Surroundings
     surroundings: (Surroundings | undefined)[],
+    getNewRandomPosition: () => number,
 }
 
 export function initCombatantStartingPos(
@@ -80,7 +76,7 @@ export function updateCombatantsPositionsAfterResize(
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const sight =
-                getSurroundings({ species: combatants[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants });
+                viewSurroundings({ species: combatants[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants });
             const up_position = sight.surroundings[ClockFace.t];
             const up_left_position = sight.surroundings[ClockFace.tl];
             const left_position = sight.surroundings[ClockFace.l];
@@ -167,7 +163,7 @@ export function compete(a: CombatantModel, b: CombatantModel) {
     }
 }
 
-export function getSurroundings(
+export function viewSurroundings(
     { species, position, tiles, window_width, combatants }:
         {
             species?: Character | undefined,
@@ -178,29 +174,21 @@ export function getSurroundings(
             combatants: { [position: number]: CombatantModel | undefined }
         }
 ): Sight {
-    const ret = { surroundings: [] as Surroundings[] } as Sight;
-
-    ret.coord = { y: Math.floor(position / window_width), x: position % window_width };
-    ret.can_go_left = position % window_width > 0;
-    ret.can_go_up = position - window_width > -1
-    ret.can_go_right = position % window_width < window_width - 1;
-    ret.can_go_down = position + window_width < tiles.length;
-    ret.window_width = window_width;
-    ret.tile_count = tiles.length;
-    ret.min_potential = Number.MAX_VALUE;
-    ret.max_potential = Number.MIN_VALUE;
+    const coord = { y: Math.floor(position / window_width), x: position % window_width };
+    let min_potential = Number.MAX_VALUE;
+    let max_potential = Number.MIN_VALUE;
 
     const setSurrounding = (position: number) => {
         const score_potential =
             !species ? -1 :
                 getMapTileScorePotentials({ position, tiles, window_width })[species];
 
-        if (score_potential < ret.min_potential) {
-            ret.min_potential = score_potential;
+        if (score_potential < min_potential) {
+            min_potential = score_potential;
         }
 
-        if (score_potential > ret.max_potential) {
-            ret.max_potential = score_potential;
+        if (score_potential > max_potential) {
+            max_potential = score_potential;
         }
 
         return {
@@ -210,26 +198,35 @@ export function getSurroundings(
         }
     }
 
+    const can_go_left = position % window_width > 0;
+    const can_go_up = position - window_width > -1
+    const can_go_right = position % window_width < window_width - 1;
+    const can_go_down = position + window_width < tiles.length;
+
     // start at center position and then move clockwise around
-    ret.surroundings = Array(9);
-    ret.surroundings[ClockFace.c] =
-        setSurrounding(position);
-    ret.surroundings[ClockFace.tl] = ret.can_go_up && ret.can_go_left ?
+    const surroundings = Array(9);
+    const center = setSurrounding(position);
+    surroundings[ClockFace.c] = center;
+    surroundings[ClockFace.tl] = can_go_up && can_go_left ?
         setSurrounding(position - window_width - 1) : undefined;
-    ret.surroundings[ClockFace.t] = ret.can_go_up ?
+    surroundings[ClockFace.t] = can_go_up ?
         setSurrounding(position - window_width) : undefined;
-    ret.surroundings[ClockFace.tr] = ret.can_go_up && ret.can_go_right ?
+    surroundings[ClockFace.tr] = can_go_up && can_go_right ?
         setSurrounding(position - window_width + 1) : undefined;
-    ret.surroundings[ClockFace.r] = ret.can_go_right ?
+    surroundings[ClockFace.r] = can_go_right ?
         setSurrounding(position + 1) : undefined;
-    ret.surroundings[ClockFace.br] = ret.can_go_down && ret.can_go_right ?
+    surroundings[ClockFace.br] = can_go_down && can_go_right ?
         setSurrounding(position + window_width + 1) : undefined;
-    ret.surroundings[ClockFace.b] = ret.can_go_down ?
+    surroundings[ClockFace.b] = can_go_down ?
         setSurrounding(position + window_width) : undefined;
-    ret.surroundings[ClockFace.bl] = ret.can_go_down && ret.can_go_left ?
+    surroundings[ClockFace.bl] = can_go_down && can_go_left ?
         setSurrounding(position + window_width - 1) : undefined;
-    ret.surroundings[ClockFace.l] = ret.can_go_left ?
+    surroundings[ClockFace.l] = can_go_left ?
         setSurrounding(position - 1) : undefined;
 
-    return ret;
+    const getNewRandomPosition = () => {
+        return surroundings[LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)]]?.position ?? center.position;
+    }
+
+    return { coord, surroundings, min_potential, max_potential, center, getNewRandomPosition };
 };

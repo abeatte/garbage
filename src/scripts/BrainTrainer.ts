@@ -4,7 +4,7 @@ import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
 import { GAME_DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
-import { DiagonalMoves, getSurroundings, LegalMoves, Sight } from "../data/utils/CombatantUtils";
+import { DiagonalMoves, viewSurroundings, LegalMoves, Sight } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
@@ -67,7 +67,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
             const combatants: { [position: number]: CombatantModel } = {};
             trainer.position = position;
             combatants[position] = trainer;
-            const sight = getSurroundings({ species, position, tiles, window_width: width, combatants })
+            const sight = viewSurroundings({ species, position, tiles, window_width: width, combatants })
             training_sets.push(getTrainingSet(species, trainer, sight, tiles, width));
         }
     }

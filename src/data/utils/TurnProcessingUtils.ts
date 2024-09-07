@@ -1,8 +1,8 @@
-import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect, getNewPositionFromClockFace, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
+import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
-import { DirectionalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH, Sight, addItemToBoard, compete, getSurroundings } from "./CombatantUtils";
+import { MAX_YOUNGLING_TICK, MIN_HEALTH, Sight, addItemToBoard, compete, viewSurroundings } from "./CombatantUtils";
 import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
 import { SpiderModel, paintTileForSpider } from "../../models/SpiderModel";
 
@@ -52,11 +52,11 @@ function processEnvironmentEffects(
                 return;
             }
 
+            const sight = viewSurroundings({ position: item.position, tiles, window_width, combatants });
             switch (item.type) {
                 case ItemType.Bomb:
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
                         // time to blow
-                        const sight = getSurroundings({ position: item.position, tiles, window_width, combatants });
                         sight.surroundings.forEach(surrounding => {
                             if (surrounding === undefined) {
                                 return;
@@ -76,7 +76,6 @@ function processEnvironmentEffects(
                     addItemToBoard(item, working_items);
                     break;
                 case ItemType.PokemonBall:
-                    const sight = getSurroundings({ position: item.position, tiles, window_width, combatants });
                     const valid_surroundings = sight.surroundings.filter(sur => sur !== undefined);
                     const capacity = valid_surroundings.length;
 
@@ -133,13 +132,7 @@ function processEnvironmentEffects(
                     }
                     break;
                 case ItemType.Spider:
-                    const clockFace = DirectionalMoves[Math.floor(Math.random() * Object.values(DirectionalMoves).length)];
-                    const new_position = getNewPositionFromClockFace(
-                        item.position,
-                        clockFace,
-                        window_width,
-                        tiles.length,
-                    );
+                    const new_position = sight.getNewRandomPosition();
                     if (item.fuse_length > 0 && item.tick < item.fuse_length) {
                         item.position = new_position;
                         addItemToBoard(item, working_items);
@@ -276,7 +269,7 @@ function processCombatantTick(
         parent.spawn = undefined;
         birthSpawn({
             sight:
-                getSurroundings({
+                viewSurroundings({
                     species: spawn.species,
                     position: parent.position,
                     tiles,
@@ -380,7 +373,7 @@ function processCombatantMovement(
         }
         combatant.target_destination = -1;
     } else {
-        const sight = getSurroundings(
+        const sight = viewSurroundings(
             {
                 species: combatant.species,
                 position: current_position,
