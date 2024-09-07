@@ -19,7 +19,7 @@ export interface Sight {
 export function viewSurroundings(
     { species, position, tiles, window_width, combatants }:
         {
-            species?: Character | undefined,
+            species?: Character,
             position: number,
             tiles: TileModel[],
             window_width: number,

@@ -8,7 +8,7 @@ import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
-import { getMapTileScorePotentials, TileModel } from "../models/TileModel";
+import { TileModel } from "../models/TileModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
 
 export type Input = { [position: string]: number };
@@ -53,7 +53,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
     // TODO: finish creating this so that the sight will have a Clockface.C combataint to use for species. 
-    const trainer = createCombatant({ spawn_position: 0, species, global_combatant_stats: undefined });
+    const trainer = createCombatant({ spawn_position: 0, species });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
         const width = GAME_DEFAULTS.arena.width;
