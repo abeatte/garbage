@@ -1,7 +1,8 @@
 import { NeuralNetwork } from "brain.js/dist/src";
-import { ClockFace, LegalMoves, MIN_HEALTH, Sight } from "../data/utils/CombatantUtils";
+import { ClockFace, LegalMoves, MIN_HEALTH } from "../data/utils/CombatantUtils";
 import { Input, Output } from "../scripts/BrainTrainer";
 import CombatantModel, { Character } from "./CombatantModel";
+import { Sight } from "../data/utils/SightUtils";
 
 const bunnyNeuralNetworkJSONPath = require('../data/nets/Bunny_NeuralNetwork.json');
 const turtleNeuralNetworkJSONPath = require('../data/nets/Turtle_NeuralNetwork.json');

@@ -4,11 +4,12 @@ import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
 import { GAME_DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
-import { DiagonalMoves, viewSurroundings, LegalMoves, Sight } from "../data/utils/CombatantUtils";
+import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
 import { getMapTileScorePotentials, TileModel } from "../models/TileModel";
+import { Sight, viewSurroundings } from "../data/utils/SightUtils";
 
 export type Input = { [position: string]: number };
 export type Output = { [direction: string]: number };
@@ -58,9 +59,9 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
         const width = GAME_DEFAULTS.arena.width;
         const height = GAME_DEFAULTS.arena.height;
         const tiles = Maps[GAME_DEFAULTS.map].generate({ width, height });
-        tiles.forEach((t, idx) => {
-            getMapTileScorePotentials({ position: idx, tiles, window_width: width });
-        });
+        // tiles.forEach((t, idx) => {
+        //     getMapTileScorePotentials({ position: idx, tiles, window_width: width });
+        // });
         debugger; // TODO: make sure tiles have score_potential setup at this point. 
 
         for (let position = 0; position < tiles.length; position++) {

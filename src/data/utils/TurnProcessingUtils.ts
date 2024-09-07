@@ -2,9 +2,10 @@ import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect,
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
-import { MAX_YOUNGLING_TICK, MIN_HEALTH, Sight, addItemToBoard, compete, viewSurroundings } from "./CombatantUtils";
+import { MAX_YOUNGLING_TICK, MIN_HEALTH, addItemToBoard, compete } from "./CombatantUtils";
 import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
 import { SpiderModel, paintTileForSpider } from "../../models/SpiderModel";
+import { Sight, viewSurroundings } from "./SightUtils";
 
 export function processBoardTick(
     { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:
@@ -295,7 +296,6 @@ function processCombatantTick(
 
     return { player, combatants: working_combatants, births, deaths };
 }
-
 
 function birthSpawn({ sight, spawn, parent, arena_size }:
     { sight: Sight, spawn: CombatantModel, parent: CombatantModel, arena_size: number }) {

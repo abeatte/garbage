@@ -2,7 +2,6 @@ import uuid from "react-uuid";
 import {
     MAX_YOUNGLING_TICK,
     ClockFace,
-    Sight,
     IllegalMoves,
 } from "../data/utils/CombatantUtils";
 import { TileModel, Type as TileType } from "./TileModel";
@@ -11,6 +10,7 @@ import { ArrowKey, MovementLogic } from "../data/slices/boardSlice";
 import Brain from "./Brain";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "./EntityModel";
+import { Sight } from "../data/utils/SightUtils";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Alive = "alive", Mating = "mating", Dead = "dead", Captured = "Captured" };
