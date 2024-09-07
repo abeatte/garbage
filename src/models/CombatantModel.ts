@@ -130,32 +130,31 @@ export function getMapTileEffect({ species, tileType }: { species: Character | u
     }
 }
 
-function b_vs_a_strength(a: Strength | undefined, b: Strength | undefined): number {
-    if (b === undefined) {
-        return -1;
-    } else if (a === undefined) {
-        return 1;
-    } else if (b === a) {
-        return 0;
-    } else if (b === Strength.Immortal) {
-        return 1;
-    } else if (b === Strength.Strong && a !== Strength.Immortal) {
-        return 1;
-    } else if (b === Strength.Average && (a !== Strength.Immortal && a !== Strength.Strong)) {
-        return 1;
-    } else {
-        return -1;
-    }
-};
-
 function getBestTargetPosition(
     self: CombatantModel, bucketed_target_strengths: { [key: string]: number[] }
 ): number {
+    const compareStrength = (a: Strength | undefined, b: Strength | undefined): number => {
+        if (b === undefined) {
+            return 1;
+        } else if (a === undefined) {
+            return -1;
+        } else if (b === a) {
+            return 0;
+        } else if (a === Strength.Immortal) {
+            return 1;
+        } else if (a === Strength.Strong && b !== Strength.Immortal) {
+            return 1;
+        } else if (a === Strength.Average && (b !== Strength.Immortal && b !== Strength.Strong)) {
+            return 1;
+        } else {
+            return -1;
+        }
+    };
     // position based on best prey (enemy) space
-    const best_target_bucket = bucketed_target_strengths[Object.keys(bucketed_target_strengths)
-        .sort((a, b) => b_vs_a_strength(a as Strength, b as Strength))
-        .filter(s => b_vs_a_strength(s as Strength, self.strength as Strength) > 0)[0]];
-    const best_target_position = best_target_bucket?.length > 0 ?
+    const best_target_bucket = bucketed_target_strengths[(Object.keys(bucketed_target_strengths) as Strength[])
+        .sort((a, b) => -compareStrength(a, b))
+        .filter(s => compareStrength(s, self.strength) > 0)[0]] ?? [];
+    const best_target_position = best_target_bucket.length > 0 ?
         best_target_bucket[Math.floor(Math.random() * best_target_bucket.length)] : -1;
 
     return best_target_position;
