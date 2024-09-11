@@ -1,8 +1,9 @@
 import CombatantModel, { Character } from "../../models/CombatantModel";
 import { getMapTileScorePotentials, TileModel } from "../../models/TileModel";
 import { ClockFace, LegalMoves } from "./CombatantUtils";
+import { isTileValidCombatantPosition } from "./TurnProcessingUtils";
 
-export interface Surroundings {
+export interface Surrounding {
     position: number,
     occupant: CombatantModel | undefined,
     tile: TileModel,
@@ -11,8 +12,8 @@ export interface Surroundings {
 export interface Sight {
     min_potential: number,
     max_potential: number,
-    center: Surroundings
-    surroundings: (Surroundings | undefined)[],
+    center: Surrounding
+    surroundings: (Surrounding | undefined)[],
     getNewRandomPosition: () => number,
 }
 
@@ -56,7 +57,7 @@ export function viewSurroundings(
     const can_go_down = position + window_width < tiles.length;
 
     // start at center position and then move clockwise around
-    const surroundings = Array(9);
+    const surroundings = Array(9) as unknown as (Surrounding | undefined)[];
     const center = setSurrounding(position);
     surroundings[ClockFace.c] = center;
     surroundings[ClockFace.tl] = can_go_up && can_go_left ?
@@ -77,7 +78,11 @@ export function viewSurroundings(
         setSurrounding(position - 1) : undefined;
 
     const getNewRandomPosition = () => {
-        return surroundings[LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)]]?.position ?? center.position;
+        const surrounding = surroundings[LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)]];
+        if (isTileValidCombatantPosition(surrounding?.tile)) {
+            return (surrounding as Surrounding).position;
+        }
+        return center.position;
     }
 
     return { surroundings, min_potential, max_potential, center, getNewRandomPosition };

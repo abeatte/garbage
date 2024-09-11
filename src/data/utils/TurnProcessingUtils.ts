@@ -1,6 +1,6 @@
 import CombatantModel, { DecisionType, State, createCombatant, getMapTileEffect, getRandomDecisionType, getRandomSpecies, requestMove } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
-import { TileModel } from "../../models/TileModel";
+import { TileModel, Type as TileType } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
 import { MAX_YOUNGLING_TICK, MIN_HEALTH, addItemToBoard, compete } from "./CombatantUtils";
 import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
@@ -34,6 +34,16 @@ export function processBoardTick(
     return item_result;
 }
 
+export function isValidCombatantPosition(position: number | undefined, tiles: Readonly<TileModel[]>): boolean {
+    return position !== undefined &&
+        0 <= position && position < tiles.length &&
+        isTileValidCombatantPosition(tiles[position]);
+}
+
+export function isTileValidCombatantPosition(tile: TileModel | undefined): boolean {
+    return tile !== undefined && tile.type !== TileType.Void;
+}
+
 function processEnvironmentEffects(
     { combatants, items, tiles, window_width, movement_logic, global_combatant_stats }:
         { combatants: Combatants, items: Items, tiles: TileModel[], window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
@@ -59,7 +69,7 @@ function processEnvironmentEffects(
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
                         // time to blow
                         sight.surroundings.forEach(surrounding => {
-                            if (surrounding === undefined) {
+                            if (surrounding === undefined || isTileValidCombatantPosition(surrounding.tile)) {
                                 return;
                             }
 
@@ -77,7 +87,8 @@ function processEnvironmentEffects(
                     addItemToBoard(item, working_items);
                     break;
                 case ItemType.PokemonBall:
-                    const valid_surroundings = sight.surroundings.filter(sur => sur !== undefined);
+                    const valid_surroundings =
+                        sight.surroundings.filter(sur => isTileValidCombatantPosition(sur?.tile));
                     const capacity = valid_surroundings.length;
 
                     if (item.fuse_length > 0 && item.tick === item.fuse_length) {
@@ -305,7 +316,7 @@ function birthSpawn({ sight, spawn, parent, arena_size }:
         empty_positions = [] as number[];
 
     surroundings.forEach((surrounding, idx, s_arr) => {
-        if (!surrounding) {
+        if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
             return;
         }
 
@@ -366,7 +377,7 @@ function processCombatantMovement(
 
     let new_position;
     if (combatant.is_player) {
-        if (combatant.target_destination > -1) {
+        if (isValidCombatantPosition(combatant.target_destination, tiles)) {
             new_position = combatant.target_destination;
         } else {
             new_position = current_position;

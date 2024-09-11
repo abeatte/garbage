@@ -76,11 +76,6 @@ const PaintPalette = () => {
 
     const tiles = Object.keys(TileType).map((k, idx) => {
         const tile = createTileModel({ index: -1, type: TileType[k as keyof typeof TileType] });
-
-        if (tile.type === TileType.Void) {
-            return undefined;
-        }
-
         return (
             <Tile
                 id={idx}

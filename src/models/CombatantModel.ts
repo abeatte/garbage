@@ -11,6 +11,7 @@ import Brain from "./Brain";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "./EntityModel";
 import { Sight } from "../data/utils/SightUtils";
+import { isTileValidCombatantPosition, isValidCombatantPosition } from "../data/utils/TurnProcessingUtils";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Alive = "alive", Mating = "mating", Dead = "dead", Captured = "Captured" };
@@ -187,7 +188,7 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
     const bucketed_empty_tiles = {} as { [key: number]: number[] };
 
     sight.surroundings.forEach((surrounding, idx, s_arr) => {
-        if (!surrounding) {
+        if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
             return;
         }
 
@@ -253,6 +254,10 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
             if (self.decision_type === DecisionType.Seeker) {
                 if (self.target_destination === self.position) {
                     self.target_destination = Math.floor(Math.random() * (tiles.length - 1));
+                    // if you are targeting an invalid position, sit tight. 
+                    if (!isValidCombatantPosition(self.target_destination, tiles)) {
+                        self.target_destination = self.position;
+                    }
                 }
 
                 const col_diff =
@@ -266,6 +271,12 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
                     position = self.position + (col_diff < 0 ? -1 : 1);
                 } else {
                     position = self.position + (row_diff < 0 ? - window_width : window_width);
+                }
+
+                // TODO: hack to reset target position when you run into a wall.
+                if (!isValidCombatantPosition(position, tiles)) {
+                    self.target_destination = Math.floor(Math.random() * (tiles.length - 1));
+                    position = self.position;
                 }
 
                 break;

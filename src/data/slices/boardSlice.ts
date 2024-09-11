@@ -16,7 +16,7 @@ import { Pointer } from '../../models/PointerModel';
 import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../../models/SpiderModel';
 import Maps from '../Map';
 import { getCombatantAtTarget } from '../utils/TargetingUtils';
-import { processBoardTick } from '../utils/TurnProcessingUtils';
+import { isValidCombatantPosition, processBoardTick } from '../utils/TurnProcessingUtils';
 import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 
@@ -236,13 +236,15 @@ function initState(
 }
 
 function spawnAt(position: number, state: BoardState & SettingsState) {
-    state.combatants[position] = createCombatant(
-        {
-            spawn_position: position,
-            global_combatant_stats: state.global_combatant_stats
-        }
-    );
-    state.global_combatant_stats.num_combatants += 1;
+    if (isValidCombatantPosition(position, state.tiles)) {
+        state.combatants[position] = createCombatant(
+            {
+                spawn_position: position,
+                global_combatant_stats: state.global_combatant_stats
+            }
+        );
+        state.global_combatant_stats.num_combatants += 1;
+    }
 }
 
 const mapReducers = {
@@ -289,11 +291,15 @@ const mapReducers = {
         state.tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     },
     paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
-        const current_occupant = state.combatants[action.payload.position]
+        const valid_combatant_position = isValidCombatantPosition(action.payload.position, state.tiles);
+        const current_occupant = state.combatants[action.payload.position];
         if (Object.keys(TileType).includes(action.payload.type)) {
             state.tiles[action.payload.position] =
                 createTileModel({ index: action.payload.position, type: action.payload.type as TileType });
             clearMapTileScorePotentials({ position: action.payload.position, tiles: state.tiles, window_width: state.arena.width });
+        } else if (!valid_combatant_position) {
+            /* no op */
+            return;
         } else if (Object.keys(ItemType).includes(action.payload.type)) {
             const new_item =
                 createItemModel({ position: action.payload.position, type: action.payload.type as ItemType });
@@ -313,7 +319,9 @@ const mapReducers = {
             if (!current_occupant) {
                 state.global_combatant_stats.num_combatants += 1;
             }
-        } else if (Object.keys(Pointer).includes(action.payload.type)) {
+        }
+
+        if (Object.keys(Pointer).includes(action.payload.type) || action.payload.type === TileType.Void) {
             if (current_occupant) {
                 state.combatants = killAndCopy({ positions: [action.payload.position], combatants: state.combatants });
                 state.global_combatant_stats.num_combatants -= 1;
@@ -473,9 +481,9 @@ export const boardSlice = createSlice({
             }
         },
         spawnAtSelected: (state) => {
-            if (state.selected_position !== undefined) {
+            if (isValidCombatantPosition(state.selected_position, state.tiles)) {
                 state.follow_selected_combatant = true;
-                spawnAt(state.selected_position, state);
+                spawnAt(state.selected_position as number, state);
             }
         },
         spawnAtRandom: (state) => {

@@ -3,6 +3,7 @@ import CombatantModel, { State } from "../../models/CombatantModel";
 import { TileModel } from "../../models/TileModel";
 import { ItemModel, MAX_TILE_ITEM_COUNT } from "../../models/ItemModel";
 import { viewSurroundings } from "./SightUtils";
+import { isValidCombatantPosition } from "./TurnProcessingUtils";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -27,7 +28,11 @@ export function initCombatantStartingPos(
     // you have 10 tries to find a valid spot otherwise you don't get to exist
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
-        if (!args.combatants[potential_pos] && args.player?.position !== potential_pos) {
+        if (
+            !args.combatants[potential_pos] &&
+            args.player?.position !== potential_pos &&
+            isValidCombatantPosition(potential_pos, args.tiles)
+        ) {
             starting_pos = potential_pos;
         }
     }

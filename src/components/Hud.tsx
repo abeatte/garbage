@@ -29,6 +29,7 @@ import Item from './Item';
 import { Purpose } from '../models/EntityModel';
 import Analytics from '../analytics';
 import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
+import { isTileValidCombatantPosition } from '../data/utils/TurnProcessingUtils';
 
 function getEditableField(
     { editing_value, enabled, editing_type, options, label, display, edit, update, done }: {
@@ -130,7 +131,7 @@ const Hud = () => {
         </div>
     );
 
-    const kill_spawn_button = selected_position > -1 && combatant?.state !== State.Dead && (
+    const kill_spawn_button = isTileValidCombatantPosition(tile) && combatant?.state !== State.Dead && (
         <div className={classNames(
             { 'Spawn_button_container': !combatant, 'Kill_button_container': !!combatant }
         )}>
@@ -198,7 +199,7 @@ const Hud = () => {
                                     editing_value: tile?.type as string,
                                     enabled: !tile,
                                     options: Object.keys(TileType).map(
-                                        t => t !== TileType.Void ? (<option key={`${t}`} value={t}>{t}</option>) : undefined),
+                                        t => <option key={`${t}`} value={t}>{t}</option>),
                                     label: (<span className={'Label'}>{'Tile: '}</span>),
                                     display: (<span>{tile?.type ?? ""}</span>),
                                     update: input => {

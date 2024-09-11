@@ -22,10 +22,17 @@ const Maps: { [name: string]: MapType } = {
                                 TileType.Grass :
                                 Math.random() < 0.1 ?
                                     TileType.Water :
-                                    TileType.Rock,
+                                    Math.random() < 0.1 ?
+                                        TileType.Void :
+                                        TileType.Rock,
                         });
                     } else {
-                        tiles[idx] = createTileModel({ index: idx, type: TileType.Sand });
+                        tiles[idx] = createTileModel({
+                            index: idx,
+                            type: Math.random() < 0.2 ?
+                                TileType.Void :
+                                TileType.Sand,
+                        });
                     }
                     idx++;
                 }
