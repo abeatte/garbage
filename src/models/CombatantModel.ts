@@ -36,7 +36,7 @@ export enum Gender { Male = "Male", Female = "Female" };
 export interface CombatantModel extends EntityModel {
     name: string | undefined;
     is_player: boolean;
-    target_destination: number;
+    target_waypoints: number[];
     state: State;
     visited_positions: { [position: number]: number };
     kills: number;
@@ -75,7 +75,7 @@ export function createCombatant(
         id: uuid(),
         name: getRandomCombatantName(),
         is_player: false,
-        target_destination: decision_type === DecisionType.Seeker ? args.spawn_position : -1,
+        target_waypoints: [],
         state: State.Alive,
         kills: 0,
         fitness: 0,
@@ -252,31 +252,43 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
 
             // seekers go directly toward their target. 
             if (self.decision_type === DecisionType.Seeker) {
-                if (self.target_destination === self.position) {
-                    self.target_destination = Math.floor(Math.random() * (tiles.length - 1));
-                    // if you are targeting an invalid position, sit tight. 
-                    if (!isValidCombatantPosition(self.target_destination, tiles)) {
-                        self.target_destination = self.position;
-                    }
+                let target_destination = self.target_waypoints[0];
+                if (
+                    // nowhere to go
+                    target_destination === undefined ||
+                    // already got there
+                    target_destination === self.position ||
+                    // can't get there
+                    !isValidCombatantPosition(target_destination, tiles)
+                ) {
+                    target_destination = self.position;
+                    self.target_waypoints[0] = Math.floor(Math.random() * (tiles.length - 1));
+                    // TODO: convert this into a PATH
                 }
 
                 const col_diff =
-                    (self.target_destination % window_width) -
+                    (target_destination % window_width) -
                     (self.position % window_width);
                 const row_diff =
-                    Math.floor(self.target_destination / window_width) -
+                    Math.floor(target_destination / window_width) -
                     Math.floor(self.position / window_width);
 
-                if (Math.abs(col_diff) > Math.abs(row_diff)) {
-                    position = self.position + (col_diff < 0 ? -1 : 1);
-                } else {
-                    position = self.position + (row_diff < 0 ? - window_width : window_width);
-                }
+                const col_movement_is_greater = Math.abs(col_diff) > Math.abs(row_diff);
+                const col_movement_position = self.position + (row_diff < 0 ? - window_width : window_width);
+                const row_movement_position = self.position + (col_diff < 0 ? -1 : 1);
+                const is_col_movement_valid = isValidCombatantPosition(col_movement_position, tiles);
+                const is_row_movement_valid = isValidCombatantPosition(row_movement_position, tiles);
 
-                // TODO: hack to reset target position when you run into a wall.
-                if (!isValidCombatantPosition(position, tiles)) {
-                    self.target_destination = Math.floor(Math.random() * (tiles.length - 1));
+                if (col_diff === 0 && row_diff === 0) {
                     position = self.position;
+                } else if ((col_movement_is_greater || !is_col_movement_valid) && is_row_movement_valid) {
+                    position = row_movement_position;
+                } else if (is_col_movement_valid) {
+                    position = col_movement_position;
+                } else {
+                    position = self.position;
+                    // TODO: hack to reset target position when you run into a wall.
+                    self.target_waypoints[0] = Math.floor(Math.random() * (tiles.length - 1));
                 }
 
                 break;

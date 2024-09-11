@@ -376,7 +376,7 @@ export const boardSlice = createSlice({
         },
         movePlayer: (state, action: PayloadAction<ArrowKey>) => {
             if (state.player) {
-                state.player.target_destination =
+                state.player.target_waypoints[0] =
                     getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.length);
             }
         },
@@ -453,7 +453,7 @@ export const boardSlice = createSlice({
                         immortal: selected.immortal
                     })
                 } else if (action.payload.field === "decision_type" && action.payload.value === DecisionType.Seeker) {
-                    selected.target_destination = selected.position;
+                    selected.target_waypoints.push(selected.position);
                 }
             }
         },

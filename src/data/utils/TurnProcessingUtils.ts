@@ -348,7 +348,7 @@ function birthSpawn({ sight, spawn, parent, arena_size }:
             // 1:4 chance of a different decision_type from the parent
             spawn.decision_type = Math.random() > 0.25 ? parent.decision_type : getRandomDecisionType();
             if (spawn.decision_type === DecisionType.Seeker) {
-                spawn.target_destination = spawn.position;
+                spawn.target_waypoints.push(spawn.position);
             }
         }
     }
@@ -377,12 +377,12 @@ function processCombatantMovement(
 
     let new_position;
     if (combatant.is_player) {
-        if (isValidCombatantPosition(combatant.target_destination, tiles)) {
-            new_position = combatant.target_destination;
+        new_position = combatant.target_waypoints.shift();
+        if (isValidCombatantPosition(new_position, tiles)) {
+            new_position = new_position as number;
         } else {
             new_position = current_position;
         }
-        combatant.target_destination = -1;
     } else {
         const sight = viewSurroundings(
             {
