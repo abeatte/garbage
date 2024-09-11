@@ -67,7 +67,7 @@ const Tile = (
           />
         }
         {
-          showPotential && tile &&
+          showPotential && tile && tile.type !== TileType.Void &&
           <span style={{ position: "absolute", color: !showRealTileImages ? "black" : "red" }} className='Tile_potential'>
             {playerSpecies ? tile.score_potential[playerSpecies] : getMapTileEffect({ species: undefined, tileType: tile.type })}
           </span>
