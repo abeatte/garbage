@@ -88,8 +88,6 @@ export function getMapTileScorePotentials(args: { position: number, tiles: TileM
             position_potential += getMapTileEffect({ species, tileType: tiles[position + window_width].type });
         }
 
-        // TODO: in the future, take into account an occupient of nearby tiles and their strengths;
-
         potentials[species] = Math.round(getMapTileEffect({ species, tileType: tiles[position].type }) + (position_potential / possible_directions));
     }
 
