@@ -12,7 +12,7 @@ export interface Surrounding {
 export interface Sight {
     min_potential: number,
     max_potential: number,
-    center: Surrounding
+    center: Surrounding | undefined,
     surroundings: (Surrounding | undefined)[],
     getNewRandomPosition: () => number,
 }
@@ -51,6 +51,7 @@ export function viewSurroundings(
         }
     }
 
+    const can_stay_put = position > -1 && position < tiles.length;
     const can_go_left = position % window_width > 0;
     const can_go_up = position - window_width > -1
     const can_go_right = position % window_width < window_width - 1;
@@ -58,7 +59,7 @@ export function viewSurroundings(
 
     // start at center position and then move clockwise around
     const surroundings = Array(9) as unknown as (Surrounding | undefined)[];
-    const center = setSurrounding(position);
+    const center = can_stay_put ? setSurrounding(position) : undefined;
     surroundings[ClockFace.c] = center;
     surroundings[ClockFace.tl] = can_go_up && can_go_left ?
         setSurrounding(position - window_width - 1) : undefined;
@@ -66,7 +67,7 @@ export function viewSurroundings(
         setSurrounding(position - window_width) : undefined;
     surroundings[ClockFace.tr] = can_go_up && can_go_right ?
         setSurrounding(position - window_width + 1) : undefined;
-    surroundings[ClockFace.r] = can_go_right ?
+    surroundings[ClockFace.r] = can_stay_put && can_go_right ?
         setSurrounding(position + 1) : undefined;
     surroundings[ClockFace.br] = can_go_down && can_go_right ?
         setSurrounding(position + window_width + 1) : undefined;
@@ -74,7 +75,7 @@ export function viewSurroundings(
         setSurrounding(position + window_width) : undefined;
     surroundings[ClockFace.bl] = can_go_down && can_go_left ?
         setSurrounding(position + window_width - 1) : undefined;
-    surroundings[ClockFace.l] = can_go_left ?
+    surroundings[ClockFace.l] = can_stay_put && can_go_left ?
         setSurrounding(position - 1) : undefined;
 
     const getNewRandomPosition = () => {
@@ -82,7 +83,7 @@ export function viewSurroundings(
         if (isTileValidCombatantPosition(surrounding?.tile)) {
             return (surrounding as Surrounding).position;
         }
-        return center.position;
+        return center?.position ?? -1;
     }
 
     return { surroundings, min_potential, max_potential, center, getNewRandomPosition };
