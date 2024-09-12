@@ -249,7 +249,6 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
             position = sight.getNewRandomPosition();
             break;
         case MovementLogic.DecisionTree:
-
             // seekers go directly toward their target. 
             if (self.decision_type === DecisionType.Seeker) {
                 let target_destination = self.target_waypoints[0];
@@ -262,8 +261,7 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
                     !isValidCombatantPosition(target_destination, tiles)
                 ) {
                     target_destination = self.position;
-                    self.target_waypoints[0] = Math.floor(Math.random() * (tiles.length - 1));
-                    // TODO: convert this into a PATH
+                    self.target_waypoints = getSeekerPath(tiles);
                 }
 
                 const col_diff =
@@ -288,7 +286,7 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
                 } else {
                     position = self.position;
                     // TODO: hack to reset target position when you run into a wall.
-                    self.target_waypoints[0] = Math.floor(Math.random() * (tiles.length - 1));
+                    self.target_waypoints = getSeekerPath(tiles);
                 }
 
                 break;
@@ -347,6 +345,15 @@ export function requestMove({ movement_logic, sight, self, tiles, window_width }
 
     return position;
 };
+
+function getSeekerPath(tiles: Readonly<TileModel[]>): number[] {
+    const waypoints = [];
+    waypoints.push(Math.floor(Math.random() * (tiles.length - 1)));
+
+    // TODO: add more logic for paths
+
+    return waypoints;
+}
 
 export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_count: number) {
     let clockFace;
