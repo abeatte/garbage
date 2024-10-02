@@ -26,10 +26,10 @@ import { Character, DecisionType, Gender, getRandomCombatantName, State } from '
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import Item from './Item';
-import { Purpose } from '../models/EntityModel';
 import Analytics from '../analytics';
 import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 import { isTileValidCombatantPosition } from '../data/utils/TurnProcessingUtils';
+import { Purpose } from '../objects/EntityObject';
 
 function getEditableField(
     { editing_value, enabled, editing_type, options, label, display, edit, update, done }: {

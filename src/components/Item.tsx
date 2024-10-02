@@ -1,8 +1,8 @@
 import { faBasketball, faBomb, faExplosion, faMedkit, faSpider } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Purpose } from "../models/EntityModel";
 import { ItemType, SpiderType, ItemModel, Type } from "../objects/items/Item";
+import { Purpose } from "../objects/EntityObject";
 
 const getIcon = (type: ItemType) => {
     switch (type) {

@@ -3,9 +3,8 @@ import { Items } from "../../data/slices/boardSlice";
 import { Sight } from "../../data/utils/SightUtils";
 import { TileModel } from "../../models/TileModel";
 import CombatantObject from "../combatants/CombatantObject";
-import EntityObject from "../EntityObject";
+import EntityObject, { EntityModel } from "../EntityObject";
 import CombatantModel from "../../models/CombatantModel";
-import { EntityModel } from "../../models/EntityModel";
 
 export enum SpiderType { WaterSpider = "WaterSpider", FireSpider = "FireSpider", RockSpider = "RockSpider", SandSpider = "SandSpider", GrassSpider = "GrassSpider" };
 export enum Type { Bomb = "Bomb", PokemonBall = "PokemonBall", MedPack = "MedPack" };

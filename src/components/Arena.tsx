@@ -33,12 +33,12 @@ import Item from "./Item";
 import { PaintEntity } from "../data/slices/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
 import { HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
-import { Purpose } from "../models/EntityModel";
 import Analytics from "../analytics";
 import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
 import Controls from "./Controls";
 import { mapStateToProps } from "../data/utils/ReactUtils";
 import { State } from "../models/CombatantModel";
+import { Purpose } from "../objects/EntityObject";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {

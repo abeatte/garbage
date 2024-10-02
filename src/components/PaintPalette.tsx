@@ -10,7 +10,6 @@ import { HudPanel, setActiveHudPanel } from "../data/slices/hudSlice";
 import { setSelectedPaint, togglePalettsDisplayed } from "../data/slices/paintPaletteSlice";
 import { AppState } from "../data/store";
 import { Character, State } from "../models/CombatantModel";
-import { Purpose } from "../models/EntityModel";
 import { Pointer } from "../models/PointerModel";
 import { createTileModel, Type as TileType } from "../models/TileModel";
 import Combatant from "./Combatant";
@@ -19,6 +18,7 @@ import Tile from "./Tile";
 import { GetItemObject } from "../data/utils/ItemUtils";
 import SpiderObject from "../objects/items/SpiderObject";
 import { SpiderType, Type } from "../objects/items/Item";
+import { Purpose } from "../objects/EntityObject";
 
 const PaintPalette = () => {
     const board = useSelector((state: AppState) => state.board);
