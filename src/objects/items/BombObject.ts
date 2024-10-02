@@ -2,10 +2,9 @@ import { Items } from "../../data/slices/boardSlice";
 import { addItemToBoard } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
-import { ItemState, ItemType, Type } from "../../models/ItemModel";
 import { TileModel } from "../../models/TileModel";
 import CombatantObject from "../combatants/CombatantObject";
-import ItemObject from "./ItemObject";
+import ItemObject, { ItemState, ItemType, Type } from "./Item";
 
 export default class BombObject extends ItemObject {
 

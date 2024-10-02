@@ -2,7 +2,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Character } from "../../models/CombatantModel";
 import { Pointer } from "../../models/PointerModel";
 import { Type as TileType } from "../../models/TileModel";
-import { ItemType } from "../../models/ItemModel";
+import { ItemType } from "../../objects/items/Item";
 
 export type PaintEntity = PlayerUsablePaintEntities | TileType | Character;
 export type PlayerUsablePaintEntities = Pointer | ItemType;

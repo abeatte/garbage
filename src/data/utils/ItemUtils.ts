@@ -1,6 +1,5 @@
-import { ItemModel, ItemType } from "../../models/ItemModel";
 import BombObject from "../../objects/items/BombObject";
-import ItemObject from "../../objects/items/ItemObject";
+import ItemObject, { ItemModel, ItemType } from "../../objects/items/Item";
 import MedPackObject from "../../objects/items/MedPackObject";
 import PokemonBallObject from "../../objects/items/PokemonBallObject";
 import SpiderObject from "../../objects/items/SpiderObject";

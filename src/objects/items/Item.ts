@@ -1,12 +1,28 @@
 import uuid from "react-uuid";
 import { Items } from "../../data/slices/boardSlice";
 import { Sight } from "../../data/utils/SightUtils";
-import { ItemModel, ItemState, ItemType, SpiderType, Type } from "../../models/ItemModel";
 import { TileModel } from "../../models/TileModel";
 import CombatantObject from "../combatants/CombatantObject";
 import EntityObject from "../EntityObject";
+import CombatantModel from "../../models/CombatantModel";
+import { EntityModel } from "../../models/EntityModel";
 
-export default abstract class ItemObject extends EntityObject<ItemModel> {
+export enum SpiderType { WaterSpider = "WaterSpider", FireSpider = "FireSpider", RockSpider = "RockSpider", SandSpider = "SandSpider", GrassSpider = "GrassSpider" };
+export enum Type { Bomb = "Bomb", PokemonBall = "PokemonBall", MedPack = "MedPack" };
+export type ItemType = Type | SpiderType;
+export enum ItemState { Spent = "Spent", Live = "Live" };
+
+export const MAX_TILE_ITEM_COUNT = 4;
+
+export interface ItemModel extends EntityModel {
+    type: ItemType;
+    state: ItemState;
+    fuse_length: number;
+    kills: number;
+    captured: CombatantModel[];
+}
+
+export default abstract class Item extends EntityObject<ItemModel> {
     protected _model: ItemModel;
 
     constructor(model?: { type: ItemType });

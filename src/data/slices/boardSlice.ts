@@ -7,8 +7,7 @@ import {
     addItemToBoard,
     GetCombatantObject,
 } from '../utils/CombatantUtils';
-import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
-import { ItemModel, Type, SpiderType, ItemType } from '../../models/ItemModel';
+import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType, Type } from "../../models/TileModel";
 import CombatantModel, { Character, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
 import { GetItemObject, updateItemsAfterResize } from '../utils/ItemUtils';
@@ -20,6 +19,7 @@ import { isValidCombatantPosition, processBoardTick } from '../utils/TurnProcess
 import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 import PlayerObject from '../../objects/combatants/PlayerObject';
+import { ItemModel, SpiderType, ItemType } from '../../objects/items/Item';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };

@@ -3,11 +3,11 @@ import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../mod
 import { TileModel, Type as TileType } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
 import { GetCombatantObject } from "./CombatantUtils";
-import { ItemModel } from "../../models/ItemModel";
 import { viewSurroundings } from "./SightUtils";
 import CombatantObject from "../../objects/combatants/CombatantObject";
 import PlayerObject from "../../objects/combatants/PlayerObject";
 import { GetItemObject } from "./ItemUtils";
+import { ItemModel } from "../../objects/items/Item";
 
 export function processBoardTick(
     { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:

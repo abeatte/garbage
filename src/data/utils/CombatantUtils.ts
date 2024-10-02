@@ -1,6 +1,5 @@
 import { Combatants } from "../slices/boardSlice";
 import { TileModel } from "../../models/TileModel";
-import { ItemModel, MAX_TILE_ITEM_COUNT } from "../../models/ItemModel";
 import { viewSurroundings } from "./SightUtils";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
 import CombatantObject from "../../objects/combatants/CombatantObject";
@@ -9,7 +8,7 @@ import CombatantModel, { Character, DecisionType } from "../../models/CombatantM
 import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
 import SeekerObject from "../../objects/combatants/SeekerObject";
 import NPC from "../../objects/combatants/NPC";
-import ItemObject from "../../objects/items/ItemObject";
+import ItemObject, { ItemModel, MAX_TILE_ITEM_COUNT } from "../../objects/items/Item";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;

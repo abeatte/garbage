@@ -1,10 +1,9 @@
 import { Items } from "../../data/slices/boardSlice";
 import { addItemToBoard } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
-import { SpiderType, Type as ItemType } from "../../models/ItemModel";
 import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
 import CombatantObject from "../combatants/CombatantObject";
-import ItemObject from "./ItemObject"
+import ItemObject, { ItemType, SpiderType } from "./Item"
 
 export default class SpiderObject extends ItemObject {
 
