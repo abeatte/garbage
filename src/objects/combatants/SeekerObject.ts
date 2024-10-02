@@ -1,6 +1,6 @@
-import { isValidCombatantPosition } from "../data/utils/TurnProcessingUtils";
-import { DecisionType } from "../models/CombatantModel";
-import { TileModel } from "../models/TileModel";
+import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
+import { DecisionType } from "../../models/CombatantModel";
+import { TileModel } from "../../models/TileModel";
 import CombatantObject from "./CombatantObject";
 
 export default class SeekerObject extends CombatantObject {

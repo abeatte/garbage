@@ -2,12 +2,12 @@ import CombatantModel, { DecisionType, State, getMapTileEffect } from "../../mod
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, Type as TileType } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
-import { GetCombatantObject, MIN_HEALTH, addItemToBoard } from "./CombatantUtils";
-import { ItemModel, Type as ItemType, State as ItemState } from "../../models/ItemModel";
-import { SpiderModel, paintTileForSpider } from "../../models/SpiderModel";
+import { GetCombatantObject } from "./CombatantUtils";
+import { ItemModel } from "../../models/ItemModel";
 import { viewSurroundings } from "./SightUtils";
-import CombatantObject from "../../objects/CombatantObject";
-import PlayerObject from "../../objects/PlayerObject";
+import CombatantObject from "../../objects/combatants/CombatantObject";
+import PlayerObject from "../../objects/combatants/PlayerObject";
+import { GetItemObject } from "./ItemUtils";
 
 export function processBoardTick(
     { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:
@@ -66,97 +66,14 @@ function processEnvironmentEffects(
         const position = parseInt(p);
         const position_items = items[position];
 
-        position_items.forEach((item: ItemModel) => {
-            if (item.state === ItemState.Spent) {
+        position_items.forEach((i: ItemModel) => {
+            const item = GetItemObject(i);
+            if (item === undefined || item.isSpent()) {
                 return;
             }
 
-            const sight = viewSurroundings({ position: item.position, tiles, window_width, combatants });
-            switch (item.type) {
-                case ItemType.Bomb:
-                    if (item.fuse_length > 0 && item.tick === item.fuse_length) {
-                        // time to blow
-                        sight.surroundings.forEach(surrounding => {
-                            if (surrounding === undefined || isTileValidCombatantPosition(surrounding.tile)) {
-                                return;
-                            }
-
-                            const c_to_die = surrounding.occupant;
-                            if (c_to_die !== undefined) {
-                                c_to_die.kill();
-                                deaths++;
-                                item.kills += 1;
-                            }
-                            items[surrounding.position] = [];
-                        });
-                        // items[position] = [];
-                        item.state = ItemState.Spent;
-                    }
-                    addItemToBoard(item, working_items);
-                    break;
-                case ItemType.PokemonBall:
-                    const valid_surroundings =
-                        sight.surroundings.filter(sur => isTileValidCombatantPosition(sur?.tile));
-                    const capacity = valid_surroundings.length;
-
-                    if (item.fuse_length > 0 && item.tick === item.fuse_length) {
-                        // time to blow
-                        const captives = item.captured;
-                        item.captured = [];
-                        while (captives.length > 0) {
-                            const captive = GetCombatantObject(captives.pop());
-                            const surrounding = valid_surroundings.pop();
-                            if (captive === undefined || surrounding === undefined) {
-                                return;
-                            }
-
-                            // time passes for the captive
-                            captive.releaseFromCaptivity(item.fuse_length);
-
-                            const occupant = surrounding.occupant;
-
-                            if (occupant === undefined) {
-                                combatants[surrounding.position] = captive;
-                                captive.setPosition(surrounding.position);
-                            } else {
-                                combatants[surrounding.position] = occupant.fightWith(captive);
-                                combatants[surrounding.position].setPosition(surrounding.position);
-                                deaths++;
-                            }
-                        }
-                        // item.state = ItemState.Spent;
-                    } else {
-                        if (item.captured.length < capacity) {
-                            // can only store as many tiles as it can disgorge into
-                            sight.surroundings.forEach(surrounding => {
-                                const c_to_capture = surrounding?.occupant;
-                                if (c_to_capture) {
-                                    combatants[c_to_capture.getPosition()].capture()
-                                    item.captured.push(c_to_capture.toModel());
-                                }
-                            });
-                        }
-                        addItemToBoard(item, working_items);
-                    }
-                    break;
-                case ItemType.MedPack:
-                    const occupant = combatants[position];
-                    if (occupant) {
-                        occupant.affectFitness(-MIN_HEALTH);
-                    } else {
-                        addItemToBoard(item, working_items);
-                    }
-                    break;
-                case ItemType.Spider:
-                    const new_position = sight.getNewRandomPosition();
-                    if (item.fuse_length > 0 && item.tick < item.fuse_length) {
-                        item.position = new_position;
-                        addItemToBoard(item, working_items);
-                        paintTileForSpider(item as SpiderModel, tiles, window_width);
-                    }
-                    break;
-            }
-            item.tick += 1;
+            const sight = viewSurroundings({ position: item.getPosition(), tiles, window_width, combatants });
+            item.tap(sight, working_items, combatants, tiles, window_width);
         });
     })
 
@@ -165,12 +82,10 @@ function processEnvironmentEffects(
         const position = parseInt(p);
         const combatant = combatants[position];
 
-        if (!combatant.isImmortal) {
+        if (!combatant.isImmortal()) {
             combatant.affectFitness(getMapTileEffect({ species: combatant.getSpecies(), tileType: tiles[position].type }));
         }
         combatant.updateStrengthRating(getStrengthRating({ global_combatant_stats, fitness: combatant.getFitness(), immortal: combatant.isImmortal() }));
-
-
 
         // catch the player
         if (combatant.isPlayer()) {

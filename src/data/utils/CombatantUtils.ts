@@ -3,12 +3,13 @@ import { TileModel } from "../../models/TileModel";
 import { ItemModel, MAX_TILE_ITEM_COUNT } from "../../models/ItemModel";
 import { viewSurroundings } from "./SightUtils";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
-import CombatantObject from "../../objects/CombatantObject";
-import PlayerObject from "../../objects/PlayerObject";
+import CombatantObject from "../../objects/combatants/CombatantObject";
+import PlayerObject from "../../objects/combatants/PlayerObject";
 import CombatantModel, { Character, DecisionType } from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
-import NPC from "../../objects/NPC";
-import SeekerObject from "../../objects/SeekerObject";
+import SeekerObject from "../../objects/combatants/SeekerObject";
+import NPC from "../../objects/combatants/NPC";
+import ItemObject from "../../objects/items/ItemObject";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -25,7 +26,6 @@ export const DirectionalMoves = [ClockFace.t, ClockFace.r, ClockFace.b, ClockFac
 export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFace.bl];
 export const LegalMoves = [ClockFace.c, ...DirectionalMoves];
 export const IllegalMoves = [...DiagonalMoves];
-
 
 export function GetCombatantObject(model: { position: number, species?: Character, decision_type?: DecisionType }, global_combatant_stats?: GlobalCombatantStatsModel): CombatantObject;
 export function GetCombatantObject(model: CombatantModel | undefined): CombatantObject | undefined;
@@ -45,7 +45,7 @@ export function GetCombatantObject(
         return new NPC(model, global_combatant_stats);
     }
 
-    throw new Error("Method not implemented.")
+    throw new Error("CombatantType not implemented.")
 }
 
 export function initCombatantStartingPos(
@@ -145,14 +145,14 @@ export function killAndCopy({ positions, combatants }: { positions: number[], co
     }, {} as Combatants);
 }
 
-export function addItemToBoard(item: ItemModel, working_items: { [position: number]: ItemModel[] | undefined }) {
-    if (working_items[item.position] === undefined) {
-        working_items[item.position] = [];
+export function addItemToBoard(item: ItemObject, working_items: { [position: number]: ItemModel[] | undefined }) {
+    if (working_items[item.getPosition()] === undefined) {
+        working_items[item.getPosition()] = [];
     }
 
-    const items = working_items[item.position] as ItemModel[];
+    const items = working_items[item.getPosition()] as ItemModel[];
     if (items.length === MAX_TILE_ITEM_COUNT) {
         items.shift();
     }
-    items.push(item);
+    items.push(item.toModel());
 }

@@ -10,8 +10,8 @@ import Brain from "../models/Brain";
 import CombatantModel, { Character } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
-import CombatantObject from "../objects/CombatantObject";
-import NPC from "../objects/NPC";
+import CombatantObject from "../objects/combatants/CombatantObject";
+import NPC from "../objects/combatants/NPC";
 
 export type Input = { [position: string]: number };
 export type Output = { [direction: string]: number };

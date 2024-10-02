@@ -11,13 +11,14 @@ import { setSelectedPaint, togglePalettsDisplayed } from "../data/slices/paintPa
 import { AppState } from "../data/store";
 import { Character, State } from "../models/CombatantModel";
 import { Purpose } from "../models/EntityModel";
-import { createItemModel, Type as ItemType } from "../models/ItemModel";
+import { Type as ItemType, SpiderType } from "../models/ItemModel";
 import { Pointer } from "../models/PointerModel";
-import { createSpiderModel, Type as SpiderType } from "../models/SpiderModel";
 import { createTileModel, Type as TileType } from "../models/TileModel";
 import Combatant from "./Combatant";
 import Item from "./Item";
 import Tile from "./Tile";
+import { GetItemObject } from "../data/utils/ItemUtils";
+import SpiderObject from "../objects/items/SpiderObject";
 
 const PaintPalette = () => {
     const board = useSelector((state: AppState) => state.board);
@@ -96,13 +97,8 @@ const PaintPalette = () => {
 
     const background_tile = createTileModel({ index: -1, type: TileType.Sand });
 
-    const items = Object.keys(ItemType).map((k, idx) => {
-        const item = createItemModel({ position: -1, type: ItemType[k as keyof typeof ItemType] });
-
-        if (item.type === ItemType.Spider) {
-            return undefined;
-        }
-
+    const items = Object.values(ItemType).map((k, idx) => {
+        const item = GetItemObject({ type: ItemType[k] });
         return (
             <Tile
                 id={idx}
@@ -110,22 +106,22 @@ const PaintPalette = () => {
                 showRealTileImages={board.show_real_tile_images}
                 className={classNames("Clickable")}
                 onClick={() => {
-                    Analytics.logEvent(`button_clicked: Paint Palette item type ${item.type} selected`);
-                    dispatch(setSelectedPaint(item.type));
+                    Analytics.logEvent(`button_clicked: Paint Palette item type ${item.getType()} selected`);
+                    dispatch(setSelectedPaint(item.getType()));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
                 }}
-                isSelected={paintPalette.selected === item.type}
+                isSelected={paintPalette.selected === item.getType()}
                 key={`paint_item_${idx}`}
             >
-                <Item item={item} purpose={Purpose.Paint} />
+                <Item item={item.toModel()} purpose={Purpose.Paint} />
             </Tile>
         )
     });
 
-    const spiders = Object.keys(SpiderType).map((k, idx) => {
-        const spider = createSpiderModel({ position: -1, type: SpiderType[k as keyof typeof SpiderType] });
-        const tile = createTileModel({ index: -1, type: spider.tile_action });
+    const spiders = Object.values(SpiderType).map((k, idx) => {
+        const spider = GetItemObject({ type: k }) as SpiderObject;
+        const tile = createTileModel({ index: -1, type: spider.getActionType() });
         return (
             <Tile
                 id={idx}
@@ -134,14 +130,14 @@ const PaintPalette = () => {
                 className={classNames("Clickable")}
                 onClick={() => {
                     Analytics.logEvent('button_clicked: Paint Palette spider selected');
-                    dispatch(setSelectedPaint(spider.spider_type));
+                    dispatch(setSelectedPaint(spider.getType()));
                     dispatch(select({}));
                     dispatch(setActiveHudPanel(HudPanel.NONE));
                 }}
-                isSelected={paintPalette.selected === spider.spider_type}
+                isSelected={paintPalette.selected === spider.getType()}
                 key={`paint_item_${idx}`}
             >
-                <Item item={spider} purpose={Purpose.Paint} />
+                <Item item={spider.toModel()} purpose={Purpose.Paint} />
             </Tile>
         )
     })

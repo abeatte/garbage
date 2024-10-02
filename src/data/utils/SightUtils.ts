@@ -1,6 +1,6 @@
 import CombatantModel, { Character } from "../../models/CombatantModel";
 import { getMapTileScorePotentials, TileModel } from "../../models/TileModel";
-import CombatantObject from "../../objects/CombatantObject";
+import CombatantObject from "../../objects/combatants/CombatantObject";
 import { ClockFace, GetCombatantObject, LegalMoves } from "./CombatantUtils";
 import { isTileValidCombatantPosition } from "./TurnProcessingUtils";
 

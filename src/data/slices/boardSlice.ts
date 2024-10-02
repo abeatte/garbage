@@ -8,19 +8,18 @@ import {
     GetCombatantObject,
 } from '../utils/CombatantUtils';
 import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
-import { createItemModel, ItemModel, Type as ItemType } from '../../models/ItemModel';
+import { ItemModel, Type, SpiderType, ItemType } from '../../models/ItemModel';
 import CombatantModel, { Character, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
-import { updateItemsAfterResize } from '../utils/ItemUtils';
+import { GetItemObject, updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
 import { Pointer } from '../../models/PointerModel';
-import { createSpiderModel, paintTileForSpider, Type as SpiderType } from '../../models/SpiderModel';
 import Maps from '../Map';
 import { getCombatantAtTarget } from '../utils/TargetingUtils';
 import { isValidCombatantPosition, processBoardTick } from '../utils/TurnProcessingUtils';
 import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
-import PlayerObject from '../../objects/PlayerObject';
+import PlayerObject from '../../objects/combatants/PlayerObject';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
@@ -302,15 +301,9 @@ const mapReducers = {
         } else if (!valid_combatant_position) {
             /* no op */
             return;
-        } else if (Object.keys(ItemType).includes(action.payload.type)) {
-            const new_item =
-                createItemModel({ position: action.payload.position, type: action.payload.type as ItemType });
+        } else if (Object.keys(Type).includes(action.payload.type) || Object.keys(SpiderType).includes(action.payload.type)) {
+            const new_item = GetItemObject({ position: action.payload.position, type: action.payload.type as ItemType });
             addItemToBoard(new_item, state.items);
-        } else if (Object.keys(SpiderType).includes(action.payload.type)) {
-            const new_spider =
-                createSpiderModel({ position: action.payload.position, type: action.payload.type as SpiderType });
-            addItemToBoard(new_spider, state.items);
-            paintTileForSpider(new_spider, state.tiles, state.arena.width);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] =
                 GetCombatantObject({

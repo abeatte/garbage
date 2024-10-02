@@ -1,4 +1,24 @@
+import { ItemModel, ItemType } from "../../models/ItemModel";
+import BombObject from "../../objects/items/BombObject";
+import ItemObject from "../../objects/items/ItemObject";
+import MedPackObject from "../../objects/items/MedPackObject";
+import PokemonBallObject from "../../objects/items/PokemonBallObject";
+import SpiderObject from "../../objects/items/SpiderObject";
 import { Items } from "../slices/boardSlice";
+
+export function GetItemObject(model: { type: ItemType } | ItemModel): ItemObject {
+    if (BombObject.IsOf(model)) {
+        return new BombObject(model);
+    } else if (MedPackObject.IsOf(model)) {
+        return new MedPackObject(model);
+    } else if (PokemonBallObject.IsOf(model)) {
+        return new PokemonBallObject(model);
+    } else if (SpiderObject.IsOf(model)) {
+        return new SpiderObject(model);
+    }
+
+    throw new Error("ItemType not implemented.")
+}
 
 export function updateItemsAfterResize(
     { items, window_width, window_height, old_window_width }:

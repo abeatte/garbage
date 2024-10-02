@@ -1,16 +1,17 @@
 import uuid from "react-uuid";
-import CombatantModel, { Character, DecisionType, Gender, getMapTileEffect, getRandomCombatantName, getRandomSpecies, State, Strength } from "../models/CombatantModel";
-import { GlobalCombatantStatsModel, getStrengthRating } from "../models/GlobalCombatantStatsModel";
-import { MovementLogic } from "../data/slices/boardSlice";
-import { ClockFace, GetCombatantObject, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../data/utils/CombatantUtils";
-import { Sight, viewSurroundings } from "../data/utils/SightUtils";
-import { isTileValidCombatantPosition } from "../data/utils/TurnProcessingUtils";
-import Brain from "../models/Brain";
-import { TileModel } from "../models/TileModel";
+import CombatantModel, { Character, DecisionType, Gender, getMapTileEffect, getRandomCombatantName, getRandomSpecies, State, Strength } from "../../models/CombatantModel";
+import { GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
+import { MovementLogic } from "../../data/slices/boardSlice";
+import { ClockFace, GetCombatantObject, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../../data/utils/CombatantUtils";
+import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
+import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
+import Brain from "../../models/Brain";
+import { TileModel } from "../../models/TileModel";
+import EntityObject from "../EntityObject";
 
 const Brains = Brain.init();
 
-export default abstract class CombatantObject {
+export default abstract class CombatantObject extends EntityObject<CombatantModel> {
     protected _model: CombatantModel;
 
     constructor(model: { position: number, species?: Character, decision_type?: DecisionType });
@@ -23,28 +24,31 @@ export default abstract class CombatantObject {
         model: CombatantModel,
         global_combatant_stats?: GlobalCombatantStatsModel,
     ) {
+        super();
         const visited_positions = {} as { [position: number]: number };
         visited_positions[model.position] = model.position;
         const decisions = Object.values(DecisionType);
-        const decision_type = model.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)];
+        const fitness = model.fitness ?? 0;
+        const immortal = model.immortal ?? false;
+
         this._model = {
-            id: uuid(),
-            name: getRandomCombatantName(),
-            is_player: false,
+            id: model.id ?? uuid(),
+            name: model.name ?? getRandomCombatantName(),
+            is_player: model.is_player ?? false,
             target_waypoints: model.target_waypoints ?? [],
-            state: State.Alive,
-            kills: 0,
-            fitness: 0,
-            strength: getStrengthRating({ global_combatant_stats: global_combatant_stats, fitness: 0, immortal: false }),
-            decision_type,
-            immortal: false,
+            state: model.state ?? State.Alive,
+            kills: model.kills ?? 0,
+            fitness,
+            strength: getStrengthRating({ global_combatant_stats: global_combatant_stats, fitness, immortal }),
+            decision_type: model.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)],
+            immortal,
             species: model.species ?? getRandomSpecies(),
-            gender: Math.random() < .5 ? Gender.Male : Gender.Female,
-            tick: 0,
+            gender: model.gender ?? Math.random() < .5 ? Gender.Male : Gender.Female,
+            tick: model.tick ?? 0,
             position: model.position,
-            visited_positions,
-            spawn: undefined,
-            children: 0,
+            visited_positions: model.visited_positions ?? visited_positions,
+            spawn: model.spawn,
+            children: model.children ?? 0,
         }
     }
 

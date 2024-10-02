@@ -1,12 +1,11 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Character } from "../../models/CombatantModel";
-import { Type as ItemType } from "../../models/ItemModel";
 import { Pointer } from "../../models/PointerModel";
 import { Type as TileType } from "../../models/TileModel";
-import { Type as SpiderType } from "../../models/SpiderModel";
+import { ItemType } from "../../models/ItemModel";
 
 export type PaintEntity = PlayerUsablePaintEntities | TileType | Character;
-export type PlayerUsablePaintEntities = Pointer | ItemType | SpiderType;
+export type PlayerUsablePaintEntities = Pointer | ItemType;
 
 type PaintPaletteState = {
     palette_displayed: boolean,

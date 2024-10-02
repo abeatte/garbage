@@ -1,9 +1,9 @@
-import { MovementLogic } from "../data/slices/boardSlice";
-import { Sight } from "../data/utils/SightUtils";
-import { isValidCombatantPosition } from "../data/utils/TurnProcessingUtils";
-import { Character, DecisionType } from "../models/CombatantModel";
-import { GlobalCombatantStatsModel } from "../models/GlobalCombatantStatsModel";
-import { TileModel } from "../models/TileModel";
+import { MovementLogic } from "../../data/slices/boardSlice";
+import { Sight } from "../../data/utils/SightUtils";
+import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
+import { Character, DecisionType } from "../../models/CombatantModel";
+import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
+import { TileModel } from "../../models/TileModel";
 import CombatantObject from "./CombatantObject";
 
 export default class PlayerObject extends CombatantObject {

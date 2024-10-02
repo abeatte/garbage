@@ -2,30 +2,54 @@ import { faBasketball, faBomb, faExplosion, faMedkit, faSpider } from "@fortawes
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Purpose } from "../models/EntityModel";
-import { ItemModel, Type as ItemType } from "../models/ItemModel";
+import { ItemModel, ItemType, SpiderType, Type } from "../models/ItemModel";
 
 const getIcon = (type: ItemType) => {
     switch (type) {
-        case ItemType.Bomb:
+        case Type.Bomb:
             return faBomb;
-        case ItemType.PokemonBall:
+        case Type.PokemonBall:
             return faBasketball;
-        case ItemType.MedPack:
+        case Type.MedPack:
             return faMedkit;
-        case ItemType.Spider:
+        case SpiderType.FireSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.GrassSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.RockSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.SandSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.WaterSpider:
             return faSpider;
     }
 }
 
 const getEndIcon = (type: ItemType) => {
     switch (type) {
-        case ItemType.Bomb:
+        case Type.Bomb:
             return faExplosion;
-        case ItemType.PokemonBall:
+        case Type.PokemonBall:
             return faExplosion;
-        case ItemType.MedPack:
+        case Type.MedPack:
             return faMedkit;
-        case ItemType.Spider:
+        case SpiderType.FireSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.GrassSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.RockSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.SandSpider:
+        // fall-through
+        /* eslint-disable-next-line no-fallthrough */
+        case SpiderType.WaterSpider:
             return faSpider;
     }
 }
