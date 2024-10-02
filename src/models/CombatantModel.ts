@@ -1,17 +1,8 @@
-import uuid from "react-uuid";
-import {
-    MAX_YOUNGLING_TICK,
-    ClockFace,
-    IllegalMoves,
-} from "../data/utils/CombatantUtils";
-import { TileModel, Type as TileType } from "./TileModel";
-import { getStrengthRating, GlobalCombatantStatsModel } from "./GlobalCombatantStatsModel";
-import { ArrowKey, MovementLogic } from "../data/slices/boardSlice";
-import Brain from "./Brain";
+import { ClockFace } from "../data/utils/CombatantUtils";
+import { Type as TileType } from "./TileModel";
+import { ArrowKey } from "../data/slices/boardSlice";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "./EntityModel";
-import { Sight } from "../data/utils/SightUtils";
-import { isTileValidCombatantPosition, isValidCombatantPosition } from "../data/utils/TurnProcessingUtils";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Alive = "alive", Mating = "mating", Dead = "dead", Captured = "Captured" };
@@ -50,8 +41,6 @@ export interface CombatantModel extends EntityModel {
     children: number,
 }
 
-const Brains = Brain.init();
-
 const uniqueNamesConfig: UniqueNamesConfig = {
     dictionaries: [colors, names, adjectives],
     separator: '|',
@@ -62,34 +51,6 @@ const uniqueNamesConfig: UniqueNamesConfig = {
 export function getRandomCombatantName(): string {
     const nameParts = uniqueNamesGenerator(uniqueNamesConfig).split("|");
     return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
-}
-
-export function createCombatant(
-    args: { spawn_position: number, species?: Character, decision_type?: DecisionType, global_combatant_stats?: GlobalCombatantStatsModel },
-): CombatantModel {
-    const visited_positions = {} as { [position: number]: number };
-    visited_positions[args.spawn_position] = args.spawn_position;
-    const decisions = Object.values(DecisionType);
-    const decision_type = args.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)];
-    return {
-        id: uuid(),
-        name: getRandomCombatantName(),
-        is_player: false,
-        target_waypoints: [],
-        state: State.Alive,
-        kills: 0,
-        fitness: 0,
-        strength: getStrengthRating({ global_combatant_stats: args.global_combatant_stats, fitness: 0, immortal: false }),
-        decision_type,
-        immortal: false,
-        species: args.species ?? getRandomSpecies(),
-        gender: Math.random() < .5 ? Gender.Male : Gender.Female,
-        tick: 0,
-        position: args.spawn_position,
-        visited_positions,
-        spawn: undefined,
-        children: 0,
-    }
 }
 
 export function getMapTileEffect({ species, tileType }: { species: Character | undefined, tileType: TileType }) {
@@ -129,230 +90,6 @@ export function getMapTileEffect({ species, tileType }: { species: Character | u
         // lame, you get nothing
         return 0 + species_buff;
     }
-}
-
-function getBestTargetPosition(
-    self: CombatantModel, bucketed_target_strengths: { [key: string]: number[] }
-): number {
-    const compareStrength = (a: Strength | undefined, b: Strength | undefined): number => {
-        if (b === undefined) {
-            return 1;
-        } else if (a === undefined) {
-            return -1;
-        } else if (b === a) {
-            return 0;
-        } else if (a === Strength.Immortal) {
-            return 1;
-        } else if (a === Strength.Strong && b !== Strength.Immortal) {
-            return 1;
-        } else if (a === Strength.Average && (b !== Strength.Immortal && b !== Strength.Strong)) {
-            return 1;
-        } else {
-            return -1;
-        }
-    };
-    // position based on best prey (enemy) space
-    const best_target_bucket = bucketed_target_strengths[(Object.keys(bucketed_target_strengths) as Strength[])
-        .sort((a, b) => -compareStrength(a, b))
-        .filter(s => compareStrength(s, self.strength) > 0)[0]] ?? [];
-    const best_target_position = best_target_bucket.length > 0 ?
-        best_target_bucket[Math.floor(Math.random() * best_target_bucket.length)] : -1;
-
-    return best_target_position;
-}
-
-// All types like open spaces;
-function getBestOpenPosition(
-    self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: { [key: string]: number[] }
-): number {
-    // position based on best safe space
-    const best_empty_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
-        .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
-    const best_safe_position = best_empty_bucket?.length > 0 ?
-        best_empty_bucket[Math.floor(Math.random() * best_empty_bucket.length)] : -1;
-
-    return best_safe_position;
-}
-
-export function requestMove({ movement_logic, sight, self, tiles, window_width }:
-    {
-        movement_logic: MovementLogic,
-        sight: Sight,
-        self: CombatantModel,
-        tiles: Readonly<TileModel[]>,
-        window_width: number,
-    }): number {
-    const bucketed_enemy_strengths = {} as { [key: string]: number[] };
-    const bucketed_ally_strengths = {} as { [key: string]: number[] };
-    const bucketed_mate_strengths = {} as { [key: string]: number[] };
-    const bucketed_empty_tiles = {} as { [key: number]: number[] };
-
-    sight.surroundings.forEach((surrounding, idx, s_arr) => {
-        if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
-            return;
-        }
-
-        if ([ClockFace.c, ...IllegalMoves].includes(idx)) {
-            // don't count yourself or diagonal positions
-            return;
-        }
-
-        const occupant = surrounding.occupant;
-        if (!occupant) {
-            if (surrounding.tile !== undefined) {
-                if (bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] === undefined) {
-                    bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] = [];
-                }
-                bucketed_empty_tiles[surrounding.tile.score_potential[self.species]].push(surrounding.position);
-            }
-        } else if (
-            // same species
-            occupant.species === self.species &&
-            // not already 'engaged'
-            occupant.state !== State.Mating &&
-            // not too young
-            occupant.tick > MAX_YOUNGLING_TICK &&
-            // not on hurtful tile
-            (getMapTileEffect({ species: self.species, tileType: surrounding.tile.type }) ?? -1) > -1
-        ) {
-            const strength = occupant.strength;
-            if (bucketed_mate_strengths[strength] === undefined) {
-                bucketed_mate_strengths[strength] = [];
-            }
-            bucketed_mate_strengths[strength].push(surrounding.position);
-        } else if (occupant.species === self.species) {
-            const strength = occupant.strength;
-            if (bucketed_ally_strengths[strength] === undefined) {
-                bucketed_ally_strengths[strength] = [];
-            }
-            bucketed_ally_strengths[strength].push(surrounding.position);
-        } else if (
-            // enemy
-            occupant.species !== self.species
-        ) {
-            const strength = occupant.strength;
-            if (bucketed_enemy_strengths[strength] === undefined) {
-                bucketed_enemy_strengths[strength] = [];
-            }
-            bucketed_enemy_strengths[strength].push(surrounding.position);
-        }
-    });
-
-    let position: number;
-    switch (movement_logic) {
-        case MovementLogic.NeuralNetwork:
-            // TODO: the Neural Network is blind to mating situations. 
-            // this causes combatants to just sit in one spot when near others. 
-            position = Brain.move(Brains[self.species], self, sight);
-            break;
-        case MovementLogic.RandomWalk:
-            position = sight.getNewRandomPosition();
-            break;
-        case MovementLogic.DecisionTree:
-            // seekers go directly toward their target. 
-            if (self.decision_type === DecisionType.Seeker) {
-                let target_destination = self.target_waypoints[0];
-                if (
-                    // nowhere to go
-                    target_destination === undefined ||
-                    // already got there
-                    target_destination === self.position ||
-                    // can't get there
-                    !isValidCombatantPosition(target_destination, tiles)
-                ) {
-                    target_destination = self.position;
-                    self.target_waypoints = getSeekerPath(tiles);
-                }
-
-                const col_diff =
-                    (target_destination % window_width) -
-                    (self.position % window_width);
-                const row_diff =
-                    Math.floor(target_destination / window_width) -
-                    Math.floor(self.position / window_width);
-
-                const col_movement_is_greater = Math.abs(col_diff) > Math.abs(row_diff);
-                const col_movement_position = self.position + (row_diff < 0 ? - window_width : window_width);
-                const row_movement_position = self.position + (col_diff < 0 ? -1 : 1);
-                const is_col_movement_valid = isValidCombatantPosition(col_movement_position, tiles);
-                const is_row_movement_valid = isValidCombatantPosition(row_movement_position, tiles);
-
-                if (col_diff === 0 && row_diff === 0) {
-                    position = self.position;
-                } else if ((col_movement_is_greater || !is_col_movement_valid) && is_row_movement_valid) {
-                    position = row_movement_position;
-                } else if (is_col_movement_valid) {
-                    position = col_movement_position;
-                } else {
-                    position = self.position;
-                    // TODO: hack to reset target position when you run into a wall.
-                    self.target_waypoints = getSeekerPath(tiles);
-                }
-
-                break;
-            }
-
-            // position based on best prey (enemy) space
-            let best_target_position = getBestTargetPosition(self, bucketed_enemy_strengths);
-
-            // if a fighter has no enemy to fight then they fight an ally
-            if (
-                best_target_position === -1 &&
-                self.decision_type === DecisionType.Fighter
-            ) {
-                best_target_position = getBestTargetPosition(self, bucketed_ally_strengths);
-            }
-
-            // position based on best mate space
-            let best_mate_position = getBestTargetPosition(self, bucketed_mate_strengths);
-
-            // position based on best safe space
-            let best_open_position = getBestOpenPosition(self, movement_logic, bucketed_empty_tiles);
-
-            // Wanderers are disinterested in places they have been before
-            if (self.decision_type === DecisionType.Wanderer) {
-                if (self.visited_positions[best_target_position] !== undefined) {
-                    best_target_position = -1;
-                }
-                if (self.visited_positions[best_mate_position] !== undefined) {
-                    best_mate_position = -1;
-                }
-                if (self.visited_positions[best_open_position] !== undefined) {
-                    best_open_position = -1;
-                }
-            }
-
-            if (best_target_position !== -1) {
-                position = best_target_position;
-            }
-
-            if (
-                best_mate_position !== -1 &&
-                (self.decision_type === DecisionType.Lover ||
-                    // % chance you'll choose to mate
-                    Math.random() > 0.5)
-            ) {
-                position = best_mate_position;
-                self.state = State.Mating;
-            } else if (best_open_position !== -1) {
-                position = best_open_position;
-            } else {
-                // when all else fails, random walk
-                position = sight.getNewRandomPosition();
-            };
-            break;
-    }
-
-    return position;
-};
-
-function getSeekerPath(tiles: Readonly<TileModel[]>): number[] {
-    const waypoints = [];
-    waypoints.push(Math.floor(Math.random() * (tiles.length - 1)));
-
-    // TODO: add more logic for paths
-
-    return waypoints;
 }
 
 export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_count: number) {
@@ -411,11 +148,6 @@ function validateNewPositionFromClockFace(current_position: number, clockFace: C
 export function getRandomSpecies(): Character {
     const set = Object.keys(Character);
     return set[Math.round(Math.random() * (set.length - 1))] as Character;
-}
-
-export function getRandomDecisionType(): DecisionType {
-    const set = Object.keys(DecisionType);
-    return set[Math.round(Math.random() * (set.length - 1))] as DecisionType;
 }
 
 export default CombatantModel;

@@ -1,11 +1,12 @@
 import CombatantModel, { Character } from "../../models/CombatantModel";
 import { getMapTileScorePotentials, TileModel } from "../../models/TileModel";
-import { ClockFace, LegalMoves } from "./CombatantUtils";
+import CombatantObject from "../../objects/CombatantObject";
+import { ClockFace, GetCombatantObject, LegalMoves } from "./CombatantUtils";
 import { isTileValidCombatantPosition } from "./TurnProcessingUtils";
 
 export interface Surrounding {
     position: number,
-    occupant: CombatantModel | undefined,
+    occupant: CombatantObject | undefined,
     tile: TileModel,
 }
 
@@ -25,7 +26,7 @@ export function viewSurroundings(
             tiles: TileModel[],
             window_width: number,
             // the Player should already be in the combatants array at this point in evaluation
-            combatants: { [position: number]: CombatantModel | undefined }
+            combatants: { [position: number]: CombatantObject | CombatantModel | undefined }
         }
 ): Sight {
     let min_potential = Number.MAX_VALUE;
@@ -46,7 +47,7 @@ export function viewSurroundings(
 
         return {
             position,
-            occupant: combatants[position],
+            occupant: (combatants[position] instanceof CombatantObject) ? (combatants[position] as CombatantObject) : GetCombatantObject(combatants[position] as CombatantModel),
             tile: tiles[position]
         }
     }
@@ -87,4 +88,4 @@ export function viewSurroundings(
     }
 
     return { surroundings, min_potential, max_potential, center, getNewRandomPosition };
-};
+}; 

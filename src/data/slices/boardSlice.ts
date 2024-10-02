@@ -5,10 +5,11 @@ import {
     MIN_HEALTH,
     killAndCopy,
     addItemToBoard,
+    GetCombatantObject,
 } from '../utils/CombatantUtils';
 import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
 import { createItemModel, ItemModel, Type as ItemType } from '../../models/ItemModel';
-import CombatantModel, { Character, createCombatant, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
+import CombatantModel, { Character, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
 import { updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
@@ -19,6 +20,7 @@ import { getCombatantAtTarget } from '../utils/TargetingUtils';
 import { isValidCombatantPosition, processBoardTick } from '../utils/TurnProcessingUtils';
 import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
+import PlayerObject from '../../objects/PlayerObject';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
@@ -89,18 +91,18 @@ interface SettingsState {
 function initCombatants(
     { tiles, num_combatants, init_player }:
         { tiles: TileModel[], num_combatants: number, init_player: boolean }
-): { player: CombatantModel | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
+): { player: PlayerObject | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
     const combatants = {} as Combatants;
     const global_combatant_stats = { ...DEFAULT };
 
     let player = undefined;
     if (init_player) {
-        player = createCombatant({
+        player = new PlayerObject({
             species: getRandomSpecies(),
-            spawn_position: initCombatantStartingPos({ tiles, player, combatants }),
+            position: initCombatantStartingPos({ tiles, player, combatants }),
+        },
             global_combatant_stats,
-        });
-        player.is_player = true;
+        );
     }
 
     for (let i = 0; i < num_combatants; i++) {
@@ -112,7 +114,7 @@ function initCombatants(
             continue;
         }
 
-        combatants[c_pos] = createCombatant({ species, spawn_position: c_pos, global_combatant_stats });
+        combatants[c_pos] = GetCombatantObject({ species, position: c_pos }, global_combatant_stats).toModel();
 
         const c_fit = combatants[c_pos].fitness;
         global_combatant_stats.average_position += c_pos;
@@ -227,7 +229,7 @@ function initState(
 
     state.global_combatant_stats = global_combatant_stats;
     state.tiles = tiles;
-    state.player = player;
+    state.player = player?.toModel();
     state.combatants = combatants;
     state.items = {};
     state.selected_position = undefined;
@@ -237,12 +239,12 @@ function initState(
 
 function spawnAt(position: number, state: BoardState & SettingsState) {
     if (isValidCombatantPosition(position, state.tiles)) {
-        state.combatants[position] = createCombatant(
+        state.combatants[position] = GetCombatantObject(
             {
-                spawn_position: position,
-                global_combatant_stats: state.global_combatant_stats
-            }
-        );
+                position: position
+            },
+            state.global_combatant_stats
+        ).toModel();
         state.global_combatant_stats.num_combatants += 1;
     }
 }
@@ -311,11 +313,11 @@ const mapReducers = {
             paintTileForSpider(new_spider, state.tiles, state.arena.width);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] =
-                createCombatant({
-                    spawn_position: action.payload.position,
+                GetCombatantObject({
+                    position: action.payload.position,
                     species: action.payload.type as Character,
-                    global_combatant_stats: state.global_combatant_stats
-                });
+                },
+                    state.global_combatant_stats).toModel();
             if (!current_occupant) {
                 state.global_combatant_stats.num_combatants += 1;
             }
@@ -397,6 +399,7 @@ export const boardSlice = createSlice({
             state.items = movement_result.items;
             state.tiles = movement_result.tiles;
             state.global_combatant_stats = movement_result.global_combatant_stats;
+            state.player = movement_result.player;
 
             if (state.player && state.player.position > -1) {
                 let new_start = state.player.position;
@@ -487,7 +490,7 @@ export const boardSlice = createSlice({
             }
         },
         spawnAtRandom: (state) => {
-            const position = initCombatantStartingPos({ tiles: state.tiles, player: state.player, combatants: state.combatants });
+            const position = initCombatantStartingPos({ tiles: state.tiles, player: GetCombatantObject(state.player), combatants: state.combatants });
             spawnAt(position, state);
         },
         setInitialNumCombatants: (state, action: PayloadAction<number>) => {
@@ -499,7 +502,7 @@ export const boardSlice = createSlice({
                 num_combatants: state.initial_num_combatants,
                 init_player: state.game_mode === GameMode.Adventure,
             });
-            state.player = player;
+            state.player = player?.toModel();
             state.selected_position = undefined;
             state.follow_selected_combatant = false;
             state.game_count += 1;

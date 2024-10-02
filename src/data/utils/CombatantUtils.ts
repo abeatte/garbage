@@ -1,9 +1,14 @@
 import { Combatants } from "../slices/boardSlice";
-import CombatantModel, { State } from "../../models/CombatantModel";
 import { TileModel } from "../../models/TileModel";
 import { ItemModel, MAX_TILE_ITEM_COUNT } from "../../models/ItemModel";
 import { viewSurroundings } from "./SightUtils";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
+import CombatantObject from "../../objects/CombatantObject";
+import PlayerObject from "../../objects/PlayerObject";
+import CombatantModel, { Character, DecisionType } from "../../models/CombatantModel";
+import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
+import NPC from "../../objects/NPC";
+import SeekerObject from "../../objects/SeekerObject";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -21,8 +26,30 @@ export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFac
 export const LegalMoves = [ClockFace.c, ...DirectionalMoves];
 export const IllegalMoves = [...DiagonalMoves];
 
+
+export function GetCombatantObject(model: { position: number, species?: Character, decision_type?: DecisionType }, global_combatant_stats?: GlobalCombatantStatsModel): CombatantObject;
+export function GetCombatantObject(model: CombatantModel | undefined): CombatantObject | undefined;
+export function GetCombatantObject(
+    model?: {
+        position: number, species?: Character, decision_type?: DecisionType, is_player?: boolean
+    } | CombatantModel,
+    global_combatant_stats?: GlobalCombatantStatsModel
+): CombatantObject | undefined {
+    if (model === undefined) {
+        return undefined;
+    } else if (PlayerObject.IsOf(model)) {
+        return new PlayerObject(model, global_combatant_stats);
+    } else if (SeekerObject.IsOf(model)) {
+        return new SeekerObject(model, global_combatant_stats);
+    } else if (NPC.IsOf(model)) {
+        return new NPC(model, global_combatant_stats);
+    }
+
+    throw new Error("Method not implemented.")
+}
+
 export function initCombatantStartingPos(
-    args: { tiles: TileModel[], player: CombatantModel | undefined, combatants: Combatants }
+    args: { tiles: TileModel[], player: PlayerObject | undefined, combatants: Combatants }
 ): number {
     let starting_pos = -1;
     // you have 10 tries to find a valid spot otherwise you don't get to exist
@@ -30,7 +57,7 @@ export function initCombatantStartingPos(
         const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
         if (
             !args.combatants[potential_pos] &&
-            args.player?.position !== potential_pos &&
+            args.player?.getPosition() !== potential_pos &&
             isValidCombatantPosition(potential_pos, args.tiles)
         ) {
             starting_pos = potential_pos;
@@ -91,8 +118,8 @@ export function updateCombatantsPositionsAfterResize(
         }
 
         if (new_pos > -1 && new_pos < window_width * window_height) {
-            const occupient = new_combatants[new_pos];
-            new_combatants[new_pos] = !!occupient ? compete(occupient, combatants[old_pos]) : combatants[old_pos];
+            const occupient = GetCombatantObject(new_combatants[new_pos]);
+            new_combatants[new_pos] = occupient ? occupient.fightWith(GetCombatantObject(combatants[old_pos])).toModel() : combatants[old_pos];
             new_combatants[new_pos].position = new_pos;
             new_combatants[new_pos].visited_positions[new_pos] = new_pos;
             if (occupient) {
@@ -101,7 +128,6 @@ export function updateCombatantsPositionsAfterResize(
         } else {
             deaths++;
         }
-
     })
     return { combatants: new_combatants, deaths };
 }
@@ -129,24 +155,4 @@ export function addItemToBoard(item: ItemModel, working_items: { [position: numb
         items.shift();
     }
     items.push(item);
-}
-
-/**
- * Ties go to the a_combatant (the attacker)
- * @param {*} a the attacking combatant
- * @param {*} b the defending combatant
- * @returns the fitter combatant
- */
-export function compete(a: CombatantModel, b: CombatantModel) {
-    const a_fitness = a.immortal ? Infinity : a.fitness;
-    const b_fitness = b.immortal ? Infinity : b.fitness;
-    if (b_fitness > a_fitness) {
-        a.state = State.Dead;
-        b.kills += 1;
-        return b;
-    } else {
-        b.state = State.Dead;
-        a.kills += 1;
-        return a;
-    }
 }

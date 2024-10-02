@@ -7,9 +7,11 @@ import { GAME_DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
 import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
-import CombatantModel, { Character, createCombatant, requestMove } from "../models/CombatantModel";
+import CombatantModel, { Character } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
+import CombatantObject from "../objects/CombatantObject";
+import NPC from "../objects/NPC";
 
 export type Input = { [position: string]: number };
 export type Output = { [direction: string]: number };
@@ -22,7 +24,7 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/nets/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
 const NUM_TRAINING_MAPS = 1;
 
-const getTrainingSet = (species: Character, combatant: CombatantModel, sight: Sight, tiles: TileModel[], window_width: number,): TrainingSet => {
+const getTrainingSet = (species: Character, combatant: CombatantObject, sight: Sight, tiles: TileModel[], window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = sight.surroundings[clockFace];
         if (sur !== undefined) {
@@ -33,11 +35,10 @@ const getTrainingSet = (species: Character, combatant: CombatantModel, sight: Si
         return move_potentials;
     }, {} as { [direction: string]: number });
 
-    const requested_position = requestMove(
+    const requested_position = combatant.requestMove(
         {
             movement_logic: MovementLogic.DecisionTree,
             sight,
-            self: combatant,
             tiles,
             window_width
         }
@@ -53,7 +54,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
     // TODO: finish creating this so that the sight will have a Clockface.C combataint to use for species. 
-    const trainer = createCombatant({ spawn_position: 0, species });
+    const trainer = new NPC({ position: 0, species });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
         const width = GAME_DEFAULTS.arena.width;
@@ -65,8 +66,8 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
         debugger; // TODO: make sure tiles have score_potential setup at this point. 
 
         for (let position = 0; position < tiles.length; position++) {
-            const combatants: { [position: number]: CombatantModel } = {};
-            trainer.position = position;
+            const combatants: { [position: number]: CombatantObject } = {};
+            trainer.setPosition(position);
             combatants[position] = trainer;
             const sight = viewSurroundings({ species, position, tiles, window_width: width, combatants })
             training_sets.push(getTrainingSet(species, trainer, sight, tiles, width));
