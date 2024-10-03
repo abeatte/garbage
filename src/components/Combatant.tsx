@@ -2,7 +2,7 @@ import React from 'react';
 import '../css/Combatant.css';
 import { Character, State } from '../models/CombatantModel';
 import classNames from 'classnames';
-import { Purpose } from '../objects/Entity';
+import { Purpose } from '../data/utils/CombatantUtils';
 const Bunny = require('../images/combatants/bunny.png');
 const Turtle = require('../images/combatants/turtle.png');
 const Elephant = require('../images/combatants/lil_eli.png');

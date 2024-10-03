@@ -38,7 +38,7 @@ import { getCombatantAtTarget } from "../data/utils/TargetingUtils";
 import Controls from "./Controls";
 import { mapStateToProps } from "../data/utils/ReactUtils";
 import { State } from "../models/CombatantModel";
-import { Purpose } from "../objects/Entity";
+import { Purpose } from "../data/utils/CombatantUtils";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {

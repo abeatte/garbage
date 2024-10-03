@@ -18,7 +18,7 @@ import Tile from "./Tile";
 import { GetItem } from "../data/utils/ItemUtils";
 import Spider from "../objects/items/Spider";
 import { SpiderType, Type } from "../objects/items/Item";
-import { Purpose } from "../objects/Entity";
+import { Purpose } from "../data/utils/CombatantUtils";
 
 const PaintPalette = () => {
     const board = useSelector((state: AppState) => state.board);

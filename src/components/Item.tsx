@@ -2,7 +2,7 @@ import { faBasketball, faBomb, faExplosion, faMedkit, faSpider } from "@fortawes
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { ItemType, SpiderType, ItemModel, Type } from "../objects/items/Item";
-import { Purpose } from "../objects/Entity";
+import { Purpose } from "../data/utils/CombatantUtils";
 
 const getIcon = (type: ItemType) => {
     switch (type) {

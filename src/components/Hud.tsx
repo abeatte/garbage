@@ -18,7 +18,7 @@ import {
 } from '../data/slices/boardSlice'
 import { pause } from '../data/slices/tickerSlice'
 import classNames from 'classnames';
-import { MIN_HEALTH } from '../data/utils/CombatantUtils';
+import { MIN_HEALTH, Purpose } from '../data/utils/CombatantUtils';
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/slices/hudSlice';
 import { AppState } from '../data/store';
 import Tile from './Tile';
@@ -29,7 +29,6 @@ import Item from './Item';
 import Analytics from '../analytics';
 import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 import { isTileValidCombatantPosition } from '../data/utils/TurnProcessingUtils';
-import { Purpose } from '../objects/Entity';
 
 function getEditableField(
     { editing_value, enabled, editing_type, options, label, display, edit, update, done }: {
