@@ -10,7 +10,7 @@ import Brain from "../models/Brain";
 import CombatantModel, { Character } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
-import CombatantObject from "../objects/combatants/CombatantObject";
+import Combatant from "../objects/combatants/Combatant";
 import NPC from "../objects/combatants/NPC";
 
 export type Input = { [position: string]: number };
@@ -24,7 +24,7 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/nets/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
 const NUM_TRAINING_MAPS = 1;
 
-const getTrainingSet = (species: Character, combatant: CombatantObject, sight: Sight, tiles: TileModel[], window_width: number,): TrainingSet => {
+const getTrainingSet = (species: Character, combatant: Combatant, sight: Sight, tiles: TileModel[], window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = sight.surroundings[clockFace];
         if (sur !== undefined) {
@@ -66,7 +66,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
         debugger; // TODO: make sure tiles have score_potential setup at this point. 
 
         for (let position = 0; position < tiles.length; position++) {
-            const combatants: { [position: number]: CombatantObject } = {};
+            const combatants: { [position: number]: Combatant } = {};
             trainer.setPosition(position);
             combatants[position] = trainer;
             const sight = viewSurroundings({ species, position, tiles, window_width: width, combatants })

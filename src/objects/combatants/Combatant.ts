@@ -2,16 +2,16 @@ import uuid from "react-uuid";
 import CombatantModel, { Character, DecisionType, Gender, getMapTileEffect, getRandomCombatantName, getRandomSpecies, State, Strength } from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { MovementLogic } from "../../data/slices/boardSlice";
-import { ClockFace, GetCombatantObject, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../../data/utils/CombatantUtils";
+import { ClockFace, GetCombatant, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../../data/utils/CombatantUtils";
 import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import Brain from "../../models/Brain";
 import { TileModel } from "../../models/TileModel";
-import EntityObject from "../EntityObject";
+import Entity from "../Entity";
 
 const Brains = Brain.init();
 
-export default abstract class CombatantObject extends EntityObject<CombatantModel> {
+export default abstract class Combatant extends Entity<CombatantModel> {
     protected _model: CombatantModel;
 
     constructor(model: { position: number, species?: Character, decision_type?: DecisionType });
@@ -148,7 +148,7 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
         return this._model;
     }
 
-    recordKill(other: CombatantObject) {
+    recordKill(other: Combatant) {
         this._model.kills += 1;
     }
 
@@ -166,7 +166,7 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
         this.increaseAge(duration);
     }
 
-    fightWith(other: CombatantObject): CombatantObject {
+    fightWith(other: Combatant): Combatant {
         if (other.getFitness() > this.getFitness()) {
             this.setState(State.Dead);
             other.recordKill(this);
@@ -178,7 +178,7 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
         }
     }
 
-    canMateWith(potential: CombatantObject, use_genders: boolean) {
+    canMateWith(potential: Combatant, use_genders: boolean) {
         return this.getAge() > MAX_YOUNGLING_TICK && potential.getAge() > MAX_YOUNGLING_TICK &&
             (
                 !use_genders ||
@@ -186,11 +186,11 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
             );
     }
 
-    mateWith(sight: Sight, mate: CombatantObject, global_combatant_stats: GlobalCombatantStatsModel) {
+    mateWith(sight: Sight, mate: Combatant, global_combatant_stats: GlobalCombatantStatsModel) {
         this._model.state = State.Mating;
         mate.setState(State.Mating);
 
-        this._model.spawn = GetCombatantObject({
+        this._model.spawn = GetCombatant({
             species: this._model.species,
             // 1:4 chance of a different decision_type from the parent
             decision_type: Math.random() > 0.25 ? this.getDecisionType() : getRandomDecisionType(),
@@ -213,9 +213,9 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
         tiles: TileModel[],
         window_width: number,
         arena_size: number
-        combatants: { [position: number]: CombatantObject },
-    }): CombatantObject | undefined {
-        const spawn = GetCombatantObject(this._model.spawn);
+        combatants: { [position: number]: Combatant },
+    }): Combatant | undefined {
+        const spawn = GetCombatant(this._model.spawn);
         if (spawn === undefined) {
             return undefined;
         }
@@ -229,7 +229,7 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
         });
 
         const { surroundings } = sight;
-        const friendly_positions: CombatantObject[] = [],
+        const friendly_positions: Combatant[] = [],
             enemy_positions = [],
             empty_positions = [] as number[];
 
@@ -269,7 +269,7 @@ export default abstract class CombatantObject extends EntityObject<CombatantMode
         return spawn;
     }
 
-    beBorn(position: number, friendlies: CombatantObject[]) {
+    beBorn(position: number, friendlies: Combatant[]) {
         this.setPosition(position);
         if (friendlies.length >= 4) {
             // too many of my kind here, let's diverge

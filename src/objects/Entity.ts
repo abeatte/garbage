@@ -6,7 +6,7 @@ export interface EntityModel {
     position: number;
 }
 
-export default abstract class EntityObject<T> {
+export default abstract class Entity<T> {
     abstract getPosition(): number;
     abstract getID(): String;
     abstract getAge(): number;

@@ -5,12 +5,12 @@ import {
     MIN_HEALTH,
     killAndCopy,
     addItemToBoard,
-    GetCombatantObject,
+    GetCombatant,
 } from '../utils/CombatantUtils';
 import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType, Type } from "../../models/TileModel";
 import CombatantModel, { Character, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
-import { GetItemObject, updateItemsAfterResize } from '../utils/ItemUtils';
+import { GetItem, updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
 import { Pointer } from '../../models/PointerModel';
 import Maps from '../Map';
@@ -18,7 +18,7 @@ import { getCombatantAtTarget } from '../utils/TargetingUtils';
 import { isValidCombatantPosition, processBoardTick } from '../utils/TurnProcessingUtils';
 import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
-import PlayerObject from '../../objects/combatants/PlayerObject';
+import Player from '../../objects/combatants/Player';
 import { ItemModel, SpiderType, ItemType } from '../../objects/items/Item';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
@@ -90,13 +90,13 @@ interface SettingsState {
 function initCombatants(
     { tiles, num_combatants, init_player }:
         { tiles: TileModel[], num_combatants: number, init_player: boolean }
-): { player: PlayerObject | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
+): { player: Player | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
     const combatants = {} as Combatants;
     const global_combatant_stats = { ...DEFAULT };
 
     let player = undefined;
     if (init_player) {
-        player = new PlayerObject({
+        player = new Player({
             species: getRandomSpecies(),
             position: initCombatantStartingPos({ tiles, player, combatants }),
         },
@@ -113,7 +113,7 @@ function initCombatants(
             continue;
         }
 
-        combatants[c_pos] = GetCombatantObject({ species, position: c_pos }, global_combatant_stats).toModel();
+        combatants[c_pos] = GetCombatant({ species, position: c_pos }, global_combatant_stats).toModel();
 
         const c_fit = combatants[c_pos].fitness;
         global_combatant_stats.average_position += c_pos;
@@ -238,7 +238,7 @@ function initState(
 
 function spawnAt(position: number, state: BoardState & SettingsState) {
     if (isValidCombatantPosition(position, state.tiles)) {
-        state.combatants[position] = GetCombatantObject(
+        state.combatants[position] = GetCombatant(
             {
                 position: position
             },
@@ -302,11 +302,11 @@ const mapReducers = {
             /* no op */
             return;
         } else if (Object.keys(Type).includes(action.payload.type) || Object.keys(SpiderType).includes(action.payload.type)) {
-            const new_item = GetItemObject({ position: action.payload.position, type: action.payload.type as ItemType });
+            const new_item = GetItem({ position: action.payload.position, type: action.payload.type as ItemType });
             addItemToBoard(new_item, state.items);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants[action.payload.position] =
-                GetCombatantObject({
+                GetCombatant({
                     position: action.payload.position,
                     species: action.payload.type as Character,
                 },
@@ -483,7 +483,7 @@ export const boardSlice = createSlice({
             }
         },
         spawnAtRandom: (state) => {
-            const position = initCombatantStartingPos({ tiles: state.tiles, player: GetCombatantObject(state.player), combatants: state.combatants });
+            const position = initCombatantStartingPos({ tiles: state.tiles, player: GetCombatant(state.player), combatants: state.combatants });
             spawnAt(position, state);
         },
         setInitialNumCombatants: (state, action: PayloadAction<number>) => {

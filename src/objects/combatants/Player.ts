@@ -4,9 +4,9 @@ import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import { Character, DecisionType } from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
 import { TileModel } from "../../models/TileModel";
-import CombatantObject from "./CombatantObject";
+import Combatant from "./Combatant";
 
-export default class PlayerObject extends CombatantObject {
+export default class Player extends Combatant {
 
     static IsOf(model: { is_player?: boolean }): boolean {
         return !!model.is_player;

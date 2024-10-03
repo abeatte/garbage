@@ -2,8 +2,8 @@ import uuid from "react-uuid";
 import { Items } from "../../data/slices/boardSlice";
 import { Sight } from "../../data/utils/SightUtils";
 import { TileModel } from "../../models/TileModel";
-import CombatantObject from "../combatants/CombatantObject";
-import EntityObject, { EntityModel } from "../EntityObject";
+import Combatant from "../combatants/Combatant";
+import Entity, { EntityModel } from "../Entity";
 import CombatantModel from "../../models/CombatantModel";
 
 export enum SpiderType { WaterSpider = "WaterSpider", FireSpider = "FireSpider", RockSpider = "RockSpider", SandSpider = "SandSpider", GrassSpider = "GrassSpider" };
@@ -21,7 +21,7 @@ export interface ItemModel extends EntityModel {
     captured: CombatantModel[];
 }
 
-export default abstract class Item extends EntityObject<ItemModel> {
+export default abstract class Item extends Entity<ItemModel> {
     protected _model: ItemModel;
 
     constructor(model?: { type: ItemType });
@@ -39,7 +39,7 @@ export default abstract class Item extends EntityObject<ItemModel> {
         };
     }
 
-    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: CombatantObject }, tiles: TileModel[], window_width: number): void;
+    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: TileModel[], window_width: number): void;
 
     getPosition(): number {
         return this._model.position;
@@ -67,7 +67,7 @@ export default abstract class Item extends EntityObject<ItemModel> {
         return this._model.fuse_length > 0 && this._model.tick >= this._model.fuse_length;
     }
 
-    recordKill(other: CombatantObject) {
+    recordKill(other: Combatant) {
         this._model.kills += 1;
     }
 

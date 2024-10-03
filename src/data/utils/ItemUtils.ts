@@ -1,19 +1,19 @@
-import BombObject from "../../objects/items/BombObject";
-import ItemObject, { ItemModel, ItemType } from "../../objects/items/Item";
-import MedPackObject from "../../objects/items/MedPackObject";
-import PokemonBallObject from "../../objects/items/PokemonBallObject";
-import SpiderObject from "../../objects/items/SpiderObject";
+import Bomb from "../../objects/items/Bomb";
+import Item, { ItemModel, ItemType } from "../../objects/items/Item";
+import MedPack from "../../objects/items/MedPack";
+import PokemonBall from "../../objects/items/PokemonBall";
+import Spider from "../../objects/items/Spider";
 import { Items } from "../slices/boardSlice";
 
-export function GetItemObject(model: { type: ItemType } | ItemModel): ItemObject {
-    if (BombObject.IsOf(model)) {
-        return new BombObject(model);
-    } else if (MedPackObject.IsOf(model)) {
-        return new MedPackObject(model);
-    } else if (PokemonBallObject.IsOf(model)) {
-        return new PokemonBallObject(model);
-    } else if (SpiderObject.IsOf(model)) {
-        return new SpiderObject(model);
+export function GetItem(model: { type: ItemType } | ItemModel): Item {
+    if (Bomb.IsOf(model)) {
+        return new Bomb(model);
+    } else if (MedPack.IsOf(model)) {
+        return new MedPack(model);
+    } else if (PokemonBall.IsOf(model)) {
+        return new PokemonBall(model);
+    } else if (Spider.IsOf(model)) {
+        return new Spider(model);
     }
 
     throw new Error("ItemType not implemented.")

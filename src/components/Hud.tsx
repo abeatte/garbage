@@ -29,7 +29,7 @@ import Item from './Item';
 import Analytics from '../analytics';
 import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 import { isTileValidCombatantPosition } from '../data/utils/TurnProcessingUtils';
-import { Purpose } from '../objects/EntityObject';
+import { Purpose } from '../objects/Entity';
 
 function getEditableField(
     { editing_value, enabled, editing_type, options, label, display, edit, update, done }: {

@@ -1,18 +1,18 @@
 import { Items } from "../../data/slices/boardSlice";
-import { addItemToBoard, GetCombatantObject } from "../../data/utils/CombatantUtils";
+import { addItemToBoard, GetCombatant } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import { TileModel } from "../../models/TileModel";
-import CombatantObject from "../combatants/CombatantObject";
-import ItemObject, { ItemType, Type } from "./Item"
+import Combatant from "../combatants/Combatant";
+import Item, { ItemType, Type } from "./Item"
 
-export default class PokemonBallObject extends ItemObject {
+export default class PokemonBall extends Item {
 
     static IsOf(model: { type: ItemType }): boolean {
         return model.type === Type.PokemonBall;
     }
 
-    tap(sight: Sight, items: Items, combatants: { [position: number]: CombatantObject }, _tiles: TileModel[], _window_width: number): void {
+    tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, _tiles: TileModel[], _window_width: number): void {
         const valid_surroundings =
             sight.surroundings.filter(sur => isTileValidCombatantPosition(sur?.tile));
         const capacity = valid_surroundings.length;
@@ -22,7 +22,7 @@ export default class PokemonBallObject extends ItemObject {
             this._model.captured = [];
 
             while (captives.length > 0) {
-                const captive = GetCombatantObject(captives.pop());
+                const captive = GetCombatant(captives.pop());
                 const surrounding = valid_surroundings.pop();
                 if (captive === undefined || surrounding === undefined) {
                     continue;

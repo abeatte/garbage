@@ -1,15 +1,15 @@
 import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import { DecisionType } from "../../models/CombatantModel";
 import { TileModel } from "../../models/TileModel";
-import CombatantObject from "./CombatantObject";
+import Combatant from "./Combatant";
 
-export default class SeekerObject extends CombatantObject {
+export default class Seeker extends Combatant {
 
     static IsOf(model: { decision_type?: DecisionType }): boolean {
         return model.decision_type === DecisionType.Seeker;
     }
 
-    beBorn(position: number, friendlies: CombatantObject[]): void {
+    beBorn(position: number, friendlies: Combatant[]): void {
         super.beBorn(position, friendlies);
         this._model.target_waypoints.push(position);
     }

@@ -2,13 +2,13 @@ import { Combatants } from "../slices/boardSlice";
 import { TileModel } from "../../models/TileModel";
 import { viewSurroundings } from "./SightUtils";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
-import CombatantObject from "../../objects/combatants/CombatantObject";
-import PlayerObject from "../../objects/combatants/PlayerObject";
+import Combatant from "../../objects/combatants/Combatant";
+import Player from "../../objects/combatants/Player";
 import CombatantModel, { Character, DecisionType } from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
-import SeekerObject from "../../objects/combatants/SeekerObject";
+import Seeker from "../../objects/combatants/Seeker";
 import NPC from "../../objects/combatants/NPC";
-import ItemObject, { ItemModel, MAX_TILE_ITEM_COUNT } from "../../objects/items/Item";
+import Item, { ItemModel, MAX_TILE_ITEM_COUNT } from "../../objects/items/Item";
 
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
@@ -26,20 +26,20 @@ export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFac
 export const LegalMoves = [ClockFace.c, ...DirectionalMoves];
 export const IllegalMoves = [...DiagonalMoves];
 
-export function GetCombatantObject(model: { position: number, species?: Character, decision_type?: DecisionType }, global_combatant_stats?: GlobalCombatantStatsModel): CombatantObject;
-export function GetCombatantObject(model: CombatantModel | undefined): CombatantObject | undefined;
-export function GetCombatantObject(
+export function GetCombatant(model: { position: number, species?: Character, decision_type?: DecisionType }, global_combatant_stats?: GlobalCombatantStatsModel): Combatant;
+export function GetCombatant(model: CombatantModel | undefined): Combatant | undefined;
+export function GetCombatant(
     model?: {
         position: number, species?: Character, decision_type?: DecisionType, is_player?: boolean
     } | CombatantModel,
     global_combatant_stats?: GlobalCombatantStatsModel
-): CombatantObject | undefined {
+): Combatant | undefined {
     if (model === undefined) {
         return undefined;
-    } else if (PlayerObject.IsOf(model)) {
-        return new PlayerObject(model, global_combatant_stats);
-    } else if (SeekerObject.IsOf(model)) {
-        return new SeekerObject(model, global_combatant_stats);
+    } else if (Player.IsOf(model)) {
+        return new Player(model, global_combatant_stats);
+    } else if (Seeker.IsOf(model)) {
+        return new Seeker(model, global_combatant_stats);
     } else if (NPC.IsOf(model)) {
         return new NPC(model, global_combatant_stats);
     }
@@ -48,7 +48,7 @@ export function GetCombatantObject(
 }
 
 export function initCombatantStartingPos(
-    args: { tiles: TileModel[], player: PlayerObject | undefined, combatants: Combatants }
+    args: { tiles: TileModel[], player: Player | undefined, combatants: Combatants }
 ): number {
     let starting_pos = -1;
     // you have 10 tries to find a valid spot otherwise you don't get to exist
@@ -117,8 +117,8 @@ export function updateCombatantsPositionsAfterResize(
         }
 
         if (new_pos > -1 && new_pos < window_width * window_height) {
-            const occupient = GetCombatantObject(new_combatants[new_pos]);
-            new_combatants[new_pos] = occupient ? occupient.fightWith(GetCombatantObject(combatants[old_pos])).toModel() : combatants[old_pos];
+            const occupient = GetCombatant(new_combatants[new_pos]);
+            new_combatants[new_pos] = occupient ? occupient.fightWith(GetCombatant(combatants[old_pos])).toModel() : combatants[old_pos];
             new_combatants[new_pos].position = new_pos;
             new_combatants[new_pos].visited_positions[new_pos] = new_pos;
             if (occupient) {
@@ -144,7 +144,7 @@ export function killAndCopy({ positions, combatants }: { positions: number[], co
     }, {} as Combatants);
 }
 
-export function addItemToBoard(item: ItemObject, working_items: { [position: number]: ItemModel[] | undefined }) {
+export function addItemToBoard(item: Item, working_items: { [position: number]: ItemModel[] | undefined }) {
     if (working_items[item.getPosition()] === undefined) {
         working_items[item.getPosition()] = [];
     }

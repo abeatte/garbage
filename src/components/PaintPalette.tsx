@@ -15,10 +15,10 @@ import { createTileModel, Type as TileType } from "../models/TileModel";
 import Combatant from "./Combatant";
 import Item from "./Item";
 import Tile from "./Tile";
-import { GetItemObject } from "../data/utils/ItemUtils";
-import SpiderObject from "../objects/items/SpiderObject";
+import { GetItem } from "../data/utils/ItemUtils";
+import Spider from "../objects/items/Spider";
 import { SpiderType, Type } from "../objects/items/Item";
-import { Purpose } from "../objects/EntityObject";
+import { Purpose } from "../objects/Entity";
 
 const PaintPalette = () => {
     const board = useSelector((state: AppState) => state.board);
@@ -98,7 +98,7 @@ const PaintPalette = () => {
     const background_tile = createTileModel({ index: -1, type: TileType.Sand });
 
     const items = Object.values(Type).map((k, idx) => {
-        const item = GetItemObject({ type: Type[k] });
+        const item = GetItem({ type: Type[k] });
         return (
             <Tile
                 id={idx}
@@ -120,7 +120,7 @@ const PaintPalette = () => {
     });
 
     const spiders = Object.values(SpiderType).map((k, idx) => {
-        const spider = GetItemObject({ type: k }) as SpiderObject;
+        const spider = GetItem({ type: k }) as Spider;
         const tile = createTileModel({ index: -1, type: spider.getActionType() });
         return (
             <Tile

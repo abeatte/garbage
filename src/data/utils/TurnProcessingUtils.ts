@@ -2,11 +2,11 @@ import CombatantModel, { DecisionType, State, getMapTileEffect } from "../../mod
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, Type as TileType } from "../../models/TileModel";
 import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
-import { GetCombatantObject } from "./CombatantUtils";
+import { GetCombatant } from "./CombatantUtils";
 import { viewSurroundings } from "./SightUtils";
-import CombatantObject from "../../objects/combatants/CombatantObject";
-import PlayerObject from "../../objects/combatants/PlayerObject";
-import { GetItemObject } from "./ItemUtils";
+import Combatant from "../../objects/combatants/Combatant";
+import Player from "../../objects/combatants/Player";
+import { GetItem } from "./ItemUtils";
 import { ItemModel } from "../../objects/items/Item";
 
 export function processBoardTick(
@@ -18,9 +18,9 @@ export function processBoardTick(
     }
 
     // TODO: this is a hack
-    const combatantObjects = {} as { [position: number]: CombatantObject };
+    const combatantObjects = {} as { [position: number]: Combatant };
     Object.keys(combatants).forEach(k => {
-        combatantObjects[k as unknown as number] = GetCombatantObject(combatants[k as unknown as number]);
+        combatantObjects[k as unknown as number] = GetCombatant(combatants[k as unknown as number]);
     });
 
     // process combatants (including player) 
@@ -54,7 +54,7 @@ export function isTileValidCombatantPosition(tile: TileModel | undefined): boole
 
 function processEnvironmentEffects(
     { combatants, items, tiles, window_width, movement_logic, global_combatant_stats }:
-        { combatants: { [position: number]: CombatantObject }, items: Items, tiles: TileModel[], window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
+        { combatants: { [position: number]: Combatant }, items: Items, tiles: TileModel[], window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: TileModel[], global_combatant_stats: GlobalCombatantStatsModel } {
     const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths } as GlobalCombatantStatsModel;
     const working_combatants: Combatants = {};
@@ -67,7 +67,7 @@ function processEnvironmentEffects(
         const position_items = items[position];
 
         position_items.forEach((i: ItemModel) => {
-            const item = GetItemObject(i);
+            const item = GetItem(i);
             if (item === undefined || item.isSpent()) {
                 return;
             }
@@ -137,16 +137,16 @@ function processEnvironmentEffects(
 function processCombatantTick(
     { combatants, movement_logic, tiles, window_width, use_genders, global_combatant_stats }:
         {
-            combatants: { [position: number]: CombatantObject },
+            combatants: { [position: number]: Combatant },
             movement_logic: MovementLogic,
             tiles: TileModel[],
             window_width: number,
             use_genders: boolean,
             global_combatant_stats: Readonly<GlobalCombatantStatsModel>
         }
-): { player: PlayerObject | undefined, combatants: Readonly<{ [position: number]: CombatantObject }>, births: number, deaths: number } {
-    const working_combatants: { [position: number]: CombatantObject } = {};
-    const mating_combatants: { [position: number]: CombatantObject } = {};
+): { player: Player | undefined, combatants: Readonly<{ [position: number]: Combatant }>, births: number, deaths: number } {
+    const working_combatants: { [position: number]: Combatant } = {};
+    const mating_combatants: { [position: number]: Combatant } = {};
     let player;
     let births = 0, deaths = 0;
 
@@ -214,14 +214,14 @@ function processCombatantMovement(
     { combatant, use_genders, combatants, global_combatant_stats, tiles, window_width, movement_logic }:
         {
             use_genders: boolean,
-            combatant: CombatantObject,
-            combatants: Readonly<{ [position: number]: CombatantObject }>,
+            combatant: Combatant,
+            combatants: Readonly<{ [position: number]: Combatant }>,
             global_combatant_stats: GlobalCombatantStatsModel,
             tiles: TileModel[],
             window_width: number,
             movement_logic: MovementLogic,
         }
-): { combatant: CombatantObject, deaths: number } {
+): { combatant: Combatant, deaths: number } {
     let deaths = 0;
 
     if (combatant.isMating()) {

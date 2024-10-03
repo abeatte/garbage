@@ -2,16 +2,16 @@ import { Items } from "../../data/slices/boardSlice";
 import { addItemToBoard } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
-import CombatantObject from "../combatants/CombatantObject";
-import ItemObject, { ItemType, SpiderType } from "./Item"
+import Combatant from "../combatants/Combatant";
+import Item, { ItemType, SpiderType } from "./Item"
 
-export default class SpiderObject extends ItemObject {
+export default class Spider extends Item {
 
     static IsOf(model: { type: ItemType | SpiderType }): boolean {
         return Object.keys(SpiderType).includes(model.type);
     }
 
-    tap(sight: Sight, items: Items, combatants: { [position: number]: CombatantObject }, tiles: TileModel[], window_width: number): void {
+    tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: TileModel[], window_width: number): void {
         const new_position = sight.getNewRandomPosition();
         if (!this.isFuseUp()) {
             paintTileForSpider(this, tiles, window_width);
@@ -40,7 +40,7 @@ export default class SpiderObject extends ItemObject {
     }
 }
 
-function paintTileForSpider(spider: SpiderObject, tiles: TileModel[], window_width: number) {
+function paintTileForSpider(spider: Spider, tiles: TileModel[], window_width: number) {
     tiles[spider.getPosition()] =
         createTileModel({ index: spider.getPosition(), type: spider.getActionType() });
     clearMapTileScorePotentials({ position: spider.getPosition(), tiles, window_width });
