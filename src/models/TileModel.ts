@@ -48,7 +48,7 @@ export function clearMapTileScorePotentials(args: { position: number, tiles: Til
  * @returns the given tile's potential as a tile to move to
  * (Tiles that are near high-value tiles have more potential than those near low-value/hurtful tiles)
  */
-export function getMapTileScorePotentials(args: { position: number, tiles: TileModel[], window_width: number }): { [key in Character]: number } {
+export function getMapTileScorePotentials(args: { position: number, tiles: Readonly<TileModel[]>, window_width: number }): { [key in Character]: number } {
     const { position, tiles, window_width } = args;
 
     const tile = tiles[position];

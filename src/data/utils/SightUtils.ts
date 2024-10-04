@@ -23,19 +23,19 @@ export function viewSurroundings(
         {
             species?: Character,
             position: number,
-            tiles: TileModel[],
+            tiles: Readonly<TileModel[]>,
             window_width: number,
             // the Player should already be in the combatants array at this point in evaluation
-            combatants: { [position: number]: Combatant | CombatantModel | undefined }
+            combatants?: { [position: number]: Combatant | CombatantModel | undefined }
         }
 ): Sight {
     let min_potential = Number.MAX_VALUE;
     let max_potential = Number.MIN_VALUE;
 
     const setSurrounding = (position: number) => {
-        const score_potential =
-            !species ? -1 :
-                getMapTileScorePotentials({ position, tiles, window_width })[species];
+        const score_potential = species === undefined ?
+            -1 :
+            getMapTileScorePotentials({ position, tiles, window_width })[species];
 
         if (score_potential < min_potential) {
             min_potential = score_potential;
@@ -47,7 +47,7 @@ export function viewSurroundings(
 
         return {
             position,
-            occupant: (combatants[position] instanceof Combatant) ? (combatants[position] as Combatant) : GetCombatant(combatants[position] as CombatantModel),
+            occupant: combatants === undefined ? undefined : (combatants[position] instanceof Combatant) ? (combatants[position] as Combatant) : GetCombatant(combatants[position] as CombatantModel),
             tile: tiles[position]
         }
     }
