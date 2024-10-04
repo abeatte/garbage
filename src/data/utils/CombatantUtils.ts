@@ -89,10 +89,15 @@ export function updateCombatantsPositionsAfterResize(
         let new_pos = k as unknown as number;
         let coord = [Math.floor(old_pos / old_window_width), old_pos % old_window_width];
 
+        const combatantObjects = {} as { [position: number]: Combatant };
+        Object.keys(combatants).forEach(k => {
+            combatantObjects[k as unknown as number] = GetCombatant(combatants[k as unknown as number]);
+        });
+
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const sight =
-                viewSurroundings({ species: combatants[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants });
+                viewSurroundings({ species: combatants[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants: combatantObjects });
             const up_position = sight.surroundings[ClockFace.t];
             const up_left_position = sight.surroundings[ClockFace.tl];
             const left_position = sight.surroundings[ClockFace.l];

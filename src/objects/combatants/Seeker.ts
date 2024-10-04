@@ -1,7 +1,7 @@
 import { DirectionalMoves } from "../../data/utils/CombatantUtils";
 import { viewSurroundings } from "../../data/utils/SightUtils";
 import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
-import { Character, DecisionType } from "../../models/CombatantModel";
+import { DecisionType } from "../../models/CombatantModel";
 import { TileModel } from "../../models/TileModel";
 import Combatant from "./Combatant";
 
@@ -30,6 +30,7 @@ export default class Seeker extends Combatant {
         ) {
             target_destination = self.position;
             self.target_waypoints = aStar(
+                this,
                 args.tiles,
                 args.window_width,
                 this.getPosition(),
@@ -50,6 +51,7 @@ interface TileNode {
 };
 
 function aStar(
+    combatant: Combatant,
     tiles: Readonly<TileModel[]>,
     window_width: number,
     start: number,
@@ -70,7 +72,7 @@ function aStar(
     while (openList.length > 0) {
         let lowInd = 0;
         for (let i = 0; i < openList.length; i++) {
-            if (openList[i].tile.score_potential[Character.Bunny] < openList[lowInd].tile.score_potential[Character.Bunny]) {
+            if (openList[i].tile.score_potential[combatant.getSpecies()] < openList[lowInd].tile.score_potential[combatant.getSpecies()]) {
                 lowInd = i;
             }
         }
@@ -94,7 +96,7 @@ function aStar(
         openList.splice(lowInd, 1);
         closedList.push(currentNode);
 
-        const sight = viewSurroundings({ position: currentNode.tile.index, tiles, window_width });
+        const sight = viewSurroundings({ species: combatant.getSpecies(), position: currentNode.tile.index, tiles, window_width });
         for (const direction of DirectionalMoves) {
             const neighbor = sight.surroundings[direction];
             if (neighbor === undefined || closedList.some(node => node.tile.index === neighbor.position)) {
