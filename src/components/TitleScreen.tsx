@@ -14,6 +14,7 @@ import PaintPalette from './PaintPalette';
 import { Pointer } from '../models/PointerModel';
 import { PaintEntity } from '../data/slices/paintPaletteSlice';
 import { Type as TileType } from '../models/TileModel';
+import Setables from './Setables';
 
 const logo = require('../images/icon.png');
 
@@ -51,7 +52,10 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
                 <div className="TitleContainer">
                     <div className="TitleSection" style={{ width: show_map_preview ? "50%" : "100%" }}>
                         <h1>Welcome to</h1>
-                        <img className="Logo" src={logo} alt='logo' />
+                        <div className="Setables_container">
+                            <img className="Logo" src={logo} alt='logo' />
+                            <Setables onReset={this.props.resetBoard} />
+                        </div>
                         <h3>How will you be playing?</h3>
                         <div className='Button_row'>
                             <button

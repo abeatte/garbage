@@ -1,0 +1,18 @@
+.Setables {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    align-items: flex-start;
+}
+
+.Checkbox_container {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.Speed_buttons_container {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0px 4px 0px;
+}
