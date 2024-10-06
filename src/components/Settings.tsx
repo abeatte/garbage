@@ -167,7 +167,7 @@ const Settings = (props: { showPause?: boolean, onReset?: () => void }) => {
             style={{ width: "182px" }}
             className={classNames('Clickable', 'Button', 'Restart')}
             onClick={() => props.onReset && props.onReset()}>
-            <span>{"Restart"}</span>
+            <span>{"Reset"}</span>
         </button>
     );
 
