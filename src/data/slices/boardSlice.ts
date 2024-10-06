@@ -90,7 +90,7 @@ interface SettingsState {
 function initCombatants(
     { tiles, num_combatants, init_player }:
         { tiles: TileModel[], num_combatants: number, init_player: boolean }
-): { player: Player | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
+): { player: CombatantModel | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
     const combatants = {} as Combatants;
     const global_combatant_stats = { ...DEFAULT };
 
@@ -133,7 +133,7 @@ function initCombatants(
     global_combatant_stats.weak_bar = (global_combatant_stats.average_fitness + global_combatant_stats.min_fitness) / 2;;
     global_combatant_stats.average_bar = (global_combatant_stats.average_fitness + global_combatant_stats.max_fitness) / 2;
 
-    return { player, combatants, global_combatant_stats };
+    return { player: player?.toModel(), combatants, global_combatant_stats };
 }
 
 function setViewPortTileDimens(state: BoardState) {
@@ -185,6 +185,9 @@ function initState(
             width_measurement: number,
             height_measurement: number,
         },
+        tiles: TileModel[] | undefined,
+        combatants: Combatants | undefined,
+        global_combatant_stats: GlobalCombatantStatsModel | undefined,
         initial_num_combatants?: number,
         use_genders?: boolean,
         show_settings?: boolean,
@@ -204,33 +207,42 @@ function initState(
     state.show_settings = args?.show_settings ?? state.show_settings;
     state.show_real_tile_images = args?.show_real_tile_images ?? state.show_real_tile_images;
 
-    state.initial_num_combatants = state.game_mode === GameMode.Adventure ? 0 : state.initial_num_combatants;
-    state.player_highlight_count = state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0;
+    state.player_highlight_count = 0;
 
-    if (
-        state.game_mode === GameMode.Adventure) {
-        state.arena.height *= 5;
-        state.arena.width *= 5;
-    }
-
-    state.view_port = args?.view_port ?? state.view_port ?? {
+    debugger;
+    state.view_port = state.view_port ?? {
         start: 0,
         width: state.arena.width,
         height: state.arena.height,
         height_measurement: 0,
         width_measurement: 0,
     };
+
+    if (state.game_mode === GameMode.Adventure) {
+        state.initial_num_combatants = 0;
+        state.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
+
+        // TODO: Fix this once game mode is a dropdown. 
+        state.arena.height *= 5;
+        state.arena.width *= 5;
+        state.view_port.width = state.arena.width;
+        state.view_port.height = state.arena.height;
+    }
+
     setViewPortTileDimens(state);
 
-    const tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
+    state.tiles = (args?.tiles && args.tiles.length === state.arena.height * state.arena.width) ?
+        args.tiles :
+        Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     const { player, combatants, global_combatant_stats } =
-        initCombatants({ tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure });
+        (args?.combatants && Object.keys(args.combatants).length === state.initial_num_combatants) ?
+            state :
+            initCombatants({ tiles: state.tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure });
 
     state.global_combatant_stats = global_combatant_stats;
-    state.tiles = tiles;
-    state.player = player?.toModel();
+    state.player = player;
     state.combatants = combatants;
-    state.items = {};
+    state.items = state.items ?? {};
     state.selected_position = undefined;
 
     return state;
@@ -356,11 +368,16 @@ export const boardSlice = createSlice({
             if (state.game_mode === action.payload) {
                 return;
             }
-            initState({ game_mode: action.payload, view_port: state.view_port }, state);
+            initState({
+                game_mode: action.payload,
+                combatants: state.combatants,
+                tiles: state.tiles,
+                global_combatant_stats: state.global_combatant_stats
+            }, state);
         },
         reset: (state) => {
             state.game_count += 1;
-            initState(state, state);
+            initState({ ...state, combatants: undefined, tiles: undefined, global_combatant_stats: undefined }, state);
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
@@ -495,7 +512,7 @@ export const boardSlice = createSlice({
                 num_combatants: state.initial_num_combatants,
                 init_player: state.game_mode === GameMode.Adventure,
             });
-            state.player = player?.toModel();
+            state.player = player;
             state.selected_position = undefined;
             state.follow_selected_combatant = false;
             state.game_count += 1;
