@@ -19,6 +19,9 @@ interface CharacterType {
     margin: string,
     placement: string,
     transformScale: number,
+    map: {
+        transformScale: number,
+    }
     detail: {
         transformScale: number,
         placement: string,
@@ -43,6 +46,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "0px -5px -2px 2px",
         placement: "-70px -10px",
         transformScale: 0.9,
+        map: {
+            transformScale: 0.4,
+        },
         detail: {
             transformScale: 7.2,
             placement: "-68px -9px",
@@ -66,6 +72,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "-13px -2px -13px -5px",
         placement: "90px 2105px",
         transformScale: 0.7,
+        map: {
+            transformScale: 0.3,
+        },
         detail: {
             transformScale: 5.6,
             placement: "84px 2478px",
@@ -89,6 +98,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "1px 0px 2px 2px",
         placement: "40px 0px",
         transformScale: 1.1,
+        map: {
+            transformScale: 0.5,
+        },
         detail: {
             transformScale: 8.8,
             placement: "40px -2px",
@@ -112,6 +124,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "-10px -8px -10px -8px",
         placement: "-5px -2px",
         transformScale: 0.5,
+        map: {
+            transformScale: 0.2,
+        },
         detail: {
             transformScale: 4,
             placement: "-1px -2px",
@@ -135,6 +150,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "-3px -3px -6px -3px",
         placement: "-338px -47px",
         transformScale: 0.6,
+        map: {
+            transformScale: 0.3,
+        },
         detail: {
             transformScale: 5,
             placement: "-336px -46px",
@@ -158,6 +176,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "-5px -3px -5px -3px",
         placement: "-338px -334px",
         transformScale: 0.6,
+        map: {
+            transformScale: 0.3,
+        },
         detail: {
             transformScale: 4.9,
             placement: "-336px -334px",
@@ -181,6 +202,9 @@ const Characters: { [key in Character]: CharacterType } = {
         margin: "-13px",
         placement: "-4px -48px",
         transformScale: 0.4,
+        map: {
+            transformScale: 0.2,
+        },
         detail: {
             transformScale: 3,
             placement: "-4px -48px",
@@ -204,6 +228,7 @@ const getCharacter = (species: Character) => {
 
 const Combatant = (props: { species: Character, state: State, purpose?: Purpose, draggable?: boolean }) => {
     const char = getCharacter(props.species);
+    const for_map_view = props.purpose === Purpose.Map;
     const for_detail_view = props.purpose === Purpose.Detail;
     const for_paint_view = props.purpose === Purpose.Paint;
     if (!char.sheet) {
@@ -215,7 +240,7 @@ const Combatant = (props: { species: Character, state: State, purpose?: Purpose,
             style={
                 {
                     background: `url(${char.sheet}) ${for_detail_view ? char.detail.placement : char.placement}`,
-                    transform: `scale(${for_detail_view ? char.detail.transformScale : for_paint_view ? char.paint.transformScale : char.transformScale})`,
+                    transform: `scale(${for_map_view ? char.map.transformScale : for_detail_view ? char.detail.transformScale : for_paint_view ? char.paint.transformScale : char.transformScale})`,
                     width: for_detail_view ? char.detail.width : for_paint_view ? char.paint.width : char.width,
                     height: for_detail_view ? char.detail.height : for_paint_view ? char.paint.height : char.height,
                     margin: for_detail_view ? char.detail.margin : for_paint_view ? char.paint.margin : char.margin,

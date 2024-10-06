@@ -1,13 +1,33 @@
-.Title {
+.TitleContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+}
+
+.TitleSection {
     align-content: center;
     text-align: center;
-    width: 100%;
+    width: 50%;
     text-align: -webkit-center;
 }
  
 .Logo {
     width: 250px; 
     height: 250px;
+}
+
+.MapContainer {
+    width: fit-content;
+}
+
+.TitleSection .Tile {
+    width: 13px;
+    height: 13px;
+}
+
+.TitleSection .Arena .Tile_container {
+    width: 13px;
+    height: 13px;
 }
 
 .Button_row {

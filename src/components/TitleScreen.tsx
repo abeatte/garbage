@@ -7,6 +7,8 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 import { mapStateToProps } from '../data/utils/ReactUtils';
 import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, speedChange } from '../data/slices/tickerSlice';
+import Map from './Map';
+import { Purpose } from '../data/utils/CombatantUtils';
 
 const logo = require('../images/icon.png');
 
@@ -32,23 +34,33 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
 
     render() {
         return (
-            <div className="Title">
-                <h1>Welcome to</h1>
-                <img className="Logo" src={logo} alt='logo' />
-                <h3>How will you be playing?</h3>
-                <div className='Button_row'>
-                    <button
-                        className={classNames('Clickable', 'Button')}
-                        onClick={() => this.props.setGameMode(GameMode.Adventure)}
-                    >
-                        (A)dventure Mode
-                    </button>
-                    <button
-                        className={classNames('Clickable', 'Button')}
-                        onClick={() => this.props.setGameMode(GameMode.God)}
-                    >
-                        (G)od Mode
-                    </button>
+            <div className="TitleContainer">
+                <div className="TitleSection">
+                    <h1>Welcome to</h1>
+                    <img className="Logo" src={logo} alt='logo' />
+                    <h3>How will you be playing?</h3>
+                    <div className='Button_row'>
+                        <button
+                            className={classNames('Clickable', 'Button')}
+                            onClick={() => this.props.setGameMode(GameMode.Adventure)}
+                        >
+                            (A)dventure Mode
+                        </button>
+                        <button
+                            className={classNames('Clickable', 'Button')}
+                            onClick={() => this.props.setGameMode(GameMode.God)}
+                        >
+                            (G)od Mode
+                        </button>
+                    </div>
+                </div>
+                <div className="TitleSection">
+                    <div className="MapContainer">
+                        <Map
+                            view_port={{ ...this.props.board.view_port, height: this.props.board.arena.height }}
+                            purpose={Purpose.Map}
+                        />
+                    </div>
                 </div>
             </div>
         );

@@ -13,7 +13,7 @@ import Item, { ItemModel, MAX_TILE_ITEM_COUNT } from "../../objects/items/Item";
 export const MAX_YOUNGLING_TICK = 5;
 export const MIN_HEALTH = -500;
 
-export enum Purpose { Tile, Detail, Paint };
+export enum Purpose { Map, Tile, Detail, Paint };
 
 export enum ClockFace {
     c = 0,
