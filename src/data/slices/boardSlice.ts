@@ -209,7 +209,6 @@ function initState(
 
     state.player_highlight_count = 0;
 
-    debugger;
     state.view_port = state.view_port ?? {
         start: 0,
         width: state.arena.width,

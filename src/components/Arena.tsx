@@ -180,7 +180,8 @@ class Arena extends React.Component<AppState & DispatchProps> {
                                 if (Object.keys(TileType).includes(selected_paint)) {
                                     this.props.paintOnTile({ position, type: selected_paint });
                                 }
-                            }} />
+                            }}
+                        />
                     </div>
                 </div>
                 {this.props.board.game_mode === GameMode.Adventure &&

@@ -13,11 +13,10 @@ const Map = (props: { view_port: { start: number, width: number, height: number 
     const board = useSelector((state: AppState) => state.board);
     const paintPalette = useSelector((state: AppState) => state.paintPalette);
 
+    const selected_paint = paintPalette.selected;
     const shouldHighlightPlayer =
         board.player_highlight_count > 0 &&
         board.player_highlight_count % 2 === 0;
-
-    const selected_paint = paintPalette.selected;
 
     const tiles = [] as JSX.Element[];
     for (let row = 0; row < props.view_port.height; row++) {

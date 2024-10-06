@@ -20,7 +20,7 @@ import Spider from "../objects/items/Spider";
 import { SpiderType, Type } from "../objects/items/Item";
 import { Purpose } from "../data/utils/CombatantUtils";
 
-const PaintPalette = () => {
+const PaintPalette = (props: { showTarget?: boolean }) => {
     const board = useSelector((state: AppState) => state.board);
     const hud = useSelector((state: AppState) => state.hud);
     const paintPalette = useSelector((state: AppState) => state.paintPalette);
@@ -198,9 +198,12 @@ const PaintPalette = () => {
             {
                 paintPalette.palette_displayed && (
                     <div className="Items_container">
-                        <div className="Items_row">
-                            {target}
-                        </div>
+                        {
+                            (props.showTarget === undefined || props.showTarget) &&
+                            <div className="Items_row">
+                                {target}
+                            </div>
+                        }
                         <div className="Items_row">
                             {tiles}
                         </div>
