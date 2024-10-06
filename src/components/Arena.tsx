@@ -211,6 +211,7 @@ interface DispatchProps {
 function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
         reset: () => {
+            Analytics.logEvent('button_click: Restart');
             dispatch(resetBoard());
             dispatch(resetTicker());
             dispatch(setActiveHudPanel(HudPanel.NONE))

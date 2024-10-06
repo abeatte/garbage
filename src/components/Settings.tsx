@@ -23,7 +23,7 @@ import { faListDots, faPause, faPlay } from "@fortawesome/free-solid-svg-icons";
 import Maps from "../data/Map";
 import Analytics from "../analytics";
 
-const Settings = ({ onReset }: { onReset: () => void }) => {
+const Settings = (props: { showPause?: boolean, onReset?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch()
@@ -166,11 +166,7 @@ const Settings = ({ onReset }: { onReset: () => void }) => {
         <button
             style={{ width: "182px" }}
             className={classNames('Clickable', 'Button', 'Restart')}
-            onClick={() => {
-                Analytics.logEvent('button_click: Restart');
-                onReset();
-            }
-            }>
+            onClick={() => props.onReset && props.onReset()}>
             <span>{"Restart"}</span>
         </button>
     );
@@ -222,7 +218,7 @@ const Settings = ({ onReset }: { onReset: () => void }) => {
             style={{ maxHeight: "50px", width: "182px" }}
         >
             {show_settings_button}
-            {pause_play_button}
+            {(props.showPause === undefined || props.showPause) && pause_play_button}
         </div>
     );
     const settings_section = (

@@ -11,7 +11,7 @@ import Analytics from "../analytics";
 
 export const DASHBOARD_HEIGHT = 57;
 
-const Dashboard = ({ onReset }: { onReset: () => void }) => {
+const Dashboard = (props: { showStats?: boolean, showGameStats?: boolean, showPause?: boolean, onReset?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
     const hud = useSelector((state: AppState) => state.hud);
@@ -66,9 +66,9 @@ const Dashboard = ({ onReset }: { onReset: () => void }) => {
     return (
         <div className={'Dashboard'} style={{ height: `${DASHBOARD_HEIGHT}px` }}>
             <div style={{ display: "flex", flexDirection: "row", flexGrow: "1", position: "unset", backgroundColor: "peru" }}>
-                <Settings onReset={onReset} />
-                {game_stats_section}
-                {show_stats_button}
+                <Settings showPause={props.showPause} onReset={() => props.onReset && props.onReset()} />
+                {(props.showGameStats === undefined || props.showGameStats) && game_stats_section}
+                {(props.showStats === undefined || props.showStats) && show_stats_button}
             </div>
         </div >
     )
