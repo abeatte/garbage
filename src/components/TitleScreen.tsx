@@ -51,7 +51,7 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
                 {show_map_preview && <Dashboard showPause={false} showGameStats={false} showStats={false} onReset={this.props.resetBoard} />}
                 <div className="TitleContainer">
                     <div className="TitleSection" style={{ width: show_map_preview ? "50%" : "100%" }}>
-                        <h1>Welcome to</h1>
+                        <h1 style={{ margin: "4px" }}>Welcome to</h1>
                         <div className="Setables_container">
                             <img className="Logo" src={logo} alt='logo' />
                             <Setables onReset={this.props.resetBoard} />
