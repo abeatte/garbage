@@ -19,12 +19,13 @@ export interface Sight {
 }
 
 export function viewSurroundings(
-    { species, position, tiles, window_width, combatants }:
+    { species, position, tiles, window_width, combatants, ignore_void_tiles }:
         {
             species?: Character,
             position: number,
             tiles: Readonly<TileModel[]>,
             window_width: number,
+            ignore_void_tiles?: boolean,
             // the Player should already be in the combatants array at this point in evaluation
             combatants?: { [position: number]: Combatant | undefined }
         }
@@ -81,7 +82,7 @@ export function viewSurroundings(
 
     const getNewRandomPosition = () => {
         const surrounding = surroundings[LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)]];
-        if (isTileValidCombatantPosition(surrounding?.tile)) {
+        if (isTileValidCombatantPosition(surrounding?.tile, ignore_void_tiles)) {
             return (surrounding as Surrounding).position;
         }
         return center?.position ?? -1;

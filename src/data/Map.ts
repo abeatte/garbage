@@ -1,4 +1,8 @@
 import { createTileModel, TileModel, Type as TileType } from "../models/TileModel";
+import { ItemModel, SpiderType } from "../objects/items/Item";
+import Spider from "../objects/items/Spider";
+import { addItemToBoard } from "./utils/CombatantUtils";
+import { Sight, viewSurroundings } from "./utils/SightUtils";
 
 export interface MapType {
     name: string;
@@ -37,6 +41,37 @@ const Maps: { [name: string]: MapType } = {
                     idx++;
                 }
             }
+            return tiles;
+        }
+    },
+
+    Chasms: {
+        name: "Chasms",
+        generate: ({ width, height }) => {
+            const tiles = Array(width * height) as TileModel[];
+            for (let index = 0; index < width * height; index++) {
+                tiles[index] = createTileModel({ index, type: TileType.Void });
+            }
+
+            const NUM_SPIDERS = width * height / 20
+            let spiders = {} as { [position: number]: ItemModel[] | undefined };
+            for (let s = 0; s < NUM_SPIDERS; s++) {
+                const spider = new Spider({ position: Math.round(Math.random() * (tiles.length - 1)), type: SpiderType.SandSpider });
+                addItemToBoard(spider, spiders);
+            }
+
+            while (Object.values(spiders).length > 0) {
+                const remaining_spiders = {};
+                for (const models of Object.values(spiders)) {
+                    for (const model in models) {
+                        const spider_model = models[model as unknown as number];
+                        const sight = viewSurroundings({ ignore_void_tiles: true, position: spider_model.position, tiles, window_width: width }) // { getNewRandomPosition: () => LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)] };
+                        new Spider(spider_model).tap(sight as Sight, remaining_spiders, {}, tiles, width);
+                    }
+                }
+                spiders = remaining_spiders;
+            }
+
             return tiles;
         }
     },

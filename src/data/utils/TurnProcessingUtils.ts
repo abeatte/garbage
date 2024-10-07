@@ -48,8 +48,8 @@ export function isValidCombatantPosition(position: number | undefined, tiles: Re
         isTileValidCombatantPosition(tiles[position]);
 }
 
-export function isTileValidCombatantPosition(tile: TileModel | undefined): boolean {
-    return tile !== undefined && tile.type !== TileType.Void;
+export function isTileValidCombatantPosition(tile: TileModel | undefined, ignore_void?: boolean): boolean {
+    return tile !== undefined && (ignore_void || tile.type !== TileType.Void);
 }
 
 function processEnvironmentEffects(

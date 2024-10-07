@@ -24,7 +24,7 @@ export interface ItemModel extends EntityModel {
 export default abstract class Item extends Entity<ItemModel> {
     protected _model: ItemModel;
 
-    constructor(model?: { type: ItemType });
+    constructor(model?: { position?: number, type: ItemType });
     constructor(model: ItemModel) {
         super();
         this._model = {
