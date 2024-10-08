@@ -23,7 +23,7 @@ import { ItemModel, SpiderType, ItemType, Type } from '../../objects/items/Item'
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
 export enum GameState { Title = "Title", Game = "Game" };
-export enum GameMode { God = "God", Adventure = "Adventure" };
+export enum GameMode { God = "God Mode", Adventure = "Adventure Mode" };
 export enum ArrowKey { ARROWLEFT = "ARROWLEFT", ARROWRIGHT = "ARROWRIGHT", ARROWUP = "ARROWUP", ARROWDOWN = "ARROWDOWN" };
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;

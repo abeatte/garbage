@@ -104,7 +104,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                         Analytics.logEvent(`input_changed: Game_mode -> ${input.target.value}`);
                         dispatch(setGameMode(input.target.value as GameMode));
                     }}>
-                    {Object.values(GameMode).map(m => (<option key={m}>{`${m} Mode`}</option>))}
+                    {Object.values(GameMode).map(m => (<option key={m}>{`${m}`}</option>))}
                 </select>
             </div>
         </>
