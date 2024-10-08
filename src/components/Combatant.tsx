@@ -21,6 +21,7 @@ interface CharacterType {
     transformScale: number,
     map: {
         transformScale: number,
+        margin: string,
     }
     detail: {
         transformScale: number,
@@ -48,6 +49,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 0.9,
         map: {
             transformScale: 0.4,
+            margin: "0px -5px -5px 2px",
         },
         detail: {
             transformScale: 7.2,
@@ -74,6 +76,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 0.7,
         map: {
             transformScale: 0.3,
+            margin: "-13px -2px -16px 5px",
         },
         detail: {
             transformScale: 5.6,
@@ -100,6 +103,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 1.1,
         map: {
             transformScale: 0.5,
+            margin: "1px, 0px -1px 2px",
         },
         detail: {
             transformScale: 8.8,
@@ -126,6 +130,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 0.5,
         map: {
             transformScale: 0.2,
+            margin: "-14px -8px",
         },
         detail: {
             transformScale: 4,
@@ -152,6 +157,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 0.6,
         map: {
             transformScale: 0.3,
+            margin: "-3px -3px -10px -3px",
         },
         detail: {
             transformScale: 5,
@@ -178,6 +184,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 0.6,
         map: {
             transformScale: 0.3,
+            margin: "-10px -3px",
         },
         detail: {
             transformScale: 4.9,
@@ -204,6 +211,7 @@ const Characters: { [key in Character]: CharacterType } = {
         transformScale: 0.4,
         map: {
             transformScale: 0.2,
+            margin: "-17",
         },
         detail: {
             transformScale: 3,
