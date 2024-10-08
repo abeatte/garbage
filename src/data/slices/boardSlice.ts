@@ -228,6 +228,7 @@ function initState(
     }
 
     setViewPortTileDimens(state);
+    centerViewOnPlayer(state);
 
     state.tiles = (args?.tiles && args.tiles.length === state.arena.height * state.arena.width) ?
         args.tiles :
@@ -424,34 +425,7 @@ export const boardSlice = createSlice({
             state.global_combatant_stats = movement_result.global_combatant_stats;
             state.player = movement_result.player;
 
-            if (state.player && state.player.position > -1) {
-                let new_start = state.player.position;
-                // snap to fit horizontal
-                new_start -= Math.max(
-                    // check right bounds
-                    state.view_port.width - (state.arena.width - state.player.position % state.arena.width),
-                    Math.min(
-                        // check left bounds
-                        state.player.position % state.arena.width,
-                        // everything in the middle
-                        Math.floor(state.view_port.width / 2),
-                    )
-                );
-                // snap to fit vertical
-                new_start -= state.arena.width *
-                    Math.max(
-                        // check bottom bounds
-                        Math.floor(state.view_port.height - (state.arena.height - Math.floor(state.player.position / state.arena.width))),
-                        Math.min(
-                            // check top bounds
-                            Math.floor(state.player.position / state.arena.width),
-                            // everything in the middle
-                            Math.floor(state.view_port.height / 2),
-                        )
-                    );
-
-                state.view_port.start = new_start;
-            }
+            centerViewOnPlayer(state);
 
             if (!!combatant_id_to_follow) {
                 const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
@@ -533,6 +507,37 @@ export const boardSlice = createSlice({
         }
     }
 })
+
+const centerViewOnPlayer = (state: BoardState) => {
+    if (state.player && state.player.position > -1) {
+        let new_start = state.player.position;
+        // snap to fit horizontal
+        new_start -= Math.max(
+            // check right bounds
+            state.view_port.width - (state.arena.width - state.player.position % state.arena.width),
+            Math.min(
+                // check left bounds
+                state.player.position % state.arena.width,
+                // everything in the middle
+                Math.floor(state.view_port.width / 2),
+            )
+        );
+        // snap to fit vertical
+        new_start -= state.arena.width *
+            Math.max(
+                // check bottom bounds
+                Math.floor(state.view_port.height - (state.arena.height - Math.floor(state.player.position / state.arena.width))),
+                Math.min(
+                    // check top bounds
+                    Math.floor(state.player.position / state.arena.width),
+                    // everything in the middle
+                    Math.floor(state.view_port.height / 2),
+                )
+            );
+
+        state.view_port.start = new_start;
+    };
+}
 
 export const {
     startGame,

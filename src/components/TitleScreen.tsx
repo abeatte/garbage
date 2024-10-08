@@ -56,7 +56,7 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
                         <div className="TitleSection">
                             <div className="MapContainer">
                                 <Map
-                                    view_port={{ ...this.props.board.view_port, height: this.props.board.arena.height }}
+                                    view_port={this.props.board.view_port}
                                     purpose={Purpose.Map}
                                     selectedPosition={selected_position}
                                     onTileClick={(position: number) => {

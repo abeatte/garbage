@@ -90,7 +90,7 @@ const Map = (props: { view_port: { start: number, width: number, height: number 
     };
 
     return (
-        <div className="Arena" style={{ gridTemplateColumns: `${"auto ".repeat(props.view_port.width)}` }}>
+        <div className={classNames({ "Arena": true, "Map": props.purpose === Purpose.Map })} style={{ gridTemplateColumns: `${"auto ".repeat(props.view_port.width)}` }}>
             {tiles}
         </div>
     );
