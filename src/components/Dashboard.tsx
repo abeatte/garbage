@@ -20,10 +20,6 @@ const Dashboard = (props: { enabled: boolean }) => {
     const game_stats_section = (
         <div className="Stats_panel">
             <div className={'Row_group'}>
-                <div className={'Row'}>
-                    <span className={'Label'}>{'Game:'}</span>
-                    <span className="Data_row">{board.game_count}</span>
-                </div>
                 <div className={classNames('Row')}>
                     <span className={'Label'}>{'Year:'}</span>
                     <span className="Data_row">{ticker.tick}</span>

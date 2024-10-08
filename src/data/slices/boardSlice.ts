@@ -35,7 +35,6 @@ export const GAME_DEFAULTS = {
     game_state: GameState.Title,
     game_mode: GameMode.God,
     player_highlight_count: 0,
-    game_count: 1,
     arena: {
         width: 26,
         height: 30,
@@ -57,7 +56,6 @@ interface BoardState {
     geolocation: GeolocationPosition,
     game_state: GameState,
     game_mode: GameMode,
-    game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
     view_port: {
         start: number,
@@ -301,7 +299,7 @@ const mapReducers = {
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
-        state.tiles = Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
+        initState({ ...state, combatants: undefined, tiles: undefined, global_combatant_stats: undefined }, state);
     },
     paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
         const valid_combatant_position = isValidCombatantPosition(action.payload.position, state.tiles);
@@ -392,7 +390,6 @@ export const boardSlice = createSlice({
             }, state);
         },
         reset: (state) => {
-            state.game_count += 1;
             initState({ ...state, combatants: undefined, tiles: undefined, global_combatant_stats: undefined }, state);
         },
         togglePlayerHighlight: (state) => {
@@ -531,7 +528,6 @@ export const boardSlice = createSlice({
             state.player = player;
             state.selected_position = undefined;
             state.follow_selected_combatant = false;
-            state.game_count += 1;
             state.combatants = combatants;
             state.global_combatant_stats = global_combatant_stats;
         }
