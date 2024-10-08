@@ -44,7 +44,6 @@ export const GAME_DEFAULTS = {
     movement_logic: MovementLogic.DecisionTree,
     map: Maps['World'].name,
     use_genders: false,
-    show_settings: false,
     show_real_tile_images: true,
     follow_selected_combatant: false,
 }
@@ -84,7 +83,6 @@ interface BoardState {
 }
 
 interface SettingsState {
-    show_settings: boolean,
     show_real_tile_images: boolean,
     show_tile_potentials: boolean,
     use_genders: boolean,
@@ -194,7 +192,6 @@ function initState(
         global_combatant_stats: GlobalCombatantStatsModel | undefined,
         initial_num_combatants?: number,
         use_genders?: boolean,
-        show_settings?: boolean,
         show_real_tile_images?: boolean,
     }, state?: BoardState & SettingsState,
 ): BoardState & SettingsState {
@@ -209,7 +206,6 @@ function initState(
     state.arena = args?.arena ?? state.arena;
     state.map = args?.map ?? state.map;
     state.use_genders = args?.use_genders ?? state.use_genders;
-    state.show_settings = args?.show_settings ?? state.show_settings;
     state.show_real_tile_images = args?.show_real_tile_images ?? state.show_real_tile_images;
 
     state.player_highlight_count = 0;
@@ -352,9 +348,6 @@ const settingsReducers = {
     toggleUseGenders: (state: BoardState & SettingsState) => {
         state.use_genders = !state.use_genders;
     },
-    setShowSettings: (state: BoardState & SettingsState, action: PayloadAction<boolean>) => {
-        state.show_settings = action.payload;
-    },
     setMovementLogic: (state: BoardState & SettingsState, action: PayloadAction<MovementLogic>) => {
         state.movement_logic = action.payload;
     },
@@ -371,6 +364,15 @@ export const boardSlice = createSlice({
         startGame: (state) => {
             initState({
                 game_state: GameState.Game,
+                game_mode: state.game_mode,
+                combatants: state.combatants,
+                tiles: state.tiles,
+                global_combatant_stats: state.global_combatant_stats
+            }, state);
+        },
+        stopGame: (state) => {
+            initState({
+                game_state: GameState.Title,
                 game_mode: state.game_mode,
                 combatants: state.combatants,
                 tiles: state.tiles,
@@ -538,6 +540,7 @@ export const boardSlice = createSlice({
 
 export const {
     startGame,
+    stopGame,
     setGameMode,
     shrinkWidth,
     setGeoLocation,
@@ -561,7 +564,6 @@ export const {
     setMap,
     toggleUseGenders,
     setInitialNumCombatants,
-    setShowSettings,
 } = boardSlice.actions
 
 export default boardSlice.reducer

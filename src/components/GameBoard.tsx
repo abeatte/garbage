@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import Analytics from '../analytics';
-import { select, setShowSettings } from '../data/slices/boardSlice';
+import { select } from '../data/slices/boardSlice';
 import { HudDisplayMode, HudPanel, setActiveHudPanel } from '../data/slices/hudSlice';
 import { setSelectedPaint } from '../data/slices/paintPaletteSlice';
 import { AppDispatch, AppState } from '../data/store';
@@ -15,15 +15,11 @@ class Game extends React.Component<AppState & DispatchProps> {
     escFunction = (event: { key: string; }) => {
         if (event.key === "Escape") {
             Analytics.logEvent('key_pressed: Escape');
-            // close settings panel first, if it is open. 
-            if (this.props.board.show_settings) {
-                this.props.setNotShowSettings();
-            } else if (this.props.paintPalette.selected !== Pointer.Target) {
+            if (this.props.paintPalette.selected !== Pointer.Target) {
                 this.props.setNoPaintSelected();
             } else {
                 this.props.select();
                 this.props.setNoActiveHudPanel();
-                this.props.setNotShowSettings();
             }
         }
     }
@@ -68,7 +64,6 @@ class Game extends React.Component<AppState & DispatchProps> {
 interface DispatchProps {
     select: () => void,
     setNoActiveHudPanel: () => void,
-    setNotShowSettings: () => void,
     setNoPaintSelected: () => void,
 }
 
@@ -76,7 +71,6 @@ function mapDispatchToProps(dispatch: AppDispatch): DispatchProps {
     return {
         select: () => dispatch(select({})),
         setNoActiveHudPanel: () => dispatch(setActiveHudPanel(HudPanel.NONE)),
-        setNotShowSettings: () => dispatch(setShowSettings(false)),
         setNoPaintSelected: () => dispatch(setSelectedPaint(Pointer.Target)),
     }
 }

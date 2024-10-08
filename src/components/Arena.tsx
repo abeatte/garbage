@@ -158,7 +158,7 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
         return (
             <div className={classNames("Arena_container")}>
-                <Dashboard onReset={this.props.reset} />
+                <Dashboard enabled={true} />
                 <div className={classNames("Arena_border_container")}>
                     <div className="Arena_inner_container">
                         <Map

@@ -1,22 +1,18 @@
 import '../css/Setables.css'
 import classNames from "classnames";
-import React, { useState } from "react";
+import React from "react";
 import Analytics from "../analytics";
 import { shrinkWidth, growWidth, shrinkHeight, growHeight, MovementLogic, setInitialNumCombatants, setMap, setMovementLogic, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders, setGameMode, GameMode } from "../data/slices/boardSlice";
 import { useSelector, useDispatch } from "react-redux";
 import Maps from "../data/Map";
-import { speedChange, MAX_TICK_SPEED, DEFAULT_TICK_SPEED } from "../data/slices/tickerSlice";
 import { AppState } from "../data/store";
 import { faPlay, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const Setables = (props: { onReset?: () => void, onPlay?: () => void }) => {
+const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch()
-
-    const [super_speed, setSuperSpeed] = useState(
-        ticker.tick_speed === MAX_TICK_SPEED || (ticker.tick_speed === 0 && ticker.prev_tick_speed === MAX_TICK_SPEED));
 
     const play_button = (
         <div style={{ margin: "0px 8px 0px 0px" }}>
@@ -99,23 +95,8 @@ const Setables = (props: { onReset?: () => void, onPlay?: () => void }) => {
 
     const game_section = (
         <>
-            <div className={classNames('Checkbox_container')}>
-                <input
-                    className={classNames('Clickable', 'Checkbox')}
-                    type="checkbox"
-                    checked={super_speed}
-                    onChange={(input) => {
-                        Analytics.logEvent(`button_click: Super Speed ${input.target.checked ? 'Checked' : 'Unchecked'}`);
-                        setSuperSpeed(input.target.checked)
-                        dispatch(speedChange({
-                            value: input.target.checked ? MAX_TICK_SPEED : DEFAULT_TICK_SPEED, respectPause: true
-                        }));
-                    }}
-                />
-                <span className={'Label'}>{'Use Super Speed'}</span>
-            </div>
             <div style={{ marginTop: "4px" }}>
-                <span className={'Label'}>{'Game Mode: '}</span>
+                <span className={'Label'}>{'Game: '}</span>
                 <select
                     className={classNames('Dropdown_selector', 'Clickable')}
                     value={board.game_mode}
@@ -123,7 +104,7 @@ const Setables = (props: { onReset?: () => void, onPlay?: () => void }) => {
                         Analytics.logEvent(`input_changed: Game_mode -> ${input.target.value}`);
                         dispatch(setGameMode(input.target.value as GameMode));
                     }}>
-                    {Object.values(GameMode).map(m => (<option key={m}>{m}</option>))}
+                    {Object.values(GameMode).map(m => (<option key={m}>{`${m} Mode`}</option>))}
                 </select>
             </div>
         </>
@@ -233,4 +214,4 @@ const Setables = (props: { onReset?: () => void, onPlay?: () => void }) => {
     );
 }
 
-export default Setables;
+export default Configurables;
