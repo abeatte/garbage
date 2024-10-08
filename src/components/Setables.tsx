@@ -2,13 +2,15 @@ import '../css/Setables.css'
 import classNames from "classnames";
 import React, { useState } from "react";
 import Analytics from "../analytics";
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, MovementLogic, setInitialNumCombatants, setMap, setMovementLogic, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders } from "../data/slices/boardSlice";
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, MovementLogic, setInitialNumCombatants, setMap, setMovementLogic, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders, setGameMode, GameMode } from "../data/slices/boardSlice";
 import { useSelector, useDispatch } from "react-redux";
 import Maps from "../data/Map";
 import { speedChange, MAX_TICK_SPEED, DEFAULT_TICK_SPEED } from "../data/slices/tickerSlice";
 import { AppState } from "../data/store";
+import { faPlay, faRotate } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const Setables = (props: { onReset?: () => void }) => {
+const Setables = (props: { onReset?: () => void, onPlay?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
     const board = useSelector((state: AppState) => state.board);
     const dispatch = useDispatch()
@@ -16,13 +18,48 @@ const Setables = (props: { onReset?: () => void }) => {
     const [super_speed, setSuperSpeed] = useState(
         ticker.tick_speed === MAX_TICK_SPEED || (ticker.tick_speed === 0 && ticker.prev_tick_speed === MAX_TICK_SPEED));
 
+    const play_button = (
+        <div style={{ margin: "0px 8px 0px 0px" }}>
+            <button
+                className={classNames('Clickable', 'Button')}
+                onClick={() => {
+                    Analytics.logEvent('button_click: Play');
+                    props.onPlay && props.onPlay()
+                }}>
+                <FontAwesomeIcon
+                    className="Clickable"
+                    icon={faPlay}
+                    color='dark'
+                    size='lg'
+                    style={{
+                        alignSelf: 'center',
+                        margin: ticker.tick_speed > 0 ? '4px 1px 4px 1px' : '4px 0px 4px 0px'
+                    }}
+                />
+            </button>
+        </div>
+    );
+
     const restart_button = (
-        <button
-            style={{ width: "182px", alignSelf: "auto" }}
-            className={classNames('Clickable', 'Button', 'Restart')}
-            onClick={() => props.onReset && props.onReset()}>
-            <span>{"Reset"}</span>
-        </button>
+        <div style={{ margin: "0px 8px 0px 0px" }}>
+            <button
+                className={classNames('Clickable', 'Button')}
+                onClick={() => {
+                    Analytics.logEvent('button_click: reset');
+                    props.onReset && props.onReset()
+                }}>
+                <FontAwesomeIcon
+                    className="Clickable"
+                    icon={faRotate}
+                    color='dark'
+                    size='lg'
+                    style={{
+                        alignSelf: 'center',
+                        margin: ticker.tick_speed > 0 ? '4px 1px 4px 1px' : '4px 0px 4px 0px'
+                    }}
+                />
+            </button>
+        </div>
     );
 
     const resize_section = (
@@ -58,6 +95,38 @@ const Setables = (props: { onReset?: () => void }) => {
                 </button>
             </div>
         </div>
+    );
+
+    const game_section = (
+        <>
+            <div className={classNames('Checkbox_container')}>
+                <input
+                    className={classNames('Clickable', 'Checkbox')}
+                    type="checkbox"
+                    checked={super_speed}
+                    onChange={(input) => {
+                        Analytics.logEvent(`button_click: Super Speed ${input.target.checked ? 'Checked' : 'Unchecked'}`);
+                        setSuperSpeed(input.target.checked)
+                        dispatch(speedChange({
+                            value: input.target.checked ? MAX_TICK_SPEED : DEFAULT_TICK_SPEED, respectPause: true
+                        }));
+                    }}
+                />
+                <span className={'Label'}>{'Use Super Speed'}</span>
+            </div>
+            <div style={{ marginTop: "4px" }}>
+                <span className={'Label'}>{'Game Mode: '}</span>
+                <select
+                    className={classNames('Dropdown_selector', 'Clickable')}
+                    value={board.game_mode}
+                    onChange={(input) => {
+                        Analytics.logEvent(`input_changed: Game_mode -> ${input.target.value}`);
+                        dispatch(setGameMode(input.target.value as GameMode));
+                    }}>
+                    {Object.values(GameMode).map(m => (<option key={m}>{m}</option>))}
+                </select>
+            </div>
+        </>
     );
 
     const combatants_section = (
@@ -145,21 +214,7 @@ const Setables = (props: { onReset?: () => void }) => {
 
     const settables_section = (
         <>
-            <div className={classNames('Checkbox_container')}>
-                <input
-                    className={classNames('Clickable', 'Checkbox')}
-                    type="checkbox"
-                    checked={super_speed}
-                    onChange={(input) => {
-                        Analytics.logEvent(`button_click: Super Speed ${input.target.checked ? 'Checked' : 'Unchecked'}`);
-                        setSuperSpeed(input.target.checked)
-                        dispatch(speedChange({
-                            value: input.target.checked ? MAX_TICK_SPEED : DEFAULT_TICK_SPEED, respectPause: true
-                        }));
-                    }}
-                />
-                <span className={'Label'}>{'Use Super Speed'}</span>
-            </div>
+            {game_section}
             {map_section}
             {combatants_section}
         </>
@@ -167,7 +222,11 @@ const Setables = (props: { onReset?: () => void }) => {
 
     return (
         <div className="Setables">
-            {restart_button}
+            <div className='Game_section'>
+                {play_button}
+                {restart_button}
+            </div>
+
             {resize_section}
             {settables_section}
         </div>

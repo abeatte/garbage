@@ -1,7 +1,7 @@
 import React from "react";
 import { AppDispatch, AppState } from "../data/store";
 import { connect } from "react-redux";
-import { GameMode, setGeoLocation, setViewPortSize } from "../data/slices/boardSlice";
+import { GameState, setGeoLocation, setViewPortSize } from "../data/slices/boardSlice";
 import GameBoard from "./GameBoard";
 import TitleScreen from "./TitleScreen";
 import { mapStateToProps } from "../data/utils/ReactUtils";
@@ -30,14 +30,11 @@ class Game extends React.Component<AppState & DispatchProps> {
     render() {
 
         let screen;
-        switch (this.props.board.game_mode) {
-            case GameMode.Adventure:
-            // fall-through
-            /* eslint-disable-next-line no-fallthrough */
-            case GameMode.God:
+        switch (this.props.board.game_state) {
+            case GameState.Game:
                 screen = (<GameBoard />);
                 break;
-            case GameMode.Title:
+            case GameState.Title:
             // fall-through
             /* eslint-disable-next-line no-fallthrough */
             default:

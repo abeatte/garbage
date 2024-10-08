@@ -22,7 +22,8 @@ import Player from '../../objects/combatants/Player';
 import { ItemModel, SpiderType, ItemType, Type } from '../../objects/items/Item';
 
 export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
-export enum GameMode { Title = "Title", God = "God", Adventure = "Adventure" };
+export enum GameState { Title = "Title", Game = "Game" };
+export enum GameMode { God = "God", Adventure = "Adventure" };
 export enum ArrowKey { ARROWLEFT = "ARROWLEFT", ARROWRIGHT = "ARROWRIGHT", ARROWUP = "ARROWUP", ARROWDOWN = "ARROWDOWN" };
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
@@ -31,7 +32,8 @@ export type Combatants = { [position: number]: CombatantModel };
 export type Items = { [position: number]: ItemModel[] };
 
 export const GAME_DEFAULTS = {
-    game_mode: GameMode.Title,
+    game_state: GameState.Title,
+    game_mode: GameMode.God,
     player_highlight_count: 0,
     game_count: 1,
     arena: {
@@ -54,6 +56,7 @@ const SETTINGS_DEFAULTS = {
 
 interface BoardState {
     geolocation: GeolocationPosition,
+    game_state: GameState,
     game_mode: GameMode,
     game_count: number,
     global_combatant_stats: GlobalCombatantStatsModel,
@@ -172,6 +175,7 @@ function handleResize(
 
 function initState(
     args?: {
+        game_state: GameState,
         game_mode: GameMode,
         map?: string,
         arena?: {
@@ -200,6 +204,7 @@ function initState(
     } as BoardState & SettingsState;
 
     // populate with args
+    state.game_state = args?.game_state ?? state.game_state;
     state.game_mode = args?.game_mode ?? state.game_mode;
     state.arena = args?.arena ?? state.arena;
     state.map = args?.map ?? state.map;
@@ -363,11 +368,21 @@ export const boardSlice = createSlice({
     reducers: {
         ...mapReducers,
         ...settingsReducers,
+        startGame: (state) => {
+            initState({
+                game_state: GameState.Game,
+                game_mode: state.game_mode,
+                combatants: state.combatants,
+                tiles: state.tiles,
+                global_combatant_stats: state.global_combatant_stats
+            }, state);
+        },
         setGameMode: (state, action: PayloadAction<GameMode>) => {
             if (state.game_mode === action.payload) {
                 return;
             }
             initState({
+                game_state: state.game_state,
                 game_mode: action.payload,
                 combatants: state.combatants,
                 tiles: state.tiles,
@@ -522,6 +537,7 @@ export const boardSlice = createSlice({
 })
 
 export const {
+    startGame,
     setGameMode,
     shrinkWidth,
     setGeoLocation,
