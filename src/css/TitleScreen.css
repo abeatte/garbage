@@ -5,7 +5,6 @@
 }
 
 .TitleSection {
-    align-content: center;
     text-align: center;
     width: 50%;
     text-align: -webkit-center;
@@ -24,6 +23,7 @@
 }
 
 .MapContainer {
+    margin-top: 46px;
     width: fit-content;
 }
 
