@@ -1,11 +1,12 @@
 import React from "react";
 import { AppDispatch, AppState } from "../data/store";
 import { connect } from "react-redux";
-import { GameState, setGeoLocation, setViewPortSize } from "../data/slices/boardSlice";
+import { setGeoLocation, setViewPortSize } from "../data/slices/boardSlice";
 import GameBoard from "./GameBoard";
 import TitleScreen from "./TitleScreen";
 import { mapStateToProps } from "../data/utils/ReactUtils";
 import { setScreenSize } from "../data/slices/hudSlice";
+import { GameState } from "../data/utils/GameUtils";
 
 class Game extends React.Component<AppState & DispatchProps> {
     handleWindowWidthResize = (dimens: { innerWidth: number, innerHeight: number }) => {

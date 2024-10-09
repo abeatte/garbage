@@ -3,15 +3,16 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
-import { GAME_DEFAULTS, MovementLogic } from "../data/slices/boardSlice";
+import { GAME_DEFAULTS } from "../data/slices/boardSlice";
 import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
-import CombatantModel, { Character } from "../models/CombatantModel";
+import { Character } from "../models/CombatantModel";
 import { TileModel } from "../models/TileModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
 import Combatant from "../objects/combatants/Combatant";
 import NPC from "../objects/combatants/NPC";
+import { MovementLogic } from "../data/utils/GameUtils";
 
 export type Input = { [position: string]: number };
 export type Output = { [direction: string]: number };

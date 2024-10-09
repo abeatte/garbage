@@ -1,13 +1,14 @@
-import '../css/Setables.css'
+import '../css/Configurables.css'
 import classNames from "classnames";
 import React from "react";
 import Analytics from "../analytics";
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, MovementLogic, setInitialNumCombatants, setMap, setMovementLogic, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders, setGameMode, GameMode } from "../data/slices/boardSlice";
+import { shrinkWidth, growWidth, shrinkHeight, growHeight, setInitialNumCombatants, setMap, setMovementLogic, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders, setGameMode } from "../data/slices/boardSlice";
 import { useSelector, useDispatch } from "react-redux";
 import Maps from "../data/Map";
 import { AppState } from "../data/store";
 import { faPlay, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { GameMode, MovementLogic } from '../data/utils/GameUtils';
 
 const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);

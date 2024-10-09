@@ -16,8 +16,6 @@ import {
     killSelected,
     spawnAtSelected,
     paintTile,
-    GameMode,
-    ArrowKey,
     togglePlayerHighlight,
     PLAYER_HIGHLIGHT_COUNT,
     spawnAtRandom,
@@ -35,6 +33,7 @@ import { State } from "../models/CombatantModel";
 import Map from "./Map";
 import { Pointer } from "../models/PointerModel";
 import { Type as TileType } from "../models/TileModel";
+import { ArrowKey, GameMode } from "../data/utils/GameUtils";
 
 const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
     if (tickSpeed === 0) {

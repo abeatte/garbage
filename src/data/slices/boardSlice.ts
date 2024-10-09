@@ -20,11 +20,7 @@ import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 import Player from '../../objects/combatants/Player';
 import { ItemModel, SpiderType, ItemType, Type } from '../../objects/items/Item';
-
-export enum MovementLogic { RandomWalk = "Random Walk", NeuralNetwork = "Neural Network", DecisionTree = "Decision Tree" };
-export enum GameState { Title = "Title", Game = "Game" };
-export enum GameMode { God = "God Mode", Adventure = "Adventure Mode" };
-export enum ArrowKey { ARROWLEFT = "ARROWLEFT", ARROWRIGHT = "ARROWRIGHT", ARROWUP = "ARROWUP", ARROWDOWN = "ARROWDOWN" };
+import { GameState, GameMode, MovementLogic, ArrowKey } from '../utils/GameUtils';
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
 

@@ -4,12 +4,13 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Analytics from "../analytics";
 import { faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faCrosshairs } from "@fortawesome/free-solid-svg-icons";
-import { ArrowKey, togglePlayerHighlight } from "../data/slices/boardSlice";
+import { togglePlayerHighlight } from "../data/slices/boardSlice";
 import { AppState } from "../data/store";
 import '../css/Controls.css';
 import { PaintEntity } from "../data/slices/paintPaletteSlice";
 import { Pointer } from "../models/PointerModel";
 import { State } from "../models/CombatantModel";
+import { ArrowKey } from "../data/utils/GameUtils";
 
 const Controls = (props: { paintOnTile: (paint_args: { position: number, type: PaintEntity }) => void, playerMovementFunction: (direction: ArrowKey) => boolean, playerHighlight: boolean }) => {
     const board = useSelector((state: AppState) => state.board);

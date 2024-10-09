@@ -1,13 +1,13 @@
 import uuid from "react-uuid";
 import CombatantModel, { Character, DecisionType, Gender, getMapTileEffect, getRandomCombatantName, getRandomSpecies, State, Strength } from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
-import { MovementLogic } from "../../data/slices/boardSlice";
 import { ClockFace, GetCombatant, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../../data/utils/CombatantUtils";
 import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import Brain from "../../models/Brain";
 import { TileModel } from "../../models/TileModel";
 import Entity from "../Entity";
+import { MovementLogic } from "../../data/utils/GameUtils";
 
 const Brains = Brain.init();
 

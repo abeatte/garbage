@@ -1,8 +1,8 @@
 import { ClockFace } from "../data/utils/CombatantUtils";
 import { Type as TileType } from "./TileModel";
-import { ArrowKey } from "../data/slices/boardSlice";
 import { uniqueNamesGenerator, Config as UniqueNamesConfig, adjectives, colors, names } from 'unique-names-generator';
 import { EntityModel } from "../objects/Entity";
+import { ArrowKey } from "../data/utils/GameUtils";
 
 export enum Strength { Weak = "Weak", Average = "Average", Strong = "Strong", Immortal = "Immortal" };
 export enum State { Alive = "alive", Mating = "mating", Dead = "dead", Captured = "Captured" };

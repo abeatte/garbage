@@ -1,13 +1,14 @@
 import CombatantModel, { DecisionType, State, getMapTileEffect } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, Type as TileType } from "../../models/TileModel";
-import { Combatants, Items, MovementLogic } from "../slices/boardSlice";
+import { Combatants, Items } from "../slices/boardSlice";
 import { GetCombatant } from "./CombatantUtils";
 import { viewSurroundings } from "./SightUtils";
 import Combatant from "../../objects/combatants/Combatant";
 import Player from "../../objects/combatants/Player";
 import { GetItem } from "./ItemUtils";
 import { ItemModel } from "../../objects/items/Item";
+import { MovementLogic } from "./GameUtils";
 
 export function processBoardTick(
     { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:

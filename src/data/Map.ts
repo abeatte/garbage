@@ -44,7 +44,6 @@ const Maps: { [name: string]: MapType } = {
             return tiles;
         }
     },
-
     Chasms: {
         name: "Chasms",
         generate: ({ width, height }) => {

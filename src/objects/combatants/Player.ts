@@ -1,4 +1,4 @@
-import { MovementLogic } from "../../data/slices/boardSlice";
+import { MovementLogic } from "../../data/utils/GameUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import { Character, DecisionType } from "../../models/CombatantModel";
