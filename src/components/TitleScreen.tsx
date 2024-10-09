@@ -17,6 +17,7 @@ import Configurables from './Configurables';
 const logo = require('../images/icon.png');
 
 const MIN_TWO_PANEL_WIDTH = 675;
+const MAX_MAP_DIMEN = 30;
 
 class TitleScreen extends React.Component<AppState & DispatchProps> {
     keysFunction = (event: { key: string; }) => {
@@ -41,6 +42,14 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
 
         const show_map_preview = this.props.board.view_port.width_measurement > MIN_TWO_PANEL_WIDTH;
 
+        const view_port = {
+            ...this.props.board.view_port,
+            width: this.props.board.arena.width,
+            height: this.props.board.arena.height
+        };
+        view_port.height = Math.min(view_port.height, MAX_MAP_DIMEN);
+        view_port.width = Math.min(view_port.width, MAX_MAP_DIMEN);
+
         return (
             <div>
                 {show_map_preview && <Dashboard enabled={false} />}
@@ -56,7 +65,7 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
                         <div className="TitleSection">
                             <div className="MapContainer">
                                 <Map
-                                    view_port={this.props.board.view_port}
+                                    view_port={view_port}
                                     purpose={Purpose.Map}
                                     selectedPosition={selected_position}
                                     onTileClick={(position: number) => {
