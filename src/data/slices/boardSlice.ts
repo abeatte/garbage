@@ -376,11 +376,13 @@ export const boardSlice = createSlice({
         startGame: (state) => {
             initState({
                 game_state: GameState.Game,
+                player_highlight_count: state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
             }, state);
         },
         stopGame: (state) => {
             initState({
                 game_state: GameState.Title,
+                player_highlight_count: state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
             }, state);
         },
         setGameMode: (state, action: PayloadAction<GameMode>) => {
