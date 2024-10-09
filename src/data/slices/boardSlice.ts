@@ -45,15 +45,21 @@ export const GAME_DEFAULTS = {
     use_genders: false,
     show_real_tile_images: true,
     follow_selected_combatant: false,
+    tiles: [],
+    player: undefined,
+    combatants: {},
+    items: {},
+    selected_position: undefined,
 }
 
 const SETTINGS_DEFAULTS = {
     use_genders: false,
     show_tile_potentials: false,
+    geolocation: undefined,
 }
 
 interface BoardState {
-    geolocation: GeolocationPosition,
+    geolocation: GeolocationPosition | undefined,
     game_state: GameState,
     game_mode: GameMode,
     global_combatant_stats: GlobalCombatantStatsModel,
@@ -171,78 +177,85 @@ function handleResize(
 
 function initState(
     args?: {
-        game_state: GameState,
-        game_mode: GameMode,
-        map?: string,
+        game_state?: GameState,
+        game_mode?: GameMode,
+        tiles?: TileModel[],
+        items?: Items,
+        combatants?: Combatants,
+        player?: CombatantModel | undefined,
         arena?: {
             width: number,
             height: number,
         },
-        view_port?: {
-            start: number,
-            width: number,
-            height: number,
-            width_measurement: number,
-            height_measurement: number,
-        },
-        tiles: TileModel[] | undefined,
-        combatants: Combatants | undefined,
-        global_combatant_stats: GlobalCombatantStatsModel | undefined,
         initial_num_combatants?: number,
-        use_genders?: boolean,
-        show_real_tile_images?: boolean,
+        player_highlight_count?: number,
     }, state?: BoardState & SettingsState,
 ): BoardState & SettingsState {
     state = state ?? {
         ...GAME_DEFAULTS,
         ...SETTINGS_DEFAULTS,
-    } as BoardState & SettingsState;
-
-    // populate with args
-    state.game_state = args?.game_state ?? state.game_state;
-    state.game_mode = args?.game_mode ?? state.game_mode;
-    state.arena = args?.arena ?? state.arena;
-    state.map = args?.map ?? state.map;
-    state.use_genders = args?.use_genders ?? state.use_genders;
-    state.show_real_tile_images = args?.show_real_tile_images ?? state.show_real_tile_images;
-
-    state.player_highlight_count = 0;
-
-    state.view_port = state.view_port ?? {
-        start: 0,
-        width: state.arena.width,
-        height: state.arena.height,
-        height_measurement: 0,
-        width_measurement: 0,
+        global_combatant_stats: { ...DEFAULT },
+        view_port: {
+            start: 0,
+            width: 26,
+            height: 30,
+            height_measurement: 0,
+            width_measurement: 0,
+        }
     };
 
-    if (state.game_mode === GameMode.Adventure) {
-        state.initial_num_combatants = 0;
-        state.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
+    if (args?.game_state !== undefined) {
+        state.game_state = args.game_state;
+    }
 
-        // TODO: Fix this once game mode is a dropdown. 
-        state.arena.height *= 5;
-        state.arena.width *= 5;
-        state.view_port.width = state.arena.width;
-        state.view_port.height = state.arena.height;
+    if (args?.game_mode !== undefined) {
+        state.game_mode = args.game_mode;
+    }
+
+    if (args?.tiles !== undefined) {
+        state.tiles = args.tiles;
+    }
+
+    if (args !== undefined && Object.keys(args).includes('player')) {
+        state.player = args?.player;
+    }
+
+    if (args?.combatants !== undefined) {
+        state.combatants = args.combatants;
+    }
+
+    if (args?.items !== undefined) {
+        state.items = args.items;
+    }
+
+    if (args?.arena !== undefined) {
+        state.arena = args.arena;
+    }
+
+    if (args?.initial_num_combatants !== undefined) {
+        state.initial_num_combatants = args.initial_num_combatants;
+    }
+
+    if (args?.player_highlight_count !== undefined) {
+        state.player_highlight_count = args.player_highlight_count;
     }
 
     setViewPortTileDimens(state);
-    centerViewOnPlayer(state);
 
-    state.tiles = (args?.tiles && args.tiles.length === state.arena.height * state.arena.width) ?
-        args.tiles :
+    state.tiles = (state.tiles.length === state.arena.height * state.arena.width) ?
+        state.tiles :
         Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     const { player, combatants, global_combatant_stats } =
-        (args?.combatants && Object.keys(args.combatants).length === state.initial_num_combatants) ?
-            state :
-            initCombatants({ tiles: state.tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure });
+        (Object.keys(state.combatants).length !== state.initial_num_combatants) || (state.player === undefined && state.game_mode === GameMode.Adventure) ?
+            initCombatants({ tiles: state.tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure }) :
+            state;
 
     state.global_combatant_stats = global_combatant_stats;
     state.player = player;
     state.combatants = combatants;
-    state.items = state.items ?? {};
     state.selected_position = undefined;
+
+    centerViewOnPlayer(state);
 
     return state;
 }
@@ -300,7 +313,7 @@ const mapReducers = {
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
-        initState({ ...state, combatants: undefined, tiles: undefined, global_combatant_stats: undefined }, state);
+        initState({ combatants: {}, tiles: [], items: {}, player: undefined }, state);
     },
     paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
         const valid_combatant_position = isValidCombatantPosition(action.payload.position, state.tiles);
@@ -363,35 +376,46 @@ export const boardSlice = createSlice({
         startGame: (state) => {
             initState({
                 game_state: GameState.Game,
-                game_mode: state.game_mode,
-                combatants: state.combatants,
-                tiles: state.tiles,
-                global_combatant_stats: state.global_combatant_stats
             }, state);
         },
         stopGame: (state) => {
             initState({
                 game_state: GameState.Title,
-                game_mode: state.game_mode,
-                combatants: state.combatants,
-                tiles: state.tiles,
-                global_combatant_stats: state.global_combatant_stats
             }, state);
         },
         setGameMode: (state, action: PayloadAction<GameMode>) => {
             if (state.game_mode === action.payload) {
                 return;
             }
-            initState({
-                game_state: state.game_state,
+
+            const args = {
                 game_mode: action.payload,
-                combatants: state.combatants,
-                tiles: state.tiles,
-                global_combatant_stats: state.global_combatant_stats
-            }, state);
+                arena: state.arena,
+                initial_num_combatants: state.initial_num_combatants,
+                player_highlight_count: state.player_highlight_count,
+                player: state.player,
+                combatants: {},
+                tiles: [],
+                items: {},
+            };
+
+            if (action.payload === GameMode.Adventure) {
+                args.initial_num_combatants = 0;
+                args.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
+                args.arena.height *= 5;
+                args.arena.width *= 5;
+            } else {
+                args.initial_num_combatants = GAME_DEFAULTS.initial_num_combatants;
+                args.player_highlight_count = 0;
+                args.player = undefined;
+                args.arena.height /= 5;
+                args.arena.width /= 5;
+            }
+
+            initState(args, state);
         },
         reset: (state) => {
-            initState({ ...state, combatants: undefined, tiles: undefined, global_combatant_stats: undefined }, state);
+            initState({ combatants: {}, tiles: [], items: {}, player: undefined }, state);
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
@@ -536,6 +560,8 @@ const centerViewOnPlayer = (state: BoardState) => {
             );
 
         state.view_port.start = new_start;
+    } else {
+        state.view_port.start = 0;
     };
 }
 
