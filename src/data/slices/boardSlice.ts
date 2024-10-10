@@ -457,7 +457,9 @@ export const boardSlice = createSlice({
             state.items = movement_result.items;
             state.tiles = movement_result.tiles;
             state.global_combatant_stats = movement_result.global_combatant_stats;
-            state.player = movement_result.player;
+            if (movement_result.player !== undefined) {
+                state.player = movement_result.player;
+            }
 
             centerViewOnPlayer(state);
 

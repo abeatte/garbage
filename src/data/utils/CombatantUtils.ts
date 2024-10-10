@@ -56,7 +56,7 @@ export function initCombatantStartingPos(
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
         const potential_pos = Math.round(Math.random() * (args.tiles.size - 1));
         if (
-            !args.combatants.c[potential_pos] &&
+            args.combatants.c[potential_pos] === undefined &&
             args.player?.getPosition() !== potential_pos &&
             isValidCombatantPosition(potential_pos, args.tiles)
         ) {
