@@ -54,11 +54,11 @@ export function viewSurroundings(
         }
     }
 
-    const can_stay_put = position > -1 && position < tiles.size;
-    const can_go_left = position % window_width > 0;
-    const can_go_up = position - window_width > -1
-    const can_go_right = position % window_width < window_width - 1;
-    const can_go_down = position + window_width < tiles.size;
+    const can_stay_put = position >= tiles.start && (position - tiles.start) < tiles.size;
+    const can_go_left = (position - tiles.start) % window_width > 0;
+    const can_go_up = (position - tiles.start) - window_width > -1
+    const can_go_right = (position - tiles.start) % window_width < window_width - 1;
+    const can_go_down = (position - tiles.start) + window_width < tiles.size;
 
     // start at center position and then move clockwise around
     const surroundings: (Surrounding | undefined)[] = Array(9);

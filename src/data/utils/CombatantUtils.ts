@@ -54,7 +54,7 @@ export function initCombatantStartingPos(
     let starting_pos = -1;
     // you have 10 tries to find a valid spot otherwise you don't get to exist
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
-        const potential_pos = Math.round(Math.random() * (args.tiles.size - 1));
+        const potential_pos = Math.round(Math.random() * (args.tiles.size - 1)) + args.tiles.start;
         if (
             args.combatants.c[potential_pos] === undefined &&
             args.player?.getPosition() !== potential_pos &&

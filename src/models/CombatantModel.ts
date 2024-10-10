@@ -92,7 +92,7 @@ export function getMapTileEffect({ species, tileType }: { species: Character | u
     }
 }
 
-export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_count: number) {
+export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_start: number, tile_count: number) {
     let clockFace;
     switch (arrowKey) {
         case ArrowKey.ARROWLEFT:
@@ -110,30 +110,30 @@ export function getNewPositionFromArrowKey(current_position: number, arrowKey: A
         default:
             clockFace = ClockFace.c;
     }
-    return validateNewPositionFromClockFace(current_position, clockFace, window_width, tile_count);
+    return validateNewPositionFromClockFace(current_position, clockFace, window_width, tile_start, tile_count);
 }
 
-function validateNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_count: number) {
+function validateNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_start: number, tile_count: number) {
     let new_position = current_position;
     switch (clockFace) {
         case ClockFace.l:
             new_position =
-                current_position % window_width > 0 ?
+                (current_position - tile_start) % window_width > 0 ?
                     current_position - 1 : current_position;
             break;
         case ClockFace.t:
             new_position =
-                current_position - window_width > -1 ?
+                (current_position - tile_start) - window_width > -1 ?
                     current_position - window_width : current_position;
             break;
         case ClockFace.r:
             new_position =
-                current_position % window_width < window_width - 1 ?
+                (current_position - tile_start) % window_width < window_width - 1 ?
                     current_position + 1 : current_position;
             break;
         case ClockFace.b:
             new_position =
-                current_position + window_width < tile_count ?
+                (current_position - tile_start) + window_width < tile_count ?
                     current_position + window_width : current_position;
             break;
         case ClockFace.c:

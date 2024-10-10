@@ -23,22 +23,22 @@ export function clearMapTileScorePotentials(args: { position: number, tiles: Til
 
     // center
     tiles.t[position].score_potential = {};
-    let bounds = position % window_width;
+    let bounds = (position - tiles.start) % window_width;
     // left
     if (bounds > 0) {
         tiles.t[position - 1].score_potential = {};
     }
-    bounds = position - window_width;
+    bounds = (position - tiles.start) - window_width;
     // up
     if (bounds > -1) {
         tiles.t[position - window_width].score_potential = {};
     }
-    bounds = position % window_width;
+    bounds = (position - tiles.start) % window_width;
     // right
     if (bounds < window_width - 1) {
         tiles.t[position + 1].score_potential = {};
     }
-    bounds = position + window_width;
+    bounds = (position - tiles.start) + window_width;
     // down
     if (bounds < tiles.size) {
         tiles.t[position + window_width].score_potential = {};
@@ -64,25 +64,25 @@ export function getMapTileScorePotentials(args: { position: number, tiles: Reado
     const potentials: { [key in Character]: number } = {} as { [key in Character]: number };
     for (let key in Character) {
         const species = Character[key as keyof typeof Character];
-        const can_go_left = position % window_width > 0;
+        const can_go_left = (position - tiles.start) % window_width > 0;
         if (!can_go_left) {
             possible_directions--;
         } else {
             position_potential += getMapTileEffect({ species, tileType: tiles.t[position - 1].type });
         }
-        const can_go_up = position - window_width > -1
+        const can_go_up = (position - tiles.start) - window_width > -1
         if (!can_go_up) {
             possible_directions--;
         } else {
             position_potential += getMapTileEffect({ species, tileType: tiles.t[position - window_width].type });
         }
-        const can_go_right = position % window_width < window_width - 1;
+        const can_go_right = (position - tiles.start) % window_width < window_width - 1;
         if (!can_go_right) {
             possible_directions--;
         } else {
             position_potential += getMapTileEffect({ species, tileType: tiles.t[position + 1].type });
         }
-        const can_go_down = position + window_width < tiles.size;
+        const can_go_down = (position - tiles.start) + window_width < tiles.size;
         if (!can_go_down) {
             possible_directions--;
         } else {

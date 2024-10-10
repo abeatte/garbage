@@ -23,10 +23,11 @@ import { ItemModel, SpiderType, ItemType, Type } from '../../objects/items/Item'
 import { GameState, GameMode, MovementLogic, ArrowKey } from '../utils/GameUtils';
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
+export const TILE_START: number = 10000;
 
 export type Combatants = { size: number, c: { [position: number]: CombatantModel } };
 export type Items = { size: number, i: { [position: number]: ItemModel[] } };
-export type Tiles = { size: number, t: { [position: number]: TileModel } };
+export type Tiles = { start: number, size: number, t: { [position: number]: TileModel } };
 
 export const GAME_DEFAULTS = {
     game_state: GameState.Title,
@@ -42,7 +43,7 @@ export const GAME_DEFAULTS = {
     use_genders: false,
     show_real_tile_images: true,
     follow_selected_combatant: false,
-    tiles: { size: 0, t: {} },
+    tiles: { start: TILE_START, size: 0, t: {} },
     player: undefined,
     combatants: { size: 0, c: {} },
     items: { size: 0, i: {} },
@@ -196,7 +197,7 @@ function initState(
         ...SETTINGS_DEFAULTS,
         global_combatant_stats: { ...DEFAULT },
         view_port: {
-            start: 0,
+            start: TILE_START,
             width: 26,
             height: 30,
             height_measurement: 0,
@@ -318,7 +319,7 @@ const mapReducers = {
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
-        initState({ combatants: { size: 0, c: {} }, tiles: { size: 0, t: {} }, items: { size: 0, i: {} }, player: undefined }, state);
+        initState({ combatants: { size: 0, c: {} }, tiles: { start: TILE_START, size: 0, t: {} }, items: { size: 0, i: {} }, player: undefined }, state);
     },
     paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
         const valid_combatant_position = isValidCombatantPosition(action.payload.position, state.tiles);
@@ -404,7 +405,7 @@ export const boardSlice = createSlice({
                 player: state.player,
                 map: state.map,
                 combatants: { size: 0, c: {} },
-                tiles: { size: 0, t: {} },
+                tiles: { start: TILE_START, size: 0, t: {} },
                 items: { size: 0, i: {} },
             };
 
@@ -425,7 +426,7 @@ export const boardSlice = createSlice({
             initState(args, state);
         },
         reset: (state) => {
-            initState({ combatants: { size: 0, c: {} }, tiles: { size: 0, t: {} }, items: { size: 0, i: {} }, player: undefined }, state);
+            initState({ combatants: { size: 0, c: {} }, tiles: { start: TILE_START, size: 0, t: {} }, items: { size: 0, i: {} }, player: undefined }, state);
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
@@ -437,7 +438,7 @@ export const boardSlice = createSlice({
         movePlayer: (state, action: PayloadAction<ArrowKey>) => {
             if (state.player) {
                 state.player.target_waypoints[0] =
-                    getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.size);
+                    getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.start, state.tiles.size);
             }
         },
         tick: (state) => {
@@ -546,15 +547,15 @@ export const boardSlice = createSlice({
 })
 
 const centerViewOnPlayer = (state: BoardState) => {
-    if (state.player && state.player.position > -1) {
+    if (state.player && state.player.position >= state.tiles.start) {
         let new_start = state.player.position;
         // snap to fit horizontal
         new_start -= Math.max(
             // check right bounds
-            state.view_port.width - (state.arena.width - state.player.position % state.arena.width),
+            state.view_port.width - (state.arena.width - (state.player.position - state.tiles.start) % state.arena.width),
             Math.min(
                 // check left bounds
-                state.player.position % state.arena.width,
+                (state.player.position - state.tiles.start) % state.arena.width,
                 // everything in the middle
                 Math.floor(state.view_port.width / 2),
             )
@@ -563,10 +564,10 @@ const centerViewOnPlayer = (state: BoardState) => {
         new_start -= state.arena.width *
             Math.max(
                 // check bottom bounds
-                Math.floor(state.view_port.height - (state.arena.height - Math.floor(state.player.position / state.arena.width))),
+                Math.floor(state.view_port.height - (state.arena.height - Math.floor((state.player.position - state.tiles.start) / state.arena.width))),
                 Math.min(
                     // check top bounds
-                    Math.floor(state.player.position / state.arena.width),
+                    Math.floor((state.player.position - state.tiles.start) / state.arena.width),
                     // everything in the middle
                     Math.floor(state.view_port.height / 2),
                 )
@@ -574,7 +575,7 @@ const centerViewOnPlayer = (state: BoardState) => {
 
         state.view_port.start = new_start;
     } else {
-        state.view_port.start = 0;
+        state.view_port.start = state.tiles.start;
     };
 }
 

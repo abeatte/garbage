@@ -1,7 +1,7 @@
 import { createTileModel, Type as TileType } from "../models/TileModel";
 import { SpiderType } from "../objects/items/Item";
 import Spider from "../objects/items/Spider";
-import { Items, Tiles } from "./slices/boardSlice";
+import { Items, TILE_START, Tiles } from "./slices/boardSlice";
 import { addItemToBoard } from "./utils/CombatantUtils";
 import { GameMode } from "./utils/GameUtils";
 import { viewSurroundings } from "./utils/SightUtils";
@@ -17,8 +17,8 @@ const Maps: { [name: string]: MapType } = {
         name: "World",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
-            let idx = 0;
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
+            let idx = tiles.start;
             for (let h = 0; h < height; h++) {
                 for (let w = 0; w < width; w++) {
                     if (h === 0 || h === height - 1 || w === 0 || w === width - 1) {
@@ -53,16 +53,16 @@ const Maps: { [name: string]: MapType } = {
         name: "Chasms",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let index = 0; index < width * height; index++) {
-                tiles.t[index] = createTileModel({ index, type: TileType.Void });
+                tiles.t[index + tiles.start] = createTileModel({ index, type: TileType.Void });
                 tiles.size++;
             }
 
             const NUM_SPIDERS = width * height / 20
             let spiders: Items = { size: 0, i: {} };
             for (let s = 0; s < NUM_SPIDERS; s++) {
-                const spider = new Spider({ position: Math.round(Math.random() * (width * height - 1)), type: SpiderType.SandSpider });
+                const spider = new Spider({ position: Math.round(Math.random() * (width * height - 1)) + tiles.start, type: SpiderType.SandSpider });
                 addItemToBoard(spider, spiders);
             }
 
@@ -86,9 +86,9 @@ const Maps: { [name: string]: MapType } = {
         name: "Ocean",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx] = createTileModel({ index: idx, type: TileType.Water });
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Water });
                 tiles.size++;
             }
 
@@ -99,9 +99,9 @@ const Maps: { [name: string]: MapType } = {
         name: "Desert",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx] = createTileModel({ index: idx, type: TileType.Sand });
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Sand });
                 tiles.size++;
             }
 
@@ -112,9 +112,9 @@ const Maps: { [name: string]: MapType } = {
         name: "Meadow",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx] = createTileModel({ index: idx, type: TileType.Grass });
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Grass });
                 tiles.size++;
             }
 
@@ -125,9 +125,9 @@ const Maps: { [name: string]: MapType } = {
         name: "Mountain",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx] = createTileModel({ index: idx, type: TileType.Rock });
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Rock });
                 tiles.size++;
             }
 
@@ -138,9 +138,9 @@ const Maps: { [name: string]: MapType } = {
         name: "The Sun",
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx] = createTileModel({ index: idx, type: TileType.Fire });
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Fire });
                 tiles.size++;
             }
 
@@ -151,9 +151,9 @@ const Maps: { [name: string]: MapType } = {
         name: "Adventure",
         game_mode: GameMode.Adventure,
         generate: function ({ width, height }: { width: number; height: number; }) {
-            const tiles: Tiles = { size: 0, t: {} };
+            const tiles: Tiles = { start: TILE_START, size: 0, t: {} };
             for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx] = createTileModel({ index: idx, type: TileType.Sand });
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Sand });
                 tiles.size++;
             }
 

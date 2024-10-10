@@ -41,7 +41,7 @@ export function processBoardTick(
 
 export function isValidCombatantPosition(position: number | undefined, tiles: Readonly<Tiles>): boolean {
     return position !== undefined &&
-        0 <= position && position < tiles.size &&
+        tiles.start <= position && (position - tiles.start) < tiles.size &&
         isTileValidCombatantPosition(tiles.t[position]);
 }
 
