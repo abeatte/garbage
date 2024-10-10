@@ -18,7 +18,7 @@ export default class Bomb extends Item {
                     return;
                 }
 
-                const item_count = items.i[surrounding.position].length;
+                const item_count = items.i[surrounding.position]?.length ?? 0;
                 items.i[surrounding.position] = [];
                 items.size -= item_count;
 

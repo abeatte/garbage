@@ -518,7 +518,7 @@ export const boardSlice = createSlice({
         spawnAtSelected: (state) => {
             if (isValidCombatantPosition(state.selected_position, state.tiles)) {
                 state.follow_selected_combatant = true;
-                spawnAt(state.selected_position as number, state);
+                spawnAt(state.selected_position!, state);
             }
         },
         spawnAtRandom: (state) => {

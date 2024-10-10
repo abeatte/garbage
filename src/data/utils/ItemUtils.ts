@@ -32,7 +32,7 @@ export function updateItemsAfterResize(
     const new_items: Items = { size: 0, i: {} };
     // TODO: fix item logic
     // for (const p in items.i) {
-    //     const position = p as unknown as number;
+    //     const position = parseInt(p);
     //     const placed_items = items.i[position];
     //     let coord = [Math.floor(position / old_window_width), position % old_window_width];
 

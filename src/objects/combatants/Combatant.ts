@@ -230,8 +230,8 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
         const { surroundings } = sight;
         const friendly_positions: Combatant[] = [],
-            enemy_positions = [],
-            empty_positions = [] as number[];
+            enemy_positions: Combatant[] = [],
+            empty_positions: number[] = [];
 
         surroundings.forEach((surrounding, idx, s_arr) => {
             if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
@@ -465,7 +465,7 @@ function getBestOpenPosition(
 ): number {
     // position based on best safe space
     const best_empty_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
-        .sort((a, b) => parseInt(b) - parseInt(a))[0] as unknown as number]
+        .sort((a, b) => parseInt(b) - parseInt(a))[0]]
     const best_safe_position = best_empty_bucket?.length > 0 ?
         best_empty_bucket[Math.floor(Math.random() * best_empty_bucket.length)] : -1;
 

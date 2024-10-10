@@ -8,7 +8,6 @@ import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import { Character } from "../models/CombatantModel";
-import { TileModel } from "../models/TileModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
 import Combatant from "../objects/combatants/Combatant";
 import NPC from "../objects/combatants/NPC";

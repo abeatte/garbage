@@ -4,7 +4,7 @@ import Spider from "../objects/items/Spider";
 import { Items, Tiles } from "./slices/boardSlice";
 import { addItemToBoard } from "./utils/CombatantUtils";
 import { GameMode } from "./utils/GameUtils";
-import { Sight, viewSurroundings } from "./utils/SightUtils";
+import { viewSurroundings } from "./utils/SightUtils";
 
 export interface MapType {
     name: string;
@@ -71,9 +71,9 @@ const Maps: { [name: string]: MapType } = {
                 for (const ms in spiders.i) {
                     const models = spiders.i[ms];
                     for (const model in models) {
-                        const spider_model = models[model as unknown as number];
+                        const spider_model = models[model];
                         const sight = viewSurroundings({ ignore_void_tiles: true, position: spider_model.position, tiles, window_width: width });
-                        new Spider(spider_model).tap(sight as Sight, remaining_spiders, { size: 0, c: {} }, tiles, width);
+                        new Spider(spider_model).tap(sight, remaining_spiders, { size: 0, c: {} }, tiles, width);
                     }
                 }
                 spiders = remaining_spiders;

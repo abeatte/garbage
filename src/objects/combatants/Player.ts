@@ -27,7 +27,7 @@ export default class Player extends Combatant {
     requestMove(args: { movement_logic: MovementLogic; sight: Sight; tiles: Readonly<Tiles>; window_width: number; }): number {
         let new_position = this._model.target_waypoints.shift();
         if (isValidCombatantPosition(new_position, args.tiles)) {
-            new_position = new_position as number;
+            new_position = new_position!;
         } else {
             new_position = this._model.position;
         }

@@ -84,8 +84,8 @@ export function updateCombatantsPositionsAfterResize(
     const dif_row = window_width - old_window_width;
     const dif_col = window_height - old_window_height;
     for (const k in combatants.c) {
-        const old_pos = k as unknown as number;
-        let new_pos = k as unknown as number;
+        const old_pos = parseInt(k);
+        let new_pos = parseInt(k);
         let coord = [Math.floor(old_pos / old_window_width), old_pos % old_window_width];
 
         if (coord[1] >= window_width || coord[0] >= window_height) {

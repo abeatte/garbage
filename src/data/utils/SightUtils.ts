@@ -61,7 +61,7 @@ export function viewSurroundings(
     const can_go_down = position + window_width < tiles.size;
 
     // start at center position and then move clockwise around
-    const surroundings = Array(9) as unknown as (Surrounding | undefined)[];
+    const surroundings: (Surrounding | undefined)[] = Array(9);
     const center = can_stay_put ? setSurrounding(position) : undefined;
     surroundings[ClockFace.c] = center;
     surroundings[ClockFace.tl] = can_go_up && can_go_left ?
@@ -84,7 +84,7 @@ export function viewSurroundings(
     const getNewRandomPosition = () => {
         const surrounding = surroundings[LegalMoves[Math.floor(Math.random() * Object.values(LegalMoves).length)]];
         if (isTileValidCombatantPosition(surrounding?.tile, ignore_void_tiles)) {
-            return (surrounding as Surrounding).position;
+            return surrounding!.position;
         }
         return center?.position ?? -1;
     }

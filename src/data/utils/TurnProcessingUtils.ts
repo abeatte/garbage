@@ -53,7 +53,7 @@ function processEnvironmentEffects(
     { combatants, items, tiles, window_width, movement_logic, global_combatant_stats }:
         { combatants: Combatants, items: Items, tiles: Tiles, window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
-    const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths } as GlobalCombatantStatsModel;
+    const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths };
     const working_combatants: Combatants = { size: 0, c: {} };
     const working_items: Items = { size: 0, i: {} };
     let deaths = 0;
