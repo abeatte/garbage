@@ -24,8 +24,9 @@ import { GameState, GameMode, MovementLogic, ArrowKey } from '../utils/GameUtils
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
 
-export type Combatants = { [position: number]: CombatantModel };
-export type Items = { [position: number]: ItemModel[] };
+export type Combatants = { size: number, c: { [position: number]: CombatantModel } };
+export type Items = { size: number, i: { [position: number]: ItemModel[] } };
+export type Tiles = { size: number, t: { [position: number]: TileModel } };
 
 export const GAME_DEFAULTS = {
     game_state: GameState.Title,
@@ -41,10 +42,10 @@ export const GAME_DEFAULTS = {
     use_genders: false,
     show_real_tile_images: true,
     follow_selected_combatant: false,
-    tiles: [],
+    tiles: { size: 0, t: {} },
     player: undefined,
-    combatants: {},
-    items: {},
+    combatants: { size: 0, c: {} },
+    items: { size: 0, i: {} },
     selected_position: undefined,
 }
 
@@ -71,7 +72,7 @@ interface BoardState {
         height: number,
     },
     initial_num_combatants: number,
-    tiles: TileModel[],
+    tiles: Tiles,
     player_highlight_count: number,
     player: CombatantModel | undefined,
     combatants: Combatants,
@@ -90,9 +91,9 @@ interface SettingsState {
 
 function initCombatants(
     { tiles, num_combatants, init_player }:
-        { tiles: TileModel[], num_combatants: number, init_player: boolean }
+        { tiles: Tiles, num_combatants: number, init_player: boolean }
 ): { player: CombatantModel | undefined, combatants: Combatants, global_combatant_stats: GlobalCombatantStatsModel } {
-    const combatants = {} as Combatants;
+    const combatants: Combatants = { size: 0, c: {} };
     const global_combatant_stats = { ...DEFAULT };
 
     let player = undefined;
@@ -114,9 +115,10 @@ function initCombatants(
             continue;
         }
 
-        combatants[c_pos] = GetCombatant({ species, position: c_pos }, global_combatant_stats).toModel();
+        combatants.c[c_pos] = GetCombatant({ species, position: c_pos }, global_combatant_stats).toModel();
+        combatants.size++;
 
-        const c_fit = combatants[c_pos].fitness;
+        const c_fit = combatants.c[c_pos].fitness;
         global_combatant_stats.average_position += c_pos;
         if (global_combatant_stats.min_fitness > c_fit) {
             global_combatant_stats.min_fitness = c_fit;
@@ -127,7 +129,7 @@ function initCombatants(
         }
     }
 
-    const real_num_combatants = Object.keys(combatants).length;
+    const real_num_combatants = combatants.size;
     global_combatant_stats.num_combatants = real_num_combatants;
     global_combatant_stats.average_position = global_combatant_stats.average_position / real_num_combatants;
     global_combatant_stats.average_fitness = global_combatant_stats.average_fitness / real_num_combatants;
@@ -162,6 +164,7 @@ function handleResize(
             window_width: state.arena.width,
             window_height: state.arena.height,
             old_window_width,
+            tiles: state.tiles,
         });
     state.combatants = combatants;
     state.items = items;
@@ -175,10 +178,11 @@ function initState(
     args?: {
         game_state?: GameState,
         game_mode?: GameMode,
-        tiles?: TileModel[],
+        tiles?: Tiles,
         items?: Items,
         combatants?: Combatants,
         player?: CombatantModel | undefined,
+        map?: string,
         arena?: {
             width: number,
             height: number,
@@ -236,13 +240,17 @@ function initState(
         state.player_highlight_count = args.player_highlight_count;
     }
 
+    if (args?.map !== undefined) {
+        state.map = args.map;
+    }
+
     setViewPortTileDimens(state);
 
-    state.tiles = (state.tiles.length === state.arena.height * state.arena.width) ?
+    state.tiles = (state?.tiles.size === state.arena.height * state.arena.width) ?
         state.tiles :
         Maps[state.map].generate({ width: state.arena.width, height: state.arena.height });
     const { player, combatants, global_combatant_stats } =
-        (Object.keys(state.combatants).length !== state.initial_num_combatants) || (state.player === undefined && state.game_mode === GameMode.Adventure) ?
+        (state?.combatants.size !== state.initial_num_combatants) || (state.player === undefined && state.game_mode === GameMode.Adventure) ?
             initCombatants({ tiles: state.tiles, num_combatants: state.initial_num_combatants, init_player: state.game_mode === GameMode.Adventure }) :
             state;
 
@@ -258,12 +266,13 @@ function initState(
 
 function spawnAt(position: number, state: BoardState & SettingsState) {
     if (isValidCombatantPosition(position, state.tiles)) {
-        state.combatants[position] = GetCombatant(
+        state.combatants.c[position] = GetCombatant(
             {
                 position: position
             },
             state.global_combatant_stats
         ).toModel();
+        state.combatants.size++;
         state.global_combatant_stats.num_combatants += 1;
     }
 }
@@ -309,13 +318,13 @@ const mapReducers = {
     },
     setMap: (state: BoardState & SettingsState, action: PayloadAction<string>) => {
         state.map = action.payload;
-        initState({ combatants: {}, tiles: [], items: {}, player: undefined }, state);
+        initState({ combatants: { size: 0, c: {} }, tiles: { size: 0, t: {} }, items: { size: 0, i: {} }, player: undefined }, state);
     },
     paintTile: (state: BoardState & SettingsState, action: PayloadAction<{ position: number, type: PaintEntity }>) => {
         const valid_combatant_position = isValidCombatantPosition(action.payload.position, state.tiles);
-        const current_occupant = state.combatants[action.payload.position];
+        const current_occupant = state.combatants.c[action.payload.position];
         if (Object.keys(TileType).includes(action.payload.type)) {
-            state.tiles[action.payload.position] =
+            state.tiles.t[action.payload.position] =
                 createTileModel({ index: action.payload.position, type: action.payload.type as TileType });
             clearMapTileScorePotentials({ position: action.payload.position, tiles: state.tiles, window_width: state.arena.width });
         } else if (!valid_combatant_position) {
@@ -325,13 +334,14 @@ const mapReducers = {
             const new_item = GetItem({ position: action.payload.position, type: action.payload.type as ItemType });
             addItemToBoard(new_item, state.items);
         } else if (Object.keys(Character).includes(action.payload.type)) {
-            state.combatants[action.payload.position] =
+            state.combatants.c[action.payload.position] =
                 GetCombatant({
                     position: action.payload.position,
                     species: action.payload.type as Character,
                 },
                     state.global_combatant_stats).toModel();
             if (!current_occupant) {
+                state.combatants.size++;
                 state.global_combatant_stats.num_combatants += 1;
             }
         }
@@ -392,28 +402,30 @@ export const boardSlice = createSlice({
                 initial_num_combatants: state.initial_num_combatants,
                 player_highlight_count: state.player_highlight_count,
                 player: state.player,
-                combatants: {},
-                tiles: [],
-                items: {},
+                map: state.map,
+                combatants: { size: 0, c: {} },
+                tiles: { size: 0, t: {} },
+                items: { size: 0, i: {} },
             };
 
             if (action.payload === GameMode.Adventure) {
                 args.initial_num_combatants = 0;
                 args.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
-                args.arena.height *= 5;
-                args.arena.width *= 5;
+                args.map = Maps['Adventure'].name
+                args.arena.height = 3;
+                args.arena.width = 3;
             } else {
                 args.initial_num_combatants = GAME_DEFAULTS.initial_num_combatants;
                 args.player_highlight_count = 0;
                 args.player = undefined;
-                args.arena.height /= 5;
-                args.arena.width /= 5;
+                args.map = args.map !== Maps['Adventure'].name ? args.map : Maps['World'].name
+                args.arena = GAME_DEFAULTS.arena;
             }
 
             initState(args, state);
         },
         reset: (state) => {
-            initState({ combatants: {}, tiles: [], items: {}, player: undefined }, state);
+            initState({ combatants: { size: 0, c: {} }, tiles: { size: 0, t: {} }, items: { size: 0, i: {} }, player: undefined }, state);
         },
         togglePlayerHighlight: (state) => {
             if (state.player_highlight_count > 0) {
@@ -425,7 +437,7 @@ export const boardSlice = createSlice({
         movePlayer: (state, action: PayloadAction<ArrowKey>) => {
             if (state.player) {
                 state.player.target_waypoints[0] =
-                    getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.length);
+                    getNewPositionFromArrowKey(state.player.position, action.payload, state.arena.width, state.tiles.size);
             }
         },
         tick: (state) => {
@@ -450,7 +462,8 @@ export const boardSlice = createSlice({
             centerViewOnPlayer(state);
 
             if (!!combatant_id_to_follow) {
-                const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants).find(c => c.id === combatant_id_to_follow);
+                // TODO: make this more efficient
+                const followed = state.player?.id === combatant_id_to_follow ? state.player : Object.values(state.combatants.c).find(c => c.id === combatant_id_to_follow);
                 if (!!followed && followed.fitness > MIN_HEALTH) {
                     state.selected_position = followed.position;
                 }
@@ -482,7 +495,7 @@ export const boardSlice = createSlice({
         killSelected: (state) => {
             if (state.selected_position !== undefined) {
                 state.follow_selected_combatant = false;
-                let selected = state.combatants[state.selected_position];
+                let selected = state.combatants.c[state.selected_position];
                 if (selected === undefined && state.selected_position === state.player?.position) {
                     selected = state.player;
                 }
@@ -497,7 +510,7 @@ export const boardSlice = createSlice({
                     selected.state = State.Dead;
                     if (selected !== state.player) {
                         // must reassign to list to get state to notice the update. 
-                        state.combatants[state.selected_position] = selected;
+                        state.combatants.c[state.selected_position] = selected;
                     }
                 }
             }

@@ -164,7 +164,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                         Analytics.logEvent(`input_changed: Map -> ${input.target.value}`);
                         dispatch(setMap(input.target.value));
                     }}>
-                    {Object.values(Maps).map(m => (<option key={m.name.toString()}>{m.name}</option>))}
+                    {Object.values(Maps).filter(m => m.game_mode === board.game_mode).map(m => (<option key={m.name.toString()}>{m.name}</option>))}
                 </select>
             </div>
             <div className={classNames('Checkbox_container')}>

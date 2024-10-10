@@ -1,5 +1,4 @@
-import { Combatants } from "../slices/boardSlice";
-import { TileModel } from "../../models/TileModel";
+import { Combatants, Items, Tiles } from "../slices/boardSlice";
 import { viewSurroundings } from "./SightUtils";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
 import Combatant from "../../objects/combatants/Combatant";
@@ -50,14 +49,14 @@ export function GetCombatant(
 }
 
 export function initCombatantStartingPos(
-    args: { tiles: TileModel[], player: Player | undefined, combatants: Combatants }
+    args: { tiles: Tiles, player: Player | undefined, combatants: Combatants }
 ): number {
     let starting_pos = -1;
     // you have 10 tries to find a valid spot otherwise you don't get to exist
     for (let i = 0; i < 10 && starting_pos === -1; i++) {
-        const potential_pos = Math.round(Math.random() * (args.tiles.length - 1));
+        const potential_pos = Math.round(Math.random() * (args.tiles.size - 1));
         if (
-            !args.combatants[potential_pos] &&
+            !args.combatants.c[potential_pos] &&
             args.player?.getPosition() !== potential_pos &&
             isValidCombatantPosition(potential_pos, args.tiles)
         ) {
@@ -76,28 +75,23 @@ export function updateCombatantsPositionsAfterResize(
             window_height: number,
             old_window_width: number,
             old_window_height: number,
-            tiles: TileModel[]
+            tiles: Tiles
         }
 ): { combatants: Combatants, deaths: number } {
-    const new_combatants = {} as Combatants;
+    const new_combatants: Combatants = { size: 0, c: {} };
     let deaths = 0;
 
     const dif_row = window_width - old_window_width;
     const dif_col = window_height - old_window_height;
-    Object.keys(combatants).forEach(k => {
+    for (const k in combatants.c) {
         const old_pos = k as unknown as number;
         let new_pos = k as unknown as number;
         let coord = [Math.floor(old_pos / old_window_width), old_pos % old_window_width];
 
-        const combatantObjects = {} as { [position: number]: Combatant };
-        Object.keys(combatants).forEach(k => {
-            combatantObjects[k as unknown as number] = GetCombatant(combatants[k as unknown as number]);
-        });
-
         if (coord[1] >= window_width || coord[0] >= window_height) {
             // they fell off the world; let's try to move them up/left
             const sight =
-                viewSurroundings({ species: combatants[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants: combatantObjects });
+                viewSurroundings({ species: combatants.c[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants });
             const up_position = sight.surroundings[ClockFace.t];
             const up_left_position = sight.surroundings[ClockFace.tl];
             const left_position = sight.surroundings[ClockFace.l];
@@ -124,17 +118,18 @@ export function updateCombatantsPositionsAfterResize(
         }
 
         if (new_pos > -1 && new_pos < window_width * window_height) {
-            const occupient = GetCombatant(new_combatants[new_pos]);
-            new_combatants[new_pos] = occupient ? occupient.fightWith(GetCombatant(combatants[old_pos])).toModel() : combatants[old_pos];
-            new_combatants[new_pos].position = new_pos;
-            new_combatants[new_pos].visited_positions[new_pos] = new_pos;
+            const occupient = GetCombatant(new_combatants.c[new_pos]);
+            new_combatants.c[new_pos] = occupient ? occupient.fightWith(GetCombatant(combatants.c[old_pos])).toModel() : combatants.c[old_pos];
+            new_combatants.c[new_pos].position = new_pos;
+            new_combatants.c[new_pos].visited_positions[new_pos] = new_pos;
+            new_combatants.size++;
             if (occupient) {
                 deaths++;
             }
         } else {
             deaths++;
         }
-    })
+    }
     return { combatants: new_combatants, deaths };
 }
 
@@ -143,22 +138,25 @@ export function updateCombatantsPositionsAfterResize(
  * @returns a copy of the Combatants without the killed positions (and no undefined spaces)
  */
 export function killAndCopy({ positions, combatants }: { positions: number[], combatants: Combatants }): Combatants {
-    return Object.values(combatants).reduce((ret_combatants, combatant, _idx, _working_combatants) => {
+    return Object.values(combatants.c).reduce((ret_combatants, combatant, _idx, _working_combatants) => {
         if (!positions.includes(combatant.position)) {
-            ret_combatants[combatant.position] = combatant;
+            ret_combatants.c[combatant.position] = combatant;
+            ret_combatants.size++;
         }
         return ret_combatants;
-    }, {} as Combatants);
+    }, { size: 0, c: {} } as Combatants);
 }
 
-export function addItemToBoard(item: Item, working_items: { [position: number]: ItemModel[] | undefined }) {
-    if (working_items[item.getPosition()] === undefined) {
-        working_items[item.getPosition()] = [];
+export function addItemToBoard(item: Item, working_items: Items) {
+    if (working_items.i[item.getPosition()] === undefined) {
+        working_items.i[item.getPosition()] = [];
     }
 
-    const items = working_items[item.getPosition()] as ItemModel[];
+    const items: ItemModel[] = working_items.i[item.getPosition()];
     if (items.length === MAX_TILE_ITEM_COUNT) {
         items.shift();
+    } else {
+        working_items.size++;
     }
     items.push(item.toModel());
 }

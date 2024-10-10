@@ -3,7 +3,7 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
-import { GAME_DEFAULTS } from "../data/slices/boardSlice";
+import { GAME_DEFAULTS, Tiles } from "../data/slices/boardSlice";
 import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
@@ -25,7 +25,7 @@ const JSON_FILE_PATH = path.join(__dirname, '../data/nets/');
 const JSON_FILE_NAME = 'NeuralNetwork.json';
 const NUM_TRAINING_MAPS = 1;
 
-const getTrainingSet = (species: Character, combatant: Combatant, sight: Sight, tiles: TileModel[], window_width: number,): TrainingSet => {
+const getTrainingSet = (species: Character, combatant: Combatant, sight: Sight, tiles: Tiles, window_width: number,): TrainingSet => {
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = sight.surroundings[clockFace];
         if (sur !== undefined) {
@@ -66,7 +66,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
         // });
         debugger; // TODO: make sure tiles have score_potential setup at this point. 
 
-        for (let position = 0; position < tiles.length; position++) {
+        for (let position = 0; position < tiles.size; position++) {
             const combatants: { [position: number]: Combatant } = {};
             trainer.setPosition(position);
             combatants[position] = trainer;

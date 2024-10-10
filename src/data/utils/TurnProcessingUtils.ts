@@ -1,7 +1,7 @@
 import CombatantModel, { DecisionType, State, getMapTileEffect } from "../../models/CombatantModel";
 import { DEFAULT, GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { TileModel, Type as TileType } from "../../models/TileModel";
-import { Combatants, Items } from "../slices/boardSlice";
+import { Combatants, Items, Tiles } from "../slices/boardSlice";
 import { GetCombatant } from "./CombatantUtils";
 import { viewSurroundings } from "./SightUtils";
 import Combatant from "../../objects/combatants/Combatant";
@@ -12,20 +12,14 @@ import { MovementLogic } from "./GameUtils";
 
 export function processBoardTick(
     { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:
-        { player: CombatantModel | undefined, combatants: Combatants, items: Items, window_width: number, tiles: TileModel[], movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel }
-): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: TileModel[], global_combatant_stats: GlobalCombatantStatsModel } {
+        { player: CombatantModel | undefined, combatants: Combatants, items: Items, window_width: number, tiles: Tiles, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel }
+): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
     if (player && player.state !== State.Dead) {
-        combatants[player.position] = player;
+        combatants.c[player.position] = player;
     }
 
-    // TODO: this is a hack
-    const combatantObjects = {} as { [position: number]: Combatant };
-    Object.keys(combatants).forEach(k => {
-        combatantObjects[k as unknown as number] = GetCombatant(combatants[k as unknown as number]);
-    });
-
     // process combatants (including player) 
-    const combatant_result = processCombatantTick({ combatants: combatantObjects, tiles, window_width, movement_logic, use_genders, global_combatant_stats });
+    const combatant_result = processCombatantTick({ combatants, tiles, window_width, movement_logic, use_genders, global_combatant_stats });
     global_combatant_stats.births += combatant_result.births;
     global_combatant_stats.deaths += combatant_result.deaths;
 
@@ -34,19 +28,21 @@ export function processBoardTick(
 
     // This step is crucial as without copying the Redux store will 
     // duplicate the now undefined combatants 
-    const ret_combatants = {} as Combatants;
-    Object.values(item_result.combatants).forEach(c => {
-        ret_combatants[c.position] = c;
-    })
+    const ret_combatants = { size: 0, c: {} } as Combatants;
+    for (const c in item_result.combatants.c) {
+        const combatant = item_result.combatants.c[c];
+        ret_combatants.c[combatant.position] = combatant;
+        ret_combatants.size++;
+    }
     item_result.combatants = ret_combatants;
 
     return item_result;
 }
 
-export function isValidCombatantPosition(position: number | undefined, tiles: Readonly<TileModel[]>): boolean {
+export function isValidCombatantPosition(position: number | undefined, tiles: Readonly<Tiles>): boolean {
     return position !== undefined &&
-        0 <= position && position < tiles.length &&
-        isTileValidCombatantPosition(tiles[position]);
+        0 <= position && position < tiles.size &&
+        isTileValidCombatantPosition(tiles.t[position]);
 }
 
 export function isTileValidCombatantPosition(tile: TileModel | undefined, ignore_void?: boolean): boolean {
@@ -55,17 +51,17 @@ export function isTileValidCombatantPosition(tile: TileModel | undefined, ignore
 
 function processEnvironmentEffects(
     { combatants, items, tiles, window_width, movement_logic, global_combatant_stats }:
-        { combatants: { [position: number]: Combatant }, items: Items, tiles: TileModel[], window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
-): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: TileModel[], global_combatant_stats: GlobalCombatantStatsModel } {
+        { combatants: Combatants, items: Items, tiles: Tiles, window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
+): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
     const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths } as GlobalCombatantStatsModel;
-    const working_combatants: Combatants = {};
-    const working_items: Items = [];
+    const working_combatants: Combatants = { size: 0, c: {} };
+    const working_items: Items = { size: 0, i: {} };
     let deaths = 0;
     let player: CombatantModel | undefined;
 
-    Object.keys(items).forEach(p => {
+    for (const p in items.i) {
         const position = parseInt(p);
-        const position_items = items[position];
+        const position_items = items.i[position];
 
         position_items.forEach((i: ItemModel) => {
             const item = GetItem(i);
@@ -76,15 +72,15 @@ function processEnvironmentEffects(
             const sight = viewSurroundings({ position: item.getPosition(), tiles, window_width, combatants });
             item.tap(sight, working_items, combatants, tiles, window_width);
         });
-    })
+    }
 
     let live_combatant_count = 0;
-    Object.keys(combatants).forEach(p => {
+    for (const p in combatants.c) {
         const position = parseInt(p);
-        const combatant = combatants[position];
+        const combatant = GetCombatant(combatants.c[position]);
 
         if (!combatant.isImmortal()) {
-            combatant.affectFitness(getMapTileEffect({ species: combatant.getSpecies(), tileType: tiles[position].type }));
+            combatant.affectFitness(getMapTileEffect({ species: combatant.getSpecies(), tileType: tiles.t[position].type }));
         }
         combatant.updateStrengthRating(getStrengthRating({ global_combatant_stats, fitness: combatant.getFitness(), immortal: combatant.isImmortal() }));
 
@@ -98,7 +94,7 @@ function processEnvironmentEffects(
         }
 
         if (combatant.isDead() || combatant.isCaptured()) {
-            return;
+            continue;
         }
 
         working_global_combatant_stats.average_position += position;
@@ -115,9 +111,10 @@ function processEnvironmentEffects(
 
         // strip out the player
         if (!combatant.isPlayer()) {
-            working_combatants[position] = combatant.toModel();
+            working_combatants.c[position] = combatant.toModel();
+            working_combatants.size++;
         }
-    });
+    };
 
     working_global_combatant_stats.deaths += deaths;
 
@@ -138,37 +135,39 @@ function processEnvironmentEffects(
 function processCombatantTick(
     { combatants, movement_logic, tiles, window_width, use_genders, global_combatant_stats }:
         {
-            combatants: { [position: number]: Combatant },
+            combatants: Combatants,
             movement_logic: MovementLogic,
-            tiles: TileModel[],
+            tiles: Tiles,
             window_width: number,
             use_genders: boolean,
             global_combatant_stats: Readonly<GlobalCombatantStatsModel>
         }
-): { player: Player | undefined, combatants: Readonly<{ [position: number]: Combatant }>, births: number, deaths: number } {
-    const working_combatants: { [position: number]: Combatant } = {};
+): { player: Player | undefined, combatants: Readonly<Combatants>, births: number, deaths: number } {
+    const working_combatants: Combatants = { size: 0, c: {} };
     const mating_combatants: { [position: number]: Combatant } = {};
     let player;
     let births = 0, deaths = 0;
 
     // advance all combatants
-    Object.keys(combatants).forEach((p) => {
+    for (const p in combatants.c) {
         const current_position = parseInt(p);
+        let combatant = GetCombatant(combatants.c[current_position]);
 
-        if (combatants[current_position].isDead()) {
-            return;
+        if (combatant.isDead()) {
+            continue;
         }
 
         // process movement;
-        const { combatant, deaths: newDeaths } = processCombatantMovement({
+        const { combatant: newCombatant, deaths: newDeaths } = processCombatantMovement({
             use_genders,
-            combatant: combatants[current_position],
+            combatant,
             combatants,
             global_combatant_stats,
             tiles,
             window_width,
             movement_logic,
         });
+        combatant = newCombatant;
 
         deaths += newDeaths;
 
@@ -177,14 +176,15 @@ function processCombatantTick(
         }
 
         if (!combatant.isDead()) {
-            working_combatants[combatant.getPosition()] = combatant;
+            working_combatants.c[combatant.getPosition()] = combatant.toModel();
+            working_combatants.size++;
         }
 
         // capture mating combatants
         if (combatant.isMating()) {
             mating_combatants[combatant.getPosition()] = combatant;
         }
-    });
+    };
 
     // process mating
     Object.values(mating_combatants).forEach(c => {
@@ -198,12 +198,13 @@ function processCombatantTick(
         const spawn = parent.birthSpawn({
             tiles,
             window_width,
-            arena_size: tiles.length,
+            arena_size: tiles.size,
             combatants: working_combatants,
         });
 
         if (spawn !== undefined && spawn.getPosition() > -1) {
-            working_combatants[spawn.getPosition()] = spawn;
+            working_combatants.c[spawn.getPosition()] = spawn.toModel();
+            working_combatants.size++;
             births++
         }
     });
@@ -218,7 +219,7 @@ function processCombatantMovement(
             combatant: Combatant,
             combatants: Readonly<{ [position: number]: Combatant }>,
             global_combatant_stats: GlobalCombatantStatsModel,
-            tiles: TileModel[],
+            tiles: Tiles,
             window_width: number,
             movement_logic: MovementLogic,
         }

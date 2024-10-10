@@ -99,8 +99,8 @@ const Hud = () => {
 
     const selected_position = board.selected_position ?? -1;
     const combatant = getCombatantAtTarget({ target: selected_position, player: board.player, combatants: board.combatants });
-    const items = selected_position > -1 ? board.items[selected_position] : undefined;
-    const tile = selected_position > -1 ? board.tiles[selected_position] : undefined;
+    const items = selected_position > -1 ? board.items.i[selected_position] : undefined;
+    const tile = selected_position > -1 ? board.tiles.t[selected_position] : undefined;
     const isFullScreen = hud.hudDisplayMode === HudDisplayMode.FULL_SCREEN;
 
     useEffect(() => {

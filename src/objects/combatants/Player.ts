@@ -1,9 +1,9 @@
+import { Tiles } from "../../data/slices/boardSlice";
 import { MovementLogic } from "../../data/utils/GameUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import { Character, DecisionType } from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
-import { TileModel } from "../../models/TileModel";
 import Combatant from "./Combatant";
 
 export default class Player extends Combatant {
@@ -24,7 +24,7 @@ export default class Player extends Combatant {
         this._model.is_player = true;
     }
 
-    requestMove(args: { movement_logic: MovementLogic; sight: Sight; tiles: Readonly<TileModel[]>; window_width: number; }): number {
+    requestMove(args: { movement_logic: MovementLogic; sight: Sight; tiles: Readonly<Tiles>; window_width: number; }): number {
         let new_position = this._model.target_waypoints.shift();
         if (isValidCombatantPosition(new_position, args.tiles)) {
             new_position = new_position as number;

@@ -1,8 +1,7 @@
-import { Items } from "../../data/slices/boardSlice";
+import { Combatants, Items, Tiles } from "../../data/slices/boardSlice";
 import { addItemToBoard } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
-import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
-import Combatant from "../combatants/Combatant";
+import { clearMapTileScorePotentials, createTileModel, Type as TileType } from "../../models/TileModel";
 import Item, { ItemType, SpiderType } from "./Item"
 
 export default class Spider extends Item {
@@ -11,7 +10,7 @@ export default class Spider extends Item {
         return Object.keys(SpiderType).includes(model.type);
     }
 
-    tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: TileModel[], window_width: number): void {
+    tap(sight: Sight, items: Items, _combatants: Combatants, tiles: Tiles, window_width: number): void {
         const new_position = sight.getNewRandomPosition();
         if (!this.isFuseUp()) {
             paintTileForSpider(this, tiles, window_width);
@@ -40,8 +39,8 @@ export default class Spider extends Item {
     }
 }
 
-function paintTileForSpider(spider: Spider, tiles: TileModel[], window_width: number) {
-    tiles[spider.getPosition()] =
+function paintTileForSpider(spider: Spider, tiles: Tiles, window_width: number) {
+    tiles.t[spider.getPosition()] =
         createTileModel({ index: spider.getPosition(), type: spider.getActionType() });
     clearMapTileScorePotentials({ position: spider.getPosition(), tiles, window_width });
 }

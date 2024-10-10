@@ -134,8 +134,8 @@ class Arena extends React.Component<AppState & DispatchProps> {
 
         // handle combatant updates
         if (
-            Object.keys(this.props.board.combatants).length < 1 &&
-            Object.keys(this.props.board.items).length < 1 &&
+            this.props.board.combatants.size < 1 &&
+            this.props.board.items.size < 1 &&
             !this.props.board.player
         ) {
             this.props.pause();

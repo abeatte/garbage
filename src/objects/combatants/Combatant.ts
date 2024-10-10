@@ -5,9 +5,9 @@ import { ClockFace, GetCombatant, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH }
 import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import Brain from "../../models/Brain";
-import { TileModel } from "../../models/TileModel";
 import Entity from "../Entity";
 import { MovementLogic } from "../../data/utils/GameUtils";
+import { Tiles } from "../../data/slices/boardSlice";
 
 const Brains = Brain.init();
 
@@ -25,7 +25,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         global_combatant_stats?: GlobalCombatantStatsModel,
     ) {
         super();
-        const visited_positions = {} as { [position: number]: number };
+        const visited_positions: { [position: number]: number } = {};
         visited_positions[model.position] = model.position;
         const decisions = Object.values(DecisionType);
         const fitness = model.fitness ?? 0;
@@ -210,7 +210,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
     }
 
     birthSpawn({ arena_size, window_width, tiles, combatants }: {
-        tiles: TileModel[],
+        tiles: Tiles,
         window_width: number,
         arena_size: number
         combatants: { [position: number]: Combatant },
@@ -282,7 +282,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         {
             movement_logic: MovementLogic,
             sight: Sight,
-            tiles: Readonly<TileModel[]>,
+            tiles: Readonly<Tiles>,
             window_width: number,
         }): number {
         const self = this._model;
@@ -297,10 +297,10 @@ export default abstract class Combatant extends Entity<CombatantModel> {
                 position = args.sight.getNewRandomPosition();
                 break;
             case MovementLogic.DecisionTree:
-                const bucketed_enemy_strengths = {} as { [key: string]: number[] };
-                const bucketed_ally_strengths = {} as { [key: string]: number[] };
-                const bucketed_mate_strengths = {} as { [key: string]: number[] };
-                const bucketed_empty_tiles = {} as { [key: number]: number[] };
+                const bucketed_enemy_strengths: { [key: string]: number[] } = {};
+                const bucketed_ally_strengths: { [key: string]: number[] } = {};
+                const bucketed_mate_strengths: { [key: string]: number[] } = {};
+                const bucketed_empty_tiles: { [key: string]: number[] } = {};
 
                 args.sight.surroundings.forEach((surrounding, idx, s_arr) => {
                     if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
@@ -382,7 +382,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
     requestMoveImpl(
         args: {
-            tiles: Readonly<TileModel[]>,
+            tiles: Readonly<Tiles>,
             window_width: number,
             best_target_position: number,
             best_mate_position: number,

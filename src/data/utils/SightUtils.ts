@@ -1,6 +1,7 @@
 import { Character } from "../../models/CombatantModel";
 import { getMapTileScorePotentials, TileModel } from "../../models/TileModel";
 import Combatant from "../../objects/combatants/Combatant";
+import { Tiles } from "../slices/boardSlice";
 import { ClockFace, LegalMoves } from "./CombatantUtils";
 import { isTileValidCombatantPosition } from "./TurnProcessingUtils";
 
@@ -23,7 +24,7 @@ export function viewSurroundings(
         {
             species?: Character,
             position: number,
-            tiles: Readonly<TileModel[]>,
+            tiles: Tiles,
             window_width: number,
             ignore_void_tiles?: boolean,
             // the Player should already be in the combatants array at this point in evaluation
@@ -49,15 +50,15 @@ export function viewSurroundings(
         return {
             position,
             occupant: combatants === undefined ? undefined : combatants[position],
-            tile: tiles[position]
+            tile: tiles.t[position]
         }
     }
 
-    const can_stay_put = position > -1 && position < tiles.length;
+    const can_stay_put = position > -1 && position < tiles.size;
     const can_go_left = position % window_width > 0;
     const can_go_up = position - window_width > -1
     const can_go_right = position % window_width < window_width - 1;
-    const can_go_down = position + window_width < tiles.length;
+    const can_go_down = position + window_width < tiles.size;
 
     // start at center position and then move clockwise around
     const surroundings = Array(9) as unknown as (Surrounding | undefined)[];

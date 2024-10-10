@@ -1,7 +1,6 @@
 import uuid from "react-uuid";
-import { Items } from "../../data/slices/boardSlice";
+import { Items, Tiles } from "../../data/slices/boardSlice";
 import { Sight } from "../../data/utils/SightUtils";
-import { TileModel } from "../../models/TileModel";
 import Combatant from "../combatants/Combatant";
 import Entity, { EntityModel } from "../Entity";
 import CombatantModel from "../../models/CombatantModel";
@@ -39,7 +38,7 @@ export default abstract class Item extends Entity<ItemModel> {
         };
     }
 
-    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: TileModel[], window_width: number): void;
+    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: Tiles, window_width: number): void;
 
     getPosition(): number {
         return this._model.position;

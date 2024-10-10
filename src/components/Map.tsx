@@ -22,10 +22,10 @@ const Map = (props: { view_port: { start: number, width: number, height: number 
     for (let row = 0; row < props.view_port.height; row++) {
         for (let col = 0; col < props.view_port.width; col++) {
             const idx = row * board.arena.width + col + props.view_port.start;
-            const tile = board.tiles[idx];
+            const tile = board.tiles.t[idx];
             const maybe_combatant = getCombatantAtTarget({ target: idx, player: board.player, combatants: board.combatants });
             const is_player_tile = maybe_combatant?.is_player;
-            const maybe_items = board.items[idx];
+            const maybe_items = board.items.i[idx];
             const is_selected = props.selectedPosition === idx;
 
             const maybe_combatant_view = maybe_combatant ? (<Combatant

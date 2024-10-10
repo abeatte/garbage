@@ -1,3 +1,4 @@
+import { Tiles } from "../../data/slices/boardSlice";
 import { DirectionalMoves } from "../../data/utils/CombatantUtils";
 import { viewSurroundings } from "../../data/utils/SightUtils";
 import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
@@ -17,7 +18,7 @@ export default class Seeker extends Combatant {
     }
 
     requestMoveImpl(args: {
-        tiles: Readonly<TileModel[]>,
+        tiles: Readonly<Tiles>,
         window_width: number,
         best_target_position: number,
         best_mate_position: number,
@@ -27,7 +28,7 @@ export default class Seeker extends Combatant {
     }
 
     private aStar(args: {
-        tiles: Readonly<TileModel[]>,
+        tiles: Readonly<Tiles>,
         window_width: number,
         best_target_position: number;
         best_mate_position: number;
@@ -51,14 +52,14 @@ export default class Seeker extends Combatant {
                 args.tiles,
                 args.window_width,
                 this.getPosition(),
-                Math.floor(Math.random() * (args.tiles.length - 1)),
+                Math.floor(Math.random() * (args.tiles.size - 1)),
             );
         }
 
         return target_destination;
     }
 
-    private basic(args: { tiles: Readonly<TileModel[]>, window_width: number }) {
+    private basic(args: { tiles: Readonly<Tiles>, window_width: number }) {
         const self = this._model;
         let position;
         // seekers go directly toward their target.
@@ -72,7 +73,7 @@ export default class Seeker extends Combatant {
             !isValidCombatantPosition(target_destination, args.tiles)
         ) {
             target_destination = self.position;
-            self.target_waypoints = [Math.floor(Math.random() * (args.tiles.length - 1))];
+            self.target_waypoints = [Math.floor(Math.random() * (args.tiles.size - 1))];
         }
 
         const col_diff =
@@ -97,7 +98,7 @@ export default class Seeker extends Combatant {
         } else {
             position = self.position;
             // hack to reset target position when you run into a wall.
-            self.target_waypoints = [Math.floor(Math.random() * (args.tiles.length - 1))];
+            self.target_waypoints = [Math.floor(Math.random() * (args.tiles.size - 1))];
         }
 
         return position;
@@ -115,7 +116,7 @@ interface TileNode {
 
 function aStar(
     combatant: Combatant,
-    tiles: Readonly<TileModel[]>,
+    tiles: Readonly<Tiles>,
     window_width: number,
     start: number,
     end: number,
@@ -124,7 +125,7 @@ function aStar(
     const closedList: TileNode[] = [];
 
     openList.push({
-        tile: tiles[start],
+        tile: tiles.t[start],
         total_cost: 0,
         path_cost: 0,
         heuristic_cost: 0,

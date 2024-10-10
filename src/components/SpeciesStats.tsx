@@ -26,10 +26,11 @@ const SpeciesStats = () => {
         return decision_types;
     }, {} as { [key in DecisionType]: number });
 
-    Object.values(board.combatants).forEach(combatant => {
+    for (const c in board.combatants.c) {
+        const combatant = board.combatants.c[c];
         species[combatant.species].push(combatant);
         decision_types[combatant.decision_type] += 1;
-    });
+    }
 
     const species_counts = Object.keys(species).map(t => {
         const spec = t as Character
