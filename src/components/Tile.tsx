@@ -46,7 +46,7 @@ const Tile = (
 ) => {
   const paintRoller = document.getElementById('paint_roller') as HTMLElement;
   const image = tile?.type && getImage(tile.type);
-  const typeClass = tile?.type ?? TileType.Void;
+  const typeClass = tile?.type;
 
   return (
     <div style={{ position: "relative" }}>

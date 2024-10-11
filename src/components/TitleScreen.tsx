@@ -44,8 +44,8 @@ class TitleScreen extends React.Component<AppState & DispatchProps> {
 
         const view_port = {
             ...this.props.board.view_port,
-            width: this.props.board.arena.width,
-            height: this.props.board.arena.height
+            width: this.props.board.tiles.width,
+            height: this.props.board.tiles.height
         };
         view_port.height = Math.min(view_port.height, MAX_MAP_DIMEN);
         view_port.width = Math.min(view_port.width, MAX_MAP_DIMEN);

@@ -11,7 +11,7 @@ export default class PokemonBall extends Item {
         return model.type === Type.PokemonBall;
     }
 
-    tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, _tiles: Tiles, _window_width: number): void {
+    tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, _tiles: Tiles): void {
         const valid_surroundings =
             sight.surroundings.filter(sur => isTileValidCombatantPosition(sur?.tile));
         const capacity = valid_surroundings.length;

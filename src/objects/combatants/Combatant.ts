@@ -209,10 +209,8 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         this._model.children += 1;
     }
 
-    birthSpawn({ arena_size, window_width, tiles, combatants }: {
+    birthSpawn({ tiles, combatants }: {
         tiles: Tiles,
-        window_width: number,
-        arena_size: number
         combatants: { [position: number]: Combatant },
     }): Combatant | undefined {
         const spawn = GetCombatant(this._model.spawn);
@@ -224,7 +222,6 @@ export default abstract class Combatant extends Entity<CombatantModel> {
             species: spawn.getSpecies(),
             position: this.getPosition(),
             tiles,
-            window_width,
             combatants,
         });
 
@@ -241,7 +238,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
             const { position, occupant: c } = surrounding;
 
             if (!c) {
-                if (position > -1 && position < arena_size) {
+                if (position > -1 && position < tiles.end) {
                     empty_positions.push(position)
                 }
             } else if (c.getSpecies() === this.getSpecies()) {
@@ -283,7 +280,6 @@ export default abstract class Combatant extends Entity<CombatantModel> {
             movement_logic: MovementLogic,
             sight: Sight,
             tiles: Readonly<Tiles>,
-            window_width: number,
         }): number {
         const self = this._model;
         let position: number;
@@ -328,7 +324,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
                         // not too young
                         !occupant.isYoung() &&
                         // not on hurtful tile
-                        (getMapTileEffect({ species: self.species, tileType: surrounding.tile.type }) ?? -1) > -1
+                        (getMapTileEffect({ species: self.species, tileType: surrounding.tile?.type }) > -1)
                     ) {
                         const strength = occupant.getStrength();
                         if (bucketed_mate_strengths[strength] === undefined) {
@@ -373,7 +369,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
                 // position based on next random space
                 const new_random_position = args.sight.getNewRandomPosition();
 
-                position = this.requestMoveImpl({ tiles: args.tiles, window_width: args.window_width, best_target_position, best_mate_position, best_open_position, new_random_position });
+                position = this.requestMoveImpl({ tiles: args.tiles, best_target_position, best_mate_position, best_open_position, new_random_position });
                 break;
         }
 
@@ -383,7 +379,6 @@ export default abstract class Combatant extends Entity<CombatantModel> {
     requestMoveImpl(
         args: {
             tiles: Readonly<Tiles>,
-            window_width: number,
             best_target_position: number,
             best_mate_position: number,
             best_open_position: number,

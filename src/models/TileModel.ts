@@ -18,30 +18,37 @@ export function createTileModel(args: { index: number, type: Type }): TileModel 
     }
 }
 
-export function clearMapTileScorePotentials(args: { position: number, tiles: Tiles, window_width: number }): void {
-    const { position, tiles, window_width } = args;
+export function clearMapTileScorePotentials(args: { position: number, tiles: Tiles }): void {
+    const { position, tiles } = args;
 
+    let tile = tiles.t[position];
     // center
-    tiles.t[position].score_potential = {};
-    let bounds = (position - tiles.start) % window_width;
+    if (tile) {
+        tile.score_potential = {};
+    }
+    let bounds = (position - tiles.start) % tiles.width;
+    tile = tiles.t[position - 1];
     // left
-    if (bounds > 0) {
-        tiles.t[position - 1].score_potential = {};
+    if (bounds > 0 && tile) {
+        tile.score_potential = {};
     }
-    bounds = (position - tiles.start) - window_width;
+    bounds = (position - tiles.start) - tiles.width;
+    tile = tiles.t[position - tiles.width];
     // up
-    if (bounds > -1) {
-        tiles.t[position - window_width].score_potential = {};
+    if (bounds > -1 && tile) {
+        tile.score_potential = {};
     }
-    bounds = (position - tiles.start) % window_width;
+    bounds = (position - tiles.start) % tiles.width;
+    tile = tiles.t[position + 1];
     // right
-    if (bounds < window_width - 1) {
-        tiles.t[position + 1].score_potential = {};
+    if (bounds < tiles.width - 1 && tile) {
+        tile.score_potential = {};
     }
-    bounds = (position - tiles.start) + window_width;
+    bounds = position + tiles.width;
+    tile = tiles.t[position + tiles.width];
     // down
-    if (bounds < tiles.size) {
-        tiles.t[position + window_width].score_potential = {};
+    if (bounds <= tiles.end && tile) {
+        tile.score_potential = {};
     }
 }
 
@@ -49,10 +56,14 @@ export function clearMapTileScorePotentials(args: { position: number, tiles: Til
  * @returns the given tile's potential as a tile to move to
  * (Tiles that are near high-value tiles have more potential than those near low-value/hurtful tiles)
  */
-export function getMapTileScorePotentials(args: { position: number, tiles: Readonly<Tiles>, window_width: number }): { [key in Character]: number } {
-    const { position, tiles, window_width } = args;
+export function getMapTileScorePotentials(args: { position: number, tiles: Readonly<Tiles> }): { [key in Character]: number | undefined } {
+    const { position, tiles } = args;
 
     const tile = tiles.t[position];
+
+    if (tile === undefined) {
+        return {} as { [key in Character]: number };
+    }
 
     if (tile?.score_potential[Character.Bunny]) {
         return tile.score_potential as { [key in Character]: number };
@@ -64,32 +75,32 @@ export function getMapTileScorePotentials(args: { position: number, tiles: Reado
     const potentials: { [key in Character]: number } = {} as { [key in Character]: number };
     for (let key in Character) {
         const species = Character[key as keyof typeof Character];
-        const can_go_left = (position - tiles.start) % window_width > 0;
+        const can_go_left = (position - tiles.start) % tiles.width > 0;
         if (!can_go_left) {
             possible_directions--;
         } else {
-            position_potential += getMapTileEffect({ species, tileType: tiles.t[position - 1].type });
+            position_potential += getMapTileEffect({ species, tileType: tiles.t[position - 1]?.type });
         }
-        const can_go_up = (position - tiles.start) - window_width > -1
+        const can_go_up = (position - tiles.start) - tiles.width > -1
         if (!can_go_up) {
             possible_directions--;
         } else {
-            position_potential += getMapTileEffect({ species, tileType: tiles.t[position - window_width].type });
+            position_potential += getMapTileEffect({ species, tileType: tiles.t[position - tiles.width]?.type });
         }
-        const can_go_right = (position - tiles.start) % window_width < window_width - 1;
+        const can_go_right = (position - tiles.start) % tiles.width < tiles.width - 1;
         if (!can_go_right) {
             possible_directions--;
         } else {
-            position_potential += getMapTileEffect({ species, tileType: tiles.t[position + 1].type });
+            position_potential += getMapTileEffect({ species, tileType: tiles.t[position + 1]?.type });
         }
-        const can_go_down = (position - tiles.start) + window_width < tiles.size;
+        const can_go_down = position + tiles.width <= tiles.end;
         if (!can_go_down) {
             possible_directions--;
         } else {
-            position_potential += getMapTileEffect({ species, tileType: tiles.t[position + window_width].type });
+            position_potential += getMapTileEffect({ species, tileType: tiles.t[position + tiles.width]?.type });
         }
 
-        potentials[species] = Math.round(getMapTileEffect({ species, tileType: tiles.t[position].type }) + (position_potential / possible_directions));
+        potentials[species] = Math.round(getMapTileEffect({ species, tileType: tiles.t[position]?.type }) + (position_potential / possible_directions));
     }
 
     tile.score_potential = potentials;

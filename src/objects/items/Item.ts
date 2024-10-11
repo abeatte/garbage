@@ -38,7 +38,7 @@ export default abstract class Item extends Entity<ItemModel> {
         };
     }
 
-    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: Tiles, window_width: number): void;
+    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: Tiles): void;
 
     getPosition(): number {
         return this._model.position;

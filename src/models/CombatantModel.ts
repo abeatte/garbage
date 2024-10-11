@@ -53,7 +53,7 @@ export function getRandomCombatantName(): string {
     return `${nameParts[0]} ${nameParts[1]} The ${nameParts[2]}`;
 }
 
-export function getMapTileEffect({ species, tileType }: { species: Character | undefined, tileType: TileType }) {
+export function getMapTileEffect({ species, tileType }: { species: Character | undefined, tileType: TileType | undefined }): number {
     let species_buff = 0;
 
     switch (species) {
@@ -92,7 +92,7 @@ export function getMapTileEffect({ species, tileType }: { species: Character | u
     }
 }
 
-export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_start: number, tile_count: number) {
+export function getNewPositionFromArrowKey(current_position: number, arrowKey: ArrowKey, window_width: number, tile_start: number, tile_end: number) {
     let clockFace;
     switch (arrowKey) {
         case ArrowKey.ARROWLEFT:
@@ -110,10 +110,10 @@ export function getNewPositionFromArrowKey(current_position: number, arrowKey: A
         default:
             clockFace = ClockFace.c;
     }
-    return validateNewPositionFromClockFace(current_position, clockFace, window_width, tile_start, tile_count);
+    return validateNewPositionFromClockFace(current_position, clockFace, window_width, tile_start, tile_end);
 }
 
-function validateNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_start: number, tile_count: number) {
+function validateNewPositionFromClockFace(current_position: number, clockFace: ClockFace, window_width: number, tile_start: number, tile_end: number) {
     let new_position = current_position;
     switch (clockFace) {
         case ClockFace.l:
@@ -123,7 +123,7 @@ function validateNewPositionFromClockFace(current_position: number, clockFace: C
             break;
         case ClockFace.t:
             new_position =
-                (current_position - tile_start) - window_width > -1 ?
+                current_position - window_width >= tile_start ?
                     current_position - window_width : current_position;
             break;
         case ClockFace.r:
@@ -133,7 +133,7 @@ function validateNewPositionFromClockFace(current_position: number, clockFace: C
             break;
         case ClockFace.b:
             new_position =
-                (current_position - tile_start) + window_width < tile_count ?
+                current_position + window_width <= tile_end ?
                     current_position + window_width : current_position;
             break;
         case ClockFace.c:

@@ -1,5 +1,4 @@
 import { Combatants, Items, Tiles } from "../slices/boardSlice";
-import { viewSurroundings } from "./SightUtils";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
 import Combatant from "../../objects/combatants/Combatant";
 import Player from "../../objects/combatants/Player";
@@ -68,56 +67,34 @@ export function initCombatantStartingPos(
 };
 
 export function updateCombatantsPositionsAfterResize(
-    { combatants, window_width, window_height, old_window_width, old_window_height, tiles }:
+    { combatants, old_window_width, tiles }:
         {
             combatants: Combatants,
-            window_width: number,
-            window_height: number,
             old_window_width: number,
-            old_window_height: number,
             tiles: Tiles
         }
 ): { combatants: Combatants, deaths: number } {
     const new_combatants: Combatants = { size: 0, c: {} };
     let deaths = 0;
 
-    const dif_row = window_width - old_window_width;
-    const dif_col = window_height - old_window_height;
+    const dif_row = tiles.width - old_window_width;
     for (const k in combatants.c) {
         const old_pos = parseInt(k);
         let new_pos = parseInt(k);
-        let coord = [Math.floor(old_pos / old_window_width), old_pos % old_window_width];
+        let coord = [Math.floor((old_pos - tiles.start) / old_window_width), (old_pos - tiles.start) % old_window_width];
 
-        if (coord[1] >= window_width || coord[0] >= window_height) {
-            // they fell off the world; let's try to move them up/left
-            const sight =
-                viewSurroundings({ species: combatants.c[old_pos].species, position: old_pos, tiles, window_width: old_window_width, combatants });
-            const up_position = sight.surroundings[ClockFace.t];
-            const up_left_position = sight.surroundings[ClockFace.tl];
-            const left_position = sight.surroundings[ClockFace.l];
-
-            const dice_roll = Math.random();
-
-            if (dice_roll < .33 && left_position && dif_col > -1) {
-                new_pos = left_position.position;
-                coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
-            } else if (dice_roll < .66 && up_position && dif_row > -1) {
-                new_pos = up_position.position;
-                coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
-            } else if (up_left_position) {
-                new_pos = up_left_position.position;
-                coord = [Math.floor(new_pos / old_window_width), new_pos % old_window_width];
-            } else {
-                new_pos = -1;
-            }
-        }
-
-        if (dif_row !== 0) {
+        if (coord[0] >= tiles.height) {
+            coord[0]--;
+            new_pos = coord[0] * tiles.width + coord[1] + tiles.start;
+        } else if (coord[1] >= tiles.width) {
+            coord[1]--;
+            new_pos = coord[0] * tiles.width + coord[1] + tiles.start;
+        } else if (dif_row !== 0) {
             // translate old coord to new coord
-            new_pos = coord[0] * window_width + coord[1];
+            new_pos = coord[0] * tiles.width + coord[1] + tiles.start;
         }
 
-        if (new_pos > -1 && new_pos < window_width * window_height) {
+        if (isValidCombatantPosition(new_pos, tiles)) {
             const occupient = GetCombatant(new_combatants.c[new_pos]);
             new_combatants.c[new_pos] = occupient ? occupient.fightWith(GetCombatant(combatants.c[old_pos])).toModel() : combatants.c[old_pos];
             new_combatants.c[new_pos].position = new_pos;

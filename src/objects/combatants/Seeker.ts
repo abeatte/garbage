@@ -125,7 +125,7 @@ function aStar(
     const closedList: TileNode[] = [];
 
     openList.push({
-        tile: tiles.t[start],
+        tile: tiles.t[start]!,
         total_cost: 0,
         path_cost: 0,
         heuristic_cost: 0,
@@ -160,7 +160,7 @@ function aStar(
         openList.splice(lowInd, 1);
         closedList.push(currentNode);
 
-        const sight = viewSurroundings({ species: combatant.getSpecies(), position: currentNode.tile.index, tiles, window_width });
+        const sight = viewSurroundings({ species: combatant.getSpecies(), position: currentNode.tile.index, tiles });
         for (const direction of DirectionalMoves) {
             const neighbor = sight.surroundings[direction];
             if (neighbor === undefined || closedList.some(node => node.tile.index === neighbor.position)) {
@@ -171,7 +171,7 @@ function aStar(
             const hScore = heuristic(neighbor.position, end);
             const fScore = gScore + hScore;
 
-            if (!openList.some(node => node.tile.index === neighbor.position)) {
+            if (neighbor.tile && !openList.some(node => node.tile.index === neighbor.position)) {
                 openList.push({
                     tile: neighbor.tile,
                     path_cost: gScore,

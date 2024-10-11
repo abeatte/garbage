@@ -28,7 +28,7 @@ const getTrainingSet = (species: Character, combatant: Combatant, sight: Sight, 
     const input = [...LegalMoves, ...DiagonalMoves].reduce((move_potentials, clockFace) => {
         const sur = sight.surroundings[clockFace];
         if (sur !== undefined) {
-            const positive_shifted_potential = sur.tile.score_potential[species] + Math.abs(sight.min_potential);
+            const positive_shifted_potential = sur.tile!.score_potential[species] + Math.abs(sight.min_potential);
             let range = Math.abs(sight.min_potential) + sight.max_potential;
             move_potentials[clockFace] = positive_shifted_potential * 1.0 / range;
         }
@@ -40,7 +40,6 @@ const getTrainingSet = (species: Character, combatant: Combatant, sight: Sight, 
             movement_logic: MovementLogic.DecisionTree,
             sight,
             tiles,
-            window_width
         }
     );
     const output = {} as Output;
@@ -57,8 +56,8 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const trainer = new NPC({ position: 0, species });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
-        const width = GAME_DEFAULTS.arena.width;
-        const height = GAME_DEFAULTS.arena.height;
+        const width = GAME_DEFAULTS.tiles.width;
+        const height = GAME_DEFAULTS.tiles.height;
         const tiles = Maps[GAME_DEFAULTS.map].generate({ width, height });
         // tiles.forEach((t, idx) => {
         //     getMapTileScorePotentials({ position: idx, tiles, window_width: width });
@@ -69,7 +68,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
             const combatants: { [position: number]: Combatant } = {};
             trainer.setPosition(position);
             combatants[position] = trainer;
-            const sight = viewSurroundings({ species, position, tiles, window_width: width, combatants })
+            const sight = viewSurroundings({ species, position, tiles, combatants })
             training_sets.push(getTrainingSet(species, trainer, sight, tiles, width));
         }
     }

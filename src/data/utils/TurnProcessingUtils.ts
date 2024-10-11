@@ -11,20 +11,20 @@ import { ItemModel } from "../../objects/items/Item";
 import { MovementLogic } from "./GameUtils";
 
 export function processBoardTick(
-    { player, combatants, items, window_width, tiles, movement_logic, use_genders, global_combatant_stats }:
-        { player: CombatantModel | undefined, combatants: Combatants, items: Items, window_width: number, tiles: Tiles, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel }
+    { player, combatants, items, tiles, movement_logic, use_genders, global_combatant_stats }:
+        { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
     if (player && player.state !== State.Dead) {
         combatants.c[player.position] = player;
     }
 
     // process combatants (including player) 
-    const combatant_result = processCombatantTick({ combatants, tiles, window_width, movement_logic, use_genders, global_combatant_stats });
+    const combatant_result = processCombatantTick({ combatants, tiles, movement_logic, use_genders, global_combatant_stats });
     global_combatant_stats.births += combatant_result.births;
     global_combatant_stats.deaths += combatant_result.deaths;
 
     // process items and tile effects
-    const item_result = processEnvironmentEffects({ combatants: combatant_result.combatants, items, window_width, tiles, movement_logic, global_combatant_stats });
+    const item_result = processEnvironmentEffects({ combatants: combatant_result.combatants, items, tiles, movement_logic, global_combatant_stats });
 
     // This step is crucial as without copying the Redux store will 
     // duplicate the now undefined combatants 
@@ -41,7 +41,7 @@ export function processBoardTick(
 
 export function isValidCombatantPosition(position: number | undefined, tiles: Readonly<Tiles>): boolean {
     return position !== undefined &&
-        tiles.start <= position && (position - tiles.start) < tiles.size &&
+        tiles.start <= position && position <= tiles.end &&
         isTileValidCombatantPosition(tiles.t[position]);
 }
 
@@ -50,8 +50,8 @@ export function isTileValidCombatantPosition(tile: TileModel | undefined, ignore
 }
 
 function processEnvironmentEffects(
-    { combatants, items, tiles, window_width, movement_logic, global_combatant_stats }:
-        { combatants: Combatants, items: Items, tiles: Tiles, window_width: number, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
+    { combatants, items, tiles, movement_logic, global_combatant_stats }:
+        { combatants: Combatants, items: Items, tiles: Tiles, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
     const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths };
     const working_combatants: Combatants = { size: 0, c: {} };
@@ -69,8 +69,8 @@ function processEnvironmentEffects(
                 return;
             }
 
-            const sight = viewSurroundings({ position: item.getPosition(), tiles, window_width, combatants });
-            item.tap(sight, working_items, combatants, tiles, window_width);
+            const sight = viewSurroundings({ position: item.getPosition(), tiles, combatants });
+            item.tap(sight, working_items, combatants, tiles);
         });
     }
 
@@ -80,7 +80,7 @@ function processEnvironmentEffects(
         const combatant = GetCombatant(combatants.c[position]);
 
         if (!combatant.isImmortal()) {
-            combatant.affectFitness(getMapTileEffect({ species: combatant.getSpecies(), tileType: tiles.t[position].type }));
+            combatant.affectFitness(getMapTileEffect({ species: combatant.getSpecies(), tileType: tiles.t[position]?.type }));
         }
         combatant.updateStrengthRating(getStrengthRating({ global_combatant_stats, fitness: combatant.getFitness(), immortal: combatant.isImmortal() }));
 
@@ -133,12 +133,11 @@ function processEnvironmentEffects(
 }
 
 function processCombatantTick(
-    { combatants, movement_logic, tiles, window_width, use_genders, global_combatant_stats }:
+    { combatants, movement_logic, tiles, use_genders, global_combatant_stats }:
         {
             combatants: Combatants,
             movement_logic: MovementLogic,
             tiles: Tiles,
-            window_width: number,
             use_genders: boolean,
             global_combatant_stats: Readonly<GlobalCombatantStatsModel>
         }
@@ -164,7 +163,6 @@ function processCombatantTick(
             combatants,
             global_combatant_stats,
             tiles,
-            window_width,
             movement_logic,
         });
         combatant = newCombatant;
@@ -197,8 +195,6 @@ function processCombatantTick(
 
         const spawn = parent.birthSpawn({
             tiles,
-            window_width,
-            arena_size: tiles.size,
             combatants: working_combatants,
         });
 
@@ -213,14 +209,13 @@ function processCombatantTick(
 }
 
 function processCombatantMovement(
-    { combatant, use_genders, combatants, global_combatant_stats, tiles, window_width, movement_logic }:
+    { combatant, use_genders, combatants, global_combatant_stats, tiles, movement_logic }:
         {
             use_genders: boolean,
             combatant: Combatant,
             combatants: Readonly<{ [position: number]: Combatant }>,
             global_combatant_stats: GlobalCombatantStatsModel,
             tiles: Tiles,
-            window_width: number,
             movement_logic: MovementLogic,
         }
 ): { combatant: Combatant, deaths: number } {
@@ -233,10 +228,10 @@ function processCombatantMovement(
 
     const sight = viewSurroundings(
         {
+            can_create: combatant.isPlayer(),
             species: combatant.getSpecies(),
             position: combatant.getPosition(),
             tiles,
-            window_width,
             combatants,
         }
     );
@@ -245,7 +240,6 @@ function processCombatantMovement(
             sight,
             movement_logic,
             tiles,
-            window_width,
         });
 
     const occupant = combatants[new_position];

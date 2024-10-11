@@ -10,10 +10,10 @@ export default class Spider extends Item {
         return Object.keys(SpiderType).includes(model.type);
     }
 
-    tap(sight: Sight, items: Items, _combatants: Combatants, tiles: Tiles, window_width: number): void {
+    tap(sight: Sight, items: Items, _combatants: Combatants, tiles: Tiles): void {
         const new_position = sight.getNewRandomPosition();
         if (!this.isFuseUp()) {
-            paintTileForSpider(this, tiles, window_width);
+            paintTileForSpider(this, tiles);
             this._model.position = new_position;
             addItemToBoard(this, items);
         }
@@ -39,8 +39,21 @@ export default class Spider extends Item {
     }
 }
 
-function paintTileForSpider(spider: Spider, tiles: Tiles, window_width: number) {
-    tiles.t[spider.getPosition()] =
-        createTileModel({ index: spider.getPosition(), type: spider.getActionType() });
-    clearMapTileScorePotentials({ position: spider.getPosition(), tiles, window_width });
+function paintTileForSpider(spider: Spider, tiles: Tiles) {
+    addTileToMap(spider.getPosition(), spider.getActionType(), tiles);
+}
+
+export function addTileToMap(index: number, type: TileType, tiles: Tiles) {
+    if (tiles.t[index] === undefined) {
+        tiles.size++;
+    }
+    // this only adds a single row above at a time
+    if (index < tiles.start) {
+        tiles.start -= tiles.width;
+    }
+    if (index > tiles.end) {
+        tiles.end += tiles.width;
+    }
+    tiles.t[index] = createTileModel({ index, type });
+    clearMapTileScorePotentials({ position: index, tiles });
 }

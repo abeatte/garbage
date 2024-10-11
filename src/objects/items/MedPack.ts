@@ -10,7 +10,7 @@ export default class MedPack extends Item {
         return model.type === Type.MedPack;
     }
 
-    tap(sight: Sight, items: Items, _combatants: { [position: number]: Combatant }, _tiles: Tiles, _window_width: number): void {
+    tap(sight: Sight, items: Items, _combatants: { [position: number]: Combatant }, _tiles: Tiles): void {
         const occupant = sight.center?.occupant;
         if (occupant) {
             occupant.affectFitness(-MIN_HEALTH);

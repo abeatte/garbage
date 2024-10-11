@@ -11,7 +11,7 @@ export default class Bomb extends Item {
         return model.type === Type.Bomb;
     }
 
-    tap(sight: Sight, items: Items, _combatants: { [position: number]: Combatant }, _tiles: Tiles, _window_width: number): void {
+    tap(sight: Sight, items: Items, _combatants: { [position: number]: Combatant }, _tiles: Tiles): void {
         if (this.isFuseUp()) {
             sight.surroundings.forEach(surrounding => {
                 if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
