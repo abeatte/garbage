@@ -265,5 +265,17 @@ function processCombatantMovement(
         deaths++;
     }
 
+    if (combatant.isPlayer()) {
+        viewSurroundings(
+            {
+                can_create: combatant.isPlayer(),
+                species: combatant.getSpecies(),
+                position: combatant.getPosition(),
+                tiles,
+                combatants,
+            }
+        );
+    }
+
     return { combatant, deaths };
 }
