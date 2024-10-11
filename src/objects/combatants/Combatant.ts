@@ -44,6 +44,10 @@ export default abstract class Combatant extends Entity<CombatantModel> {
             this._model.visited_positions = {} as { [position: number]: number };
             this._model.visited_positions[model.position] = model.position;
         }
+
+        if (this._model.target_waypoints.length === 0) {
+            this._model.target_waypoints = [];
+        }
     }
 
     getID(): string {
@@ -256,6 +260,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
         this.setState(State.Alive);
         this._model.children += 1;
+        this._model.spawn = undefined;
 
         return spawn;
     }
@@ -439,9 +444,10 @@ function getBestTargetPosition(
         }
     };
     // position based on best prey (enemy) space
-    const best_target_bucket = bucketed_target_strengths[(Object.keys(bucketed_target_strengths) as Strength[])
-        .sort((a, b) => -compareStrength(a, b))
-        .filter(s => compareStrength(s, self.strength) > 0)[0]] ?? [];
+    let strength_buckets = Object.keys(bucketed_target_strengths) as Strength[];
+    strength_buckets = strength_buckets.sort((a, b) => -compareStrength(a, b));
+    strength_buckets.filter(s => compareStrength(s, self.strength) > 0);
+    const best_target_bucket = bucketed_target_strengths[strength_buckets[0]] ?? [];
     const best_target_position = best_target_bucket.length > 0 ?
         best_target_bucket[Math.floor(Math.random() * best_target_bucket.length)] : -1;
 

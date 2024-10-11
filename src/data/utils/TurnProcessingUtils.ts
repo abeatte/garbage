@@ -141,7 +141,7 @@ function processCombatantTick(
             use_genders: boolean,
             global_combatant_stats: Readonly<GlobalCombatantStatsModel>
         }
-): { player: Player | undefined, combatants: Readonly<Combatants>, births: number, deaths: number } {
+): { player: Player | undefined, combatants: Combatants, births: number, deaths: number } {
     const working_combatants: Combatants = { size: 0, c: {} };
     const mating_combatants: { [position: number]: Combatant } = {};
     let player;

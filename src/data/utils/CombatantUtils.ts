@@ -26,8 +26,9 @@ export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFac
 export const LegalMoves = [ClockFace.c, ...DirectionalMoves];
 export const IllegalMoves = [...DiagonalMoves];
 
+export function GetCombatant(model: CombatantModel): Combatant;
+export function GetCombatant(model: CombatantModel | undefined): Combatant | undefined;
 export function GetCombatant(model: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel): Combatant;
-export function GetCombatant(model?: CombatantModel): Combatant | undefined;
 export function GetCombatant(model?: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel
 ): Combatant | undefined {
     if (model === undefined) {
