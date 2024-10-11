@@ -3,11 +3,11 @@ import { INeuralNetworkDatum, INeuralNetworkJSON } from "brain.js/dist/src/neura
 import { INeuralNetworkState } from "brain.js/dist/src/neural-network-types";
 import { writeFileSync } from "fs";
 import path from "path";
-import { GAME_DEFAULTS, Tiles } from "../data/slices/boardSlice";
+import { Combatants, GAME_DEFAULTS, Tiles } from "../data/slices/boardSlice";
 import { DiagonalMoves, LegalMoves } from "../data/utils/CombatantUtils";
 import Maps from "../data/Map";
 import Brain from "../models/Brain";
-import { Character } from "../models/CombatantModel";
+import CombatantModel, { Character } from "../models/CombatantModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
 import Combatant, { DEFAULT_MODEL } from "../objects/combatants/Combatant";
 import NPC from "../objects/combatants/NPC";
@@ -65,9 +65,10 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
         debugger; // TODO: make sure tiles have score_potential setup at this point. 
 
         for (let position = 0; position < tiles.size; position++) {
-            const combatants: { [position: number]: Combatant } = {};
+            const trainers: { [p: number]: CombatantModel } = {};
             trainer.setPosition(position);
-            combatants[position] = trainer;
+            trainers[position] = trainer.toModel();
+            const combatants: Combatants = { size: 0, c: {} };
             const sight = viewSurroundings({ species, position, tiles, combatants })
             training_sets.push(getTrainingSet(species, trainer, sight, tiles, width));
         }

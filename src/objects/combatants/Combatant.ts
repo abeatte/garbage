@@ -7,7 +7,7 @@ import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUti
 import Brain from "../../models/Brain";
 import Entity from "../Entity";
 import { MovementLogic } from "../../data/utils/GameUtils";
-import { Tiles } from "../../data/slices/boardSlice";
+import { Combatants, Tiles } from "../../data/slices/boardSlice";
 
 const Brains = Brain.init();
 
@@ -209,7 +209,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
     birthSpawn({ tiles, combatants }: {
         tiles: Tiles,
-        combatants: { [position: number]: Combatant },
+        combatants: Combatants,
     }): Combatant | undefined {
         const spawn = GetCombatant(this._model.spawn);
         if (spawn === undefined) {

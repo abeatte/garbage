@@ -24,7 +24,7 @@ export function processBoardTick(
     global_combatant_stats.deaths += combatant_result.deaths;
 
     // process items and tile effects
-    const item_result = processEnvironmentEffects({ combatants: combatant_result.combatants, items, tiles, movement_logic, global_combatant_stats });
+    const item_result = processEnvironmentEffects({ combatants: combatant_result.combatants, items, tiles, global_combatant_stats });
 
     // This step is crucial as without copying the Redux store will 
     // duplicate the now undefined combatants 
@@ -50,8 +50,8 @@ export function isTileValidCombatantPosition(tile: TileModel | undefined, ignore
 }
 
 function processEnvironmentEffects(
-    { combatants, items, tiles, movement_logic, global_combatant_stats }:
-        { combatants: Combatants, items: Items, tiles: Tiles, movement_logic: MovementLogic, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
+    { combatants, items, tiles, global_combatant_stats }:
+        { combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: Readonly<GlobalCombatantStatsModel> }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
     const working_global_combatant_stats = { ...DEFAULT, births: global_combatant_stats.births, deaths: global_combatant_stats.deaths };
     const working_combatants: Combatants = { size: 0, c: {} };
@@ -213,7 +213,7 @@ function processCombatantMovement(
         {
             use_genders: boolean,
             combatant: Combatant,
-            combatants: Readonly<{ [position: number]: Combatant }>,
+            combatants: Combatants,
             global_combatant_stats: GlobalCombatantStatsModel,
             tiles: Tiles,
             movement_logic: MovementLogic,
@@ -242,7 +242,7 @@ function processCombatantMovement(
             tiles,
         });
 
-    const occupant = combatants[new_position];
+    const occupant = GetCombatant(combatants.c[new_position]);
     if (!occupant) {
         // space is empty; OK to move
         combatant.setPosition(new_position);
