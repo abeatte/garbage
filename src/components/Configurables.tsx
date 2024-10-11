@@ -9,6 +9,7 @@ import { AppState } from "../data/store";
 import { faPlay, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GameMode, MovementLogic } from '../data/utils/GameUtils';
+import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, speedChange } from '../data/slices/tickerSlice';
 
 const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
@@ -62,14 +63,14 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
     const resize_section = (
         <div style={{ width: "182px" }}>
             <div className="Speed_buttons_container">
-                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                <button disabled={board.game_mode === GameMode.Adventure} className={classNames('Clickable', 'Button')} onClick={() => {
                     Analytics.logEvent('button_click: Shrink Width');
                     dispatch(shrinkWidth());
                 }}>
                     <span>{"<"}</span>
                 </button>
                 <span className={classNames('Label', 'Centered')}>{`Width`}</span>
-                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                <button disabled={board.game_mode === GameMode.Adventure} className={classNames('Clickable', 'Button')} onClick={() => {
                     Analytics.logEvent('button_click: Grow Width');
                     dispatch(growWidth());
                 }}>
@@ -77,14 +78,14 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                 </button>
             </div>
             <div className="Speed_buttons_container">
-                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                <button disabled={board.game_mode === GameMode.Adventure} className={classNames('Clickable', 'Button')} onClick={() => {
                     Analytics.logEvent('button_click: Shrink Height');
                     dispatch(shrinkHeight());
                 }}>
                     <span>{"<"}</span>
                 </button>
                 <span className={classNames('Label', 'Centered')}>{`Height`}</span>
-                <button className={classNames('Clickable', 'Button')} onClick={() => {
+                <button disabled={board.game_mode === GameMode.Adventure} className={classNames('Clickable', 'Button')} onClick={() => {
                     Analytics.logEvent('button_click: Grow Height');
                     dispatch(growHeight());
                 }}>
@@ -104,6 +105,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                     onChange={(input) => {
                         Analytics.logEvent(`input_changed: Game_mode -> ${input.target.value}`);
                         dispatch(setGameMode(input.target.value as GameMode));
+                        dispatch(speedChange(input.target.value === GameMode.Adventure ? DEFAULT_TICK_SPEED : MAX_TICK_SPEED))
                     }}>
                     {Object.values(GameMode).map(m => (<option key={m}>{`${m}`}</option>))}
                 </select>
