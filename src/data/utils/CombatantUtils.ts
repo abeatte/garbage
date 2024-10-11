@@ -2,7 +2,7 @@ import { Combatants, Items, Tiles } from "../slices/boardSlice";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
 import Combatant from "../../objects/combatants/Combatant";
 import Player from "../../objects/combatants/Player";
-import CombatantModel, { Character, DecisionType } from "../../models/CombatantModel";
+import CombatantModel from "../../models/CombatantModel";
 import { GlobalCombatantStatsModel } from "../../models/GlobalCombatantStatsModel";
 import Seeker from "../../objects/combatants/Seeker";
 import NPC from "../../objects/combatants/NPC";
@@ -26,13 +26,9 @@ export const DiagonalMoves = [ClockFace.tl, ClockFace.tr, ClockFace.br, ClockFac
 export const LegalMoves = [ClockFace.c, ...DirectionalMoves];
 export const IllegalMoves = [...DiagonalMoves];
 
-export function GetCombatant(model: { position: number, species?: Character, decision_type?: DecisionType }, global_combatant_stats?: GlobalCombatantStatsModel): Combatant;
-export function GetCombatant(model: CombatantModel | undefined): Combatant | undefined;
-export function GetCombatant(
-    model?: {
-        position: number, species?: Character, decision_type?: DecisionType, is_player?: boolean
-    } | CombatantModel,
-    global_combatant_stats?: GlobalCombatantStatsModel
+export function GetCombatant(model: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel): Combatant;
+export function GetCombatant(model?: CombatantModel): Combatant | undefined;
+export function GetCombatant(model?: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel
 ): Combatant | undefined {
     if (model === undefined) {
         return undefined;

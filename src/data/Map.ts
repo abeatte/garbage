@@ -1,5 +1,5 @@
 import { createTileModel, Type as TileType } from "../models/TileModel";
-import { SpiderType } from "../objects/items/Item";
+import { DEFAULT_ITEM, SpiderType } from "../objects/items/Item";
 import Spider from "../objects/items/Spider";
 import { Items, TILE_START, Tiles } from "./slices/boardSlice";
 import { addItemToBoard } from "./utils/CombatantUtils";
@@ -64,7 +64,7 @@ const Maps: { [name: string]: MapType } = {
             const NUM_SPIDERS = width * height / 20
             let spiders: Items = { size: 0, i: {} };
             for (let s = 0; s < NUM_SPIDERS; s++) {
-                const spider = new Spider({ position: Math.round(Math.random() * (width * height - 1)) + tiles.start, type: SpiderType.SandSpider });
+                const spider = new Spider({ ...DEFAULT_ITEM, position: Math.round(Math.random() * (width * height - 1)) + tiles.start, type: SpiderType.SandSpider });
                 addItemToBoard(spider, spiders);
             }
 

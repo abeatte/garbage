@@ -11,44 +11,38 @@ import { Tiles } from "../../data/slices/boardSlice";
 
 const Brains = Brain.init();
 
+export const DEFAULT_MODEL = {
+    id: uuid(),
+    name: getRandomCombatantName(),
+    is_player: false,
+    target_waypoints: [],
+    state: State.Alive,
+    kills: 0,
+    fitness: 0,
+    strength: Strength.Average,
+    decision_type: Object.values(DecisionType)[Math.floor(Math.random() * Object.values(DecisionType).length)],
+    immortal: false,
+    species: getRandomSpecies(),
+    gender: Math.random() < .5 ? Gender.Male : Gender.Female,
+    tick: 0,
+    position: -1,
+    visited_positions: {},
+    spawn: undefined,
+    children: 0,
+};
+
 export default abstract class Combatant extends Entity<CombatantModel> {
     protected _model: CombatantModel;
 
-    constructor(model: { position: number, species?: Character, decision_type?: DecisionType });
-    constructor(
-        model: { position: number, species?: Character, decision_type?: DecisionType },
-        global_combatant_stats?: GlobalCombatantStatsModel
-    );
-    constructor(model: CombatantModel);
-    constructor(
-        model: CombatantModel,
-        global_combatant_stats?: GlobalCombatantStatsModel,
-    ) {
+    constructor(model: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel) {
         super();
-        const visited_positions: { [position: number]: number } = {};
-        visited_positions[model.position] = model.position;
-        const decisions = Object.values(DecisionType);
-        const fitness = model.fitness ?? 0;
-        const immortal = model.immortal ?? false;
+        this._model = model;
 
-        this._model = {
-            id: model.id ?? uuid(),
-            name: model.name ?? getRandomCombatantName(),
-            is_player: model.is_player ?? false,
-            target_waypoints: model.target_waypoints ?? [],
-            state: model.state ?? State.Alive,
-            kills: model.kills ?? 0,
-            fitness,
-            strength: getStrengthRating({ global_combatant_stats: global_combatant_stats, fitness, immortal }),
-            decision_type: model.decision_type ?? decisions[Math.floor(Math.random() * decisions.length)],
-            immortal,
-            species: model.species ?? getRandomSpecies(),
-            gender: model.gender ?? Math.random() < .5 ? Gender.Male : Gender.Female,
-            tick: model.tick ?? 0,
-            position: model.position,
-            visited_positions: model.visited_positions ?? visited_positions,
-            spawn: model.spawn,
-            children: model.children ?? 0,
+        this._model.strength = getStrengthRating({ global_combatant_stats: global_combatant_stats, fitness: this._model.fitness, immortal: this._model.immortal })
+
+        if (Object.keys(this._model.visited_positions).length === 0) {
+            this._model.visited_positions = {} as { [position: number]: number };
+            this._model.visited_positions[model.position] = model.position;
         }
     }
 
@@ -191,10 +185,10 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         mate.setState(State.Mating);
 
         this._model.spawn = GetCombatant({
+            ...DEFAULT_MODEL,
             species: this._model.species,
             // 1:4 chance of a different decision_type from the parent
             decision_type: Math.random() > 0.25 ? this.getDecisionType() : getRandomDecisionType(),
-            position: -1,
         },
             global_combatant_stats,
         ).toModel();

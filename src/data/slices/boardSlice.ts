@@ -19,8 +19,9 @@ import { isValidCombatantPosition, processBoardTick } from '../utils/TurnProcess
 import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 import Player from '../../objects/combatants/Player';
-import { ItemModel, SpiderType, ItemType, Type } from '../../objects/items/Item';
+import { ItemModel, SpiderType, ItemType, Type, DEFAULT_ITEM } from '../../objects/items/Item';
 import { GameState, GameMode, MovementLogic, ArrowKey } from '../utils/GameUtils';
+import { DEFAULT_MODEL } from '../../objects/combatants/Combatant';
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
 export const TILE_START: number = 10000;
@@ -99,6 +100,7 @@ function initCombatants(
     let player = undefined;
     if (init_player) {
         player = new Player({
+            ...DEFAULT_MODEL,
             species: getRandomSpecies(),
             position: initCombatantStartingPos({ tiles, player, combatants }),
         },
@@ -115,7 +117,7 @@ function initCombatants(
             continue;
         }
 
-        combatants.c[c_pos] = GetCombatant({ species, position: c_pos }, global_combatant_stats).toModel();
+        combatants.c[c_pos] = GetCombatant({ ...DEFAULT_MODEL, species, position: c_pos }, global_combatant_stats).toModel();
         combatants.size++;
 
         const c_fit = combatants.c[c_pos].fitness;
@@ -252,6 +254,7 @@ function spawnAt(position: number, state: BoardState & SettingsState) {
     if (isValidCombatantPosition(position, state.tiles)) {
         state.combatants.c[position] = GetCombatant(
             {
+                ...DEFAULT_MODEL,
                 position: position
             },
             state.global_combatant_stats
@@ -311,11 +314,12 @@ const mapReducers = {
             /* no op */
             return;
         } else if (Object.keys(Type).includes(action.payload.type) || Object.keys(SpiderType).includes(action.payload.type)) {
-            const new_item = GetItem({ position: action.payload.position, type: action.payload.type as ItemType });
+            const new_item = GetItem({ ...DEFAULT_ITEM, position: action.payload.position, type: action.payload.type as ItemType });
             addItemToBoard(new_item, state.items);
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants.c[action.payload.position] =
                 GetCombatant({
+                    ...DEFAULT_MODEL,
                     position: action.payload.position,
                     species: action.payload.type as Character,
                 },
@@ -362,12 +366,18 @@ export const boardSlice = createSlice({
         startGame: (state) => {
             initState({
                 game_state: GameState.Game,
+                player: state.player,
+                combatants: state.combatants,
+                items: state.items,
                 player_highlight_count: state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
             }, state);
         },
         stopGame: (state) => {
             initState({
                 game_state: GameState.Title,
+                player: state.player,
+                combatants: state.combatants,
+                items: state.items,
                 player_highlight_count: state.game_mode === GameMode.Adventure ? PLAYER_HIGHLIGHT_COUNT : 0,
             }, state);
         },

@@ -1,5 +1,5 @@
 import uuid from "react-uuid";
-import { Items, Tiles } from "../../data/slices/boardSlice";
+import { Combatants, Items, Tiles } from "../../data/slices/boardSlice";
 import { Sight } from "../../data/utils/SightUtils";
 import Combatant from "../combatants/Combatant";
 import Entity, { EntityModel } from "../Entity";
@@ -20,25 +20,27 @@ export interface ItemModel extends EntityModel {
     captured: CombatantModel[];
 }
 
+export const DEFAULT_ITEM = {
+    id: uuid(),
+    tick: 0,
+    position: -1,
+    type: undefined,
+    state: ItemState.Live,
+    fuse_length: 0,
+    kills: 0,
+    captured: [],
+};
+
 export default abstract class Item extends Entity<ItemModel> {
     protected _model: ItemModel;
 
-    constructor(model?: { position?: number, type: ItemType });
     constructor(model: ItemModel) {
         super();
-        this._model = {
-            id: model.id ?? uuid(),
-            tick: model.tick ?? 0,
-            position: model.position ?? -1,
-            type: model.type,
-            state: model.state ?? ItemState.Live,
-            fuse_length: model?.fuse_length ?? getFuseLength(model.type),
-            kills: model.kills ?? 0,
-            captured: model.captured ?? [],
-        };
+        this._model = model;
+        this._model.fuse_length = getFuseLength(this._model.type);
     }
 
-    abstract tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, tiles: Tiles): void;
+    abstract tap(sight: Sight, items: Items, combatants: Combatants, tiles: Tiles): void;
 
     getPosition(): number {
         return this._model.position;

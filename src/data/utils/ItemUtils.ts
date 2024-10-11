@@ -1,12 +1,12 @@
 import Bomb from "../../objects/items/Bomb";
-import Item, { ItemModel, ItemType } from "../../objects/items/Item";
+import Item, { ItemModel } from "../../objects/items/Item";
 import MedPack from "../../objects/items/MedPack";
 import PokemonBall from "../../objects/items/PokemonBall";
 import Spider from "../../objects/items/Spider";
 import { Items, Tiles } from "../slices/boardSlice";
 import { isValidCombatantPosition } from "./TurnProcessingUtils";
 
-export function GetItem(model: { type: ItemType } | ItemModel): Item {
+export function GetItem(model: ItemModel): Item {
     if (Bomb.IsOf(model)) {
         return new Bomb(model);
     } else if (MedPack.IsOf(model)) {

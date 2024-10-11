@@ -1,8 +1,7 @@
-import { Items, Tiles } from "../../data/slices/boardSlice";
-import { addItemToBoard } from "../../data/utils/CombatantUtils";
+import { Combatants, Items, Tiles } from "../../data/slices/boardSlice";
+import { addItemToBoard, GetCombatant } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
-import Combatant from "../combatants/Combatant";
 import Item, { ItemState, ItemType, Type } from "./Item";
 
 export default class Bomb extends Item {
@@ -11,7 +10,7 @@ export default class Bomb extends Item {
         return model.type === Type.Bomb;
     }
 
-    tap(sight: Sight, items: Items, _combatants: { [position: number]: Combatant }, _tiles: Tiles): void {
+    tap(sight: Sight, items: Items, combatants: Combatants, _tiles: Tiles): void {
         if (this.isFuseUp()) {
             sight.surroundings.forEach(surrounding => {
                 if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
@@ -22,7 +21,7 @@ export default class Bomb extends Item {
                 items.i[surrounding.position] = [];
                 items.size -= item_count;
 
-                const c_to_die = surrounding.occupant;
+                const c_to_die = GetCombatant(combatants.c[surrounding.position]);
                 if (c_to_die !== undefined) {
                     c_to_die.kill();
                     this.recordKill(c_to_die);

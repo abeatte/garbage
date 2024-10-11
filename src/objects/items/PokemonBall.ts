@@ -1,8 +1,7 @@
-import { Items, Tiles } from "../../data/slices/boardSlice";
+import { Combatants, Items, Tiles } from "../../data/slices/boardSlice";
 import { addItemToBoard, GetCombatant } from "../../data/utils/CombatantUtils";
 import { Sight } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
-import Combatant from "../combatants/Combatant";
 import Item, { ItemType, Type } from "./Item"
 
 export default class PokemonBall extends Item {
@@ -11,7 +10,7 @@ export default class PokemonBall extends Item {
         return model.type === Type.PokemonBall;
     }
 
-    tap(sight: Sight, items: Items, combatants: { [position: number]: Combatant }, _tiles: Tiles): void {
+    tap(sight: Sight, items: Items, combatants: Combatants, _tiles: Tiles): void {
         const valid_surroundings =
             sight.surroundings.filter(sur => isTileValidCombatantPosition(sur?.tile));
         const capacity = valid_surroundings.length;
@@ -30,22 +29,26 @@ export default class PokemonBall extends Item {
                 // time passes for the captive
                 captive.releaseFromCaptivity(this._model.fuse_length);
 
-                const occupant = surrounding.occupant;
+                const occupant = GetCombatant(combatants.c[surrounding.position]);
 
                 if (occupant === undefined) {
                     captive.setPosition(surrounding.position);
-                    combatants[captive.getPosition()] = captive;
+                    combatants.c[captive.getPosition()] = captive.toModel();
                 } else {
                     const winner = occupant.fightWith(captive);
                     winner.setPosition(surrounding.position);
-                    combatants[winner.getPosition()] = winner;
+                    combatants.c[winner.getPosition()] = winner.toModel();
                 }
             }
         } else {
             if (this._model.captured.length < capacity) {
                 // can only store as many tiles as it can disgorge into
                 sight.surroundings.forEach(surrounding => {
-                    const c_to_capture = surrounding?.occupant;
+                    if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
+                        return;
+                    }
+
+                    const c_to_capture = GetCombatant(combatants.c[surrounding?.position]);
                     if (c_to_capture) {
                         c_to_capture.capture();
                         this._model.captured.push(c_to_capture.toModel());

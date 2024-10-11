@@ -17,7 +17,7 @@ import Item from "./Item";
 import Tile from "./Tile";
 import { GetItem } from "../data/utils/ItemUtils";
 import Spider from "../objects/items/Spider";
-import { SpiderType, Type } from "../objects/items/Item";
+import { DEFAULT_ITEM, SpiderType, Type } from "../objects/items/Item";
 import { Purpose } from "../data/utils/CombatantUtils";
 
 const PaintPalette = (props: { showTarget?: boolean }) => {
@@ -98,7 +98,7 @@ const PaintPalette = (props: { showTarget?: boolean }) => {
     const background_tile = createTileModel({ index: -1, type: TileType.Sand });
 
     const items = Object.values(Type).map((k, idx) => {
-        const item = GetItem({ type: Type[k] });
+        const item = GetItem({ ...DEFAULT_ITEM, type: Type[k] });
         return (
             <Tile
                 id={idx}
@@ -120,7 +120,7 @@ const PaintPalette = (props: { showTarget?: boolean }) => {
     });
 
     const spiders = Object.values(SpiderType).map((k, idx) => {
-        const spider = GetItem({ type: k }) as Spider;
+        const spider = new Spider({ ...DEFAULT_ITEM, type: k });
         const tile = createTileModel({ index: -1, type: spider.getActionType() });
         return (
             <Tile
