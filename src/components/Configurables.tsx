@@ -2,13 +2,23 @@ import '../css/Configurables.css'
 import classNames from "classnames";
 import React from "react";
 import Analytics from "../analytics";
-import { shrinkWidth, growWidth, shrinkHeight, growHeight, setInitialNumCombatants, setMap, setMovementLogic, toggleShowRealTileImages, toggleShowTilePotentials, toggleUseGenders, setGameMode } from "../data/slices/boardSlice";
+import {
+    shrinkWidth,
+    growWidth,
+    shrinkHeight,
+    growHeight,
+    setInitialNumCombatants,
+    setMap,
+    toggleShowRealTileImages,
+    toggleShowTilePotentials,
+    setGameMode
+} from "../data/slices/boardSlice";
 import { useSelector, useDispatch } from "react-redux";
 import Maps from "../data/Map";
 import { AppState } from "../data/store";
 import { faPlay, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { GameMode, MovementLogic } from '../data/utils/GameUtils';
+import { GameMode } from '../data/utils/GameUtils';
 import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, speedChange } from '../data/slices/tickerSlice';
 
 const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => {
@@ -127,7 +137,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                     }}
                     value={board.initial_num_combatants} />
             </div>
-            <div className={classNames('Checkbox_container')}>
+            {/* <div className={classNames('Checkbox_container')}>
                 <input
                     className={classNames('Clickable', 'Checkbox')}
                     type="checkbox"
@@ -138,8 +148,8 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                     }}
                 />
                 <span className={'Label'}>{'Set Genders'}</span>
-            </div>
-            <div style={{ marginTop: "4px" }}>
+            </div> */}
+            {/* <div style={{ marginTop: "4px" }}>
                 <span className={'Label'}>{'Movement: '}</span>
                 <select
                     className={classNames('Dropdown_selector', 'Clickable')}
@@ -151,7 +161,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                 >
                     {Object.values(MovementLogic).map(l => (<option key={l.toString()}>{l}</option>))}
                 </select>
-            </div>
+            </div> */}
         </>
     );
 
