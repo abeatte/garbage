@@ -43,6 +43,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         if (Object.keys(this._model.visited_positions).length === 0) {
             this._model.visited_positions = {} as { [position: number]: number };
             this._model.visited_positions[model.position] = model.position;
+            this._model.id = uuid();
         }
 
         if (this._model.target_waypoints.length === 0) {
