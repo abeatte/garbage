@@ -55,8 +55,8 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let index = 0; index < width * height; index++) {
-                tiles.t[index + tiles.start] = createTileModel({ index, type: TileType.Void });
+            for (let index = tiles.start; index < tiles.start + width * height; index++) {
+                tiles.t[index] = createTileModel({ index, type: TileType.Void });
                 tiles.size++;
                 tiles.end++;
             }
@@ -89,8 +89,8 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Water });
+            for (let index = tiles.start; index < tiles.start + width * height; index++) {
+                tiles.t[index] = createTileModel({ index, type: TileType.Water });
                 tiles.size++;
                 tiles.end++;
             }
@@ -103,8 +103,8 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Sand });
+            for (let index = tiles.start; index < tiles.start + width * height; index++) {
+                tiles.t[index] = createTileModel({ index, type: TileType.Sand });
                 tiles.size++;
                 tiles.end++;
             }
@@ -117,8 +117,8 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Grass });
+            for (let index = tiles.start; index < tiles.start + width * height; index++) {
+                tiles.t[index] = createTileModel({ index, type: TileType.Grass });
                 tiles.size++;
                 tiles.end++;
             }
@@ -131,8 +131,8 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Rock });
+            for (let index = tiles.start; index < tiles.start + width * height; index++) {
+                tiles.t[index] = createTileModel({ index, type: TileType.Rock });
                 tiles.size++;
                 tiles.end++;
             }
@@ -145,8 +145,8 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.God,
         generate: ({ width, height }) => {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Fire });
+            for (let index = tiles.start; index < tiles.start + width * height; index++) {
+                tiles.t[index] = createTileModel({ index, type: TileType.Fire });
                 tiles.size++;
                 tiles.end++;
             }
@@ -159,10 +159,12 @@ const Maps: { [name: string]: MapType } = {
         game_mode: GameMode.Adventure,
         generate: function ({ width, height }: { width: number; height: number; }) {
             const tiles: Tiles = { width, height, start: TILE_START, end: TILE_START, size: 0, t: {} };
-            for (let idx = 0; idx < width * height; idx++) {
-                tiles.t[idx + tiles.start] = createTileModel({ index: idx, type: TileType.Sand });
+            const platform_start = Math.ceil((width - 3) / 2);
+            for (let i = 0; i < 9; i++) {
+                const idx = platform_start + (i % 3) + (Math.floor(i / 3) * width);
+                tiles.t[idx + tiles.start] = createTileModel({ index: idx + tiles.start, type: TileType.Sand });
                 tiles.size++;
-                tiles.end++;
+                tiles.end = idx + tiles.start;
             }
 
             return tiles;

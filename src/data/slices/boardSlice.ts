@@ -98,7 +98,7 @@ function initCombatants(
 
     let player = undefined;
     if (init_player) {
-        player = new Player({ position: initCombatantStartingPos({ tiles, player, combatants }) },
+        player = new Player({ position: 10039 },
             global_combatant_stats,
         );
     }
@@ -387,7 +387,6 @@ export const boardSlice = createSlice({
                 args.player_highlight_count = PLAYER_HIGHLIGHT_COUNT;
                 args.map = Maps['Adventure'].name
                 args.tiles.height = 3;
-                args.tiles.width = 3;
             } else {
                 args.initial_num_combatants = GAME_DEFAULTS.initial_num_combatants;
                 args.player_highlight_count = 0;
