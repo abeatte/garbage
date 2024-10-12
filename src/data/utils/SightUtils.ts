@@ -40,7 +40,12 @@ export function viewSurroundings(
             if (!can_create) {
                 return;
             } else {
-                addTileToMap(position, TileType.Grass, tiles)
+                const tile_type =
+                    Math.random() < 0.1 ? TileType.Void :
+                        Math.random() < 0.1 ? TileType.Water :
+                            Math.random() < 0.1 ? TileType.Grass :
+                                TileType.Rock;
+                addTileToMap(position, tile_type, tiles)
             }
         }
 
