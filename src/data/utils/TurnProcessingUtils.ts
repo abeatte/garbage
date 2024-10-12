@@ -143,7 +143,7 @@ function processCombatantTick(
         }
 ): { player: Player | undefined, combatants: Combatants, births: number, deaths: number } {
     const working_combatants: Combatants = { size: 0, c: {} };
-    const mating_combatant_ids: { [position: number]: string } = {};
+    const mating_combatants: Combatant[] = [];
     let player;
     let births = 0, deaths = 0;
 
@@ -179,14 +179,12 @@ function processCombatantTick(
 
         // capture mating combatants
         if (combatant.isMating()) {
-            mating_combatant_ids[combatant.getPosition()] = combatant.getID();
+            mating_combatants.push(combatant);
         }
     };
 
     // process mating
-    Object.keys(mating_combatant_ids).forEach((position: string) => {
-        const id = mating_combatant_ids[parseInt(position)];
-        const parent = GetCombatant(working_combatants.c[parseInt(position)]);
+    mating_combatants.forEach((parent: Combatant) => {
         if (!parent.isPregnant()) {
             // congrats, dad... get lost
             parent.fatherSpawn();

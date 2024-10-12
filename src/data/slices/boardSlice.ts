@@ -8,7 +8,7 @@ import {
     GetCombatant,
 } from '../utils/CombatantUtils';
 import { clearMapTileScorePotentials, createTileModel, TileModel, Type as TileType } from "../../models/TileModel";
-import CombatantModel, { Character, DecisionType, getNewPositionFromArrowKey, getRandomSpecies, State } from '../../models/CombatantModel';
+import CombatantModel, { Character, DecisionType, getNewPositionFromArrowKey, State } from '../../models/CombatantModel';
 import { DEFAULT, getStrengthRating, GlobalCombatantStatsModel } from '../../models/GlobalCombatantStatsModel';
 import { GetItem, updateItemsAfterResize } from '../utils/ItemUtils';
 import { PaintEntity } from '../slices/paintPaletteSlice';
@@ -21,7 +21,6 @@ import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 import Player from '../../objects/combatants/Player';
 import { ItemModel, SpiderType, ItemType, Type, DEFAULT_ITEM } from '../../objects/items/Item';
 import { GameState, GameMode, MovementLogic, ArrowKey } from '../utils/GameUtils';
-import { DEFAULT_MODEL } from '../../objects/combatants/Combatant';
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
 export const TILE_START: number = 10000;
@@ -99,25 +98,18 @@ function initCombatants(
 
     let player = undefined;
     if (init_player) {
-        player = new Player({
-            ...DEFAULT_MODEL,
-            species: getRandomSpecies(),
-            position: initCombatantStartingPos({ tiles, player, combatants }),
-        },
+        player = new Player({ position: initCombatantStartingPos({ tiles, player, combatants }) },
             global_combatant_stats,
         );
     }
 
     for (let i = 0; i < num_combatants; i++) {
-
-        const species = getRandomSpecies();
-
         const c_pos: number = initCombatantStartingPos({ tiles, player, combatants });
         if (c_pos < 0) {
             continue;
         }
 
-        combatants.c[c_pos] = GetCombatant({ ...DEFAULT_MODEL, species, position: c_pos }, global_combatant_stats).toModel();
+        combatants.c[c_pos] = GetCombatant({ position: c_pos }, global_combatant_stats).toModel();
         combatants.size++;
 
         const c_fit = combatants.c[c_pos].fitness;
@@ -252,13 +244,7 @@ function initState(
 
 function spawnAt(position: number, state: BoardState & SettingsState) {
     if (isValidCombatantPosition(position, state.tiles)) {
-        state.combatants.c[position] = GetCombatant(
-            {
-                ...DEFAULT_MODEL,
-                position: position
-            },
-            state.global_combatant_stats
-        ).toModel();
+        state.combatants.c[position] = GetCombatant({ position }, state.global_combatant_stats).toModel();
         state.combatants.size++;
         state.global_combatant_stats.num_combatants += 1;
     }
@@ -319,7 +305,6 @@ const mapReducers = {
         } else if (Object.keys(Character).includes(action.payload.type)) {
             state.combatants.c[action.payload.position] =
                 GetCombatant({
-                    ...DEFAULT_MODEL,
                     position: action.payload.position,
                     species: action.payload.type as Character,
                 },

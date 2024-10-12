@@ -9,7 +9,7 @@ import Maps from "../data/Map";
 import Brain from "../models/Brain";
 import CombatantModel, { Character } from "../models/CombatantModel";
 import { Sight, viewSurroundings } from "../data/utils/SightUtils";
-import Combatant, { DEFAULT_MODEL } from "../objects/combatants/Combatant";
+import Combatant from "../objects/combatants/Combatant";
 import NPC from "../objects/combatants/NPC";
 import { MovementLogic } from "../data/utils/GameUtils";
 
@@ -53,7 +53,7 @@ const buildTrainingSets = (species: Character): TrainingSet[] => {
     const training_sets = [] as TrainingSet[];
 
     // TODO: finish creating this so that the sight will have a Clockface.C combataint to use for species. 
-    const trainer = new NPC({ ...DEFAULT_MODEL, position: 0, species });
+    const trainer = new NPC({ position: 0, species });
 
     for (let map = 0; map < NUM_TRAINING_MAPS; map++) {
         const width = GAME_DEFAULTS.tiles.width;

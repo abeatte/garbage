@@ -19,7 +19,6 @@ export default class Seeker extends Combatant {
 
     requestMoveImpl(args: {
         tiles: Readonly<Tiles>,
-        window_width: number,
         best_target_position: number,
         best_mate_position: number,
         best_open_position: number; new_random_position: number,
@@ -59,7 +58,7 @@ export default class Seeker extends Combatant {
         return target_destination;
     }
 
-    private basic(args: { tiles: Readonly<Tiles>, window_width: number }) {
+    private basic(args: { tiles: Readonly<Tiles> }) {
         const self = this._model;
         let position;
         // seekers go directly toward their target.
@@ -73,18 +72,18 @@ export default class Seeker extends Combatant {
             !isValidCombatantPosition(target_destination, args.tiles)
         ) {
             target_destination = self.position;
-            self.target_waypoints = [Math.floor(Math.random() * (args.tiles.size - 1) + args.tiles.start)];
+            self.target_waypoints = [Math.floor(Math.random() * (args.tiles.end - args.tiles.start + 1) + args.tiles.start)];
         }
 
         const col_diff =
-            (target_destination % args.window_width) -
-            (self.position % args.window_width);
+            (target_destination % args.tiles.width) -
+            (self.position % args.tiles.width);
         const row_diff =
-            Math.floor(target_destination / args.window_width) -
-            Math.floor(self.position / args.window_width);
+            Math.floor(target_destination / args.tiles.width) -
+            Math.floor(self.position / args.tiles.width);
 
         const col_movement_is_greater = Math.abs(col_diff) > Math.abs(row_diff);
-        const col_movement_position = self.position + (row_diff < 0 ? - args.window_width : args.window_width);
+        const col_movement_position = self.position + (row_diff < 0 ? - args.tiles.width : args.tiles.width);
         const row_movement_position = self.position + (col_diff < 0 ? -1 : 1);
         const is_col_movement_valid = isValidCombatantPosition(col_movement_position, args.tiles);
         const is_row_movement_valid = isValidCombatantPosition(row_movement_position, args.tiles);

@@ -11,43 +11,42 @@ import { Combatants, Tiles } from "../../data/slices/boardSlice";
 
 const Brains = Brain.init();
 
-export const DEFAULT_MODEL = {
-    id: uuid(),
-    name: getRandomCombatantName(),
-    is_player: false,
-    target_waypoints: [],
-    state: State.Alive,
-    kills: 0,
-    fitness: 0,
-    strength: Strength.Average,
-    decision_type: Object.values(DecisionType)[Math.floor(Math.random() * Object.values(DecisionType).length)],
-    immortal: false,
-    species: getRandomSpecies(),
-    gender: Math.random() < .5 ? Gender.Male : Gender.Female,
-    tick: 0,
-    position: -1,
-    visited_positions: {},
-    spawn: undefined,
-    children: 0,
-};
-
 export default abstract class Combatant extends Entity<CombatantModel> {
     protected _model: CombatantModel;
 
-    constructor(model: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel) {
+    constructor(model: Partial<CombatantModel>, global_combatant_stats?: GlobalCombatantStatsModel) {
         super();
-        this._model = model;
+        if (model.id !== undefined) {
+            this._model = model as CombatantModel;
+        } else {
+            this._model = {
+                id: uuid(),
+                name: getRandomCombatantName(),
+                is_player: false,
+                target_waypoints: [],
+                state: State.Alive,
+                kills: 0,
+                fitness: 0,
+                strength: Strength.Average,
+                decision_type: Object.values(DecisionType)[Math.floor(Math.random() * Object.values(DecisionType).length)],
+                immortal: false,
+                species: getRandomSpecies(),
+                gender: Math.random() < .5 ? Gender.Male : Gender.Female,
+                tick: 0,
+                position: -1,
+                visited_positions: {},
+                spawn: undefined,
+                children: 0,
+
+                // get the passed in fields
+                ...model
+            }
+        }
 
         this._model.strength = getStrengthRating({ global_combatant_stats: global_combatant_stats, fitness: this._model.fitness, immortal: this._model.immortal })
 
-        if (Object.keys(this._model.visited_positions).length === 0) {
-            this._model.visited_positions = {} as { [position: number]: number };
-            this._model.visited_positions[model.position] = model.position;
-            this._model.id = uuid();
-        }
-
-        if (this._model.target_waypoints.length === 0) {
-            this._model.target_waypoints = [];
+        if (model.id === undefined) {
+            this._model.visited_positions[this._model.position] = this._model.position;
         }
     }
 
@@ -190,7 +189,6 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         mate.setState(State.Mating);
 
         this._model.spawn = GetCombatant({
-            ...DEFAULT_MODEL,
             species: this._model.species,
             // 1:4 chance of a different decision_type from the parent
             decision_type: Math.random() > 0.25 ? this.getDecisionType() : getRandomDecisionType(),
@@ -212,7 +210,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         tiles: Tiles,
         combatants: Combatants,
     }): Combatant | undefined {
-        const spawn = GetCombatant(this._model.spawn);
+        let spawn = GetCombatant(this._model.spawn);
         if (spawn === undefined) {
             return undefined;
         }
@@ -237,7 +235,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
             const { position, occupant: c } = surrounding;
 
             if (!c) {
-                if (position > -1 && position < tiles.end) {
+                if (position >= tiles.start && position <= tiles.end) {
                     empty_positions.push(position)
                 }
             } else if (c.getSpecies() === this.getSpecies()) {
@@ -249,6 +247,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
         if (enemy_positions.length > 1) {
             // spawn dies; too dangerous
+            spawn = undefined;
         } else {
             // safe, let's do it!
             const spawn_pos = empty_positions.length > 0 ?
@@ -256,6 +255,8 @@ export default abstract class Combatant extends Entity<CombatantModel> {
                 -1;
             if (spawn_pos > -1) {
                 spawn.beBorn(spawn_pos, friendly_positions);
+            } else {
+                spawn = undefined;
             }
         }
 

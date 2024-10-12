@@ -12,7 +12,7 @@ export default class Player extends Combatant {
         return !!model.is_player;
     }
 
-    constructor(model: CombatantModel, global_combatant_stats?: GlobalCombatantStatsModel) {
+    constructor(model: Partial<CombatantModel>, global_combatant_stats?: GlobalCombatantStatsModel) {
         super(model, global_combatant_stats);
         this._model.is_player = true;
     }
