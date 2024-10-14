@@ -546,6 +546,8 @@ const centerViewOnPlayer = (state: BoardState) => {
             );
 
         state.view_port.start = new_start;
+    } else if (state.player?.state === State.Captured) {
+        // do nothing
     } else {
         state.view_port.start = state.tiles.start;
     };
