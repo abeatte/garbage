@@ -3,7 +3,7 @@ import CombatantModel, { Character, DecisionType, Gender, getMapTileEffect, getR
 import { GlobalCombatantStatsModel, getStrengthRating } from "../../models/GlobalCombatantStatsModel";
 import { ClockFace, GetCombatant, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../../data/utils/CombatantUtils";
 import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
-import { isTileValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
+import { isTileValidCombatantPosition, isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import Brain from "../../models/Brain";
 import Entity from "../Entity";
 import { MovementLogic } from "../../data/utils/GameUtils";
@@ -70,7 +70,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         return this.getState() === State.Mating;
     }
 
-    setState(state: State) {
+    protected setState(state: State) {
         return this._model.state = state;
     }
 
@@ -102,6 +102,16 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         return this._model.immortal;
     }
 
+    setImmortal(immortal: boolean, global_combatant_stats: GlobalCombatantStatsModel) {
+        this._model.immortal = immortal;
+
+        this._model.strength = getStrengthRating({
+            global_combatant_stats,
+            fitness: this._model.fitness,
+            immortal: this._model.immortal,
+        })
+    }
+
     getFitness(): number {
         return this._model.immortal ? Infinity : this._model.fitness;
     }
@@ -109,7 +119,7 @@ export default abstract class Combatant extends Entity<CombatantModel> {
     affectFitness(health: number) {
         this._model.fitness += health;
         if (this._model.fitness < MIN_HEALTH) {
-            this.setState(State.Dead);
+            this.kill();
         }
     }
 
@@ -119,6 +129,10 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
     getStrength(): Strength {
         return this._model.strength;
+    }
+
+    setStrength(strength: Strength) {
+        this._model.strength = strength;
     }
 
     updateStrengthRating(strength: Strength) {
@@ -166,14 +180,43 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
     fightWith(other: Combatant): Combatant {
         if (other.getFitness() > this.getFitness()) {
-            this.setState(State.Dead);
+            this.kill();
             other.recordKill(this);
             return other;
         } else {
-            other.setState(State.Dead);
+            other.kill();
             this.recordKill(other);
             return this;
         }
+    }
+
+    protected moveTowardPosition(args: { target_destination: number, tiles: Tiles }) {
+        const col_diff =
+            ((args.target_destination - args.tiles.start) % args.tiles.width) -
+            ((this.getPosition() - args.tiles.start) % args.tiles.width);
+        const row_diff =
+            Math.floor((args.target_destination - args.tiles.start) / args.tiles.width) -
+            Math.floor((this.getPosition() - args.tiles.start) / args.tiles.width);
+
+        const col_movement_position = this.getPosition() + (row_diff < 0 ? - args.tiles.width : args.tiles.width);
+        const row_movement_position = this.getPosition() + (col_diff < 0 ? -1 : 1);
+        const is_col_movement_valid = isValidCombatantPosition(col_movement_position, args.tiles);
+        const is_row_movement_valid = isValidCombatantPosition(row_movement_position, args.tiles);
+
+        let position;
+        if ((col_diff === 0 && row_diff === 0) || (!is_row_movement_valid && !is_col_movement_valid)) {
+            position = this.getPosition();
+        } else if (!is_col_movement_valid) {
+            position = row_movement_position;
+        } else if (!is_row_movement_valid) {
+            position = col_movement_position;
+        } else {
+            const diff_total = Math.abs(col_diff) + Math.abs(row_diff);
+            const row_ods = Math.abs(row_diff) / diff_total;
+            position = Math.random() < row_ods ? col_movement_position : row_movement_position;
+        }
+
+        return position;
     }
 
     canMateWith(potential: Combatant, use_genders: boolean) {
@@ -189,9 +232,9 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         mate.setState(State.Mating);
 
         this._model.spawn = GetCombatant({
+            position: -1,
             species: this._model.species,
-            // 1:4 chance of a different decision_type from the parent
-            decision_type: Math.random() > 0.25 ? this.getDecisionType() : getRandomDecisionType(),
+            decision_type: this.getSpawnDecisionType(),
         },
             global_combatant_stats,
         ).toModel();
@@ -199,6 +242,11 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
     isPregnant() {
         return this._model.spawn !== undefined;
+    }
+
+    getSpawnDecisionType(): DecisionType {
+        // 1:4 chance of a different decision_type from the parent
+        return Math.random() > 0.25 ? this.getDecisionType() : getRandomDecisionType();
     }
 
     fatherSpawn() {

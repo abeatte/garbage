@@ -2,7 +2,7 @@ import { Tiles } from "../../data/slices/boardSlice";
 import { DirectionalMoves } from "../../data/utils/CombatantUtils";
 import { viewSurroundings } from "../../data/utils/SightUtils";
 import { isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
-import { DecisionType } from "../../models/CombatantModel";
+import { DecisionType, State } from "../../models/CombatantModel";
 import { TileModel } from "../../models/TileModel";
 import Combatant from "./Combatant";
 
@@ -13,15 +13,20 @@ export default class Seeker extends Combatant {
     }
 
     beBorn(position: number, friendlies: Combatant[]): void {
-        super.beBorn(position, friendlies);
+        this.setState(State.Alive);
         this._model.target_waypoints.push(position);
+    }
+
+    getSpawnDecisionType(): DecisionType {
+        return DecisionType.Seeker;
     }
 
     requestMoveImpl(args: {
         tiles: Readonly<Tiles>,
         best_target_position: number,
         best_mate_position: number,
-        best_open_position: number; new_random_position: number,
+        best_open_position: number;
+        new_random_position: number,
     }): number {
         return this.basic(args);
     }
@@ -75,27 +80,8 @@ export default class Seeker extends Combatant {
             self.target_waypoints = [Math.floor(Math.random() * (args.tiles.end - args.tiles.start + 1) + args.tiles.start)];
         }
 
-        const col_diff =
-            (target_destination % args.tiles.width) -
-            (self.position % args.tiles.width);
-        const row_diff =
-            Math.floor(target_destination / args.tiles.width) -
-            Math.floor(self.position / args.tiles.width);
-
-        const col_movement_is_greater = Math.abs(col_diff) > Math.abs(row_diff);
-        const col_movement_position = self.position + (row_diff < 0 ? - args.tiles.width : args.tiles.width);
-        const row_movement_position = self.position + (col_diff < 0 ? -1 : 1);
-        const is_col_movement_valid = isValidCombatantPosition(col_movement_position, args.tiles);
-        const is_row_movement_valid = isValidCombatantPosition(row_movement_position, args.tiles);
-
-        if (col_diff === 0 && row_diff === 0) {
-            position = self.position;
-        } else if ((col_movement_is_greater || !is_col_movement_valid) && is_row_movement_valid) {
-            position = row_movement_position;
-        } else if (is_col_movement_valid) {
-            position = col_movement_position;
-        } else {
-            position = self.position;
+        position = this.moveTowardPosition({ target_destination, tiles: args.tiles });
+        if (position === self.position) {
             // hack to reset target position when you run into a wall.
             self.target_waypoints = [Math.floor(Math.random() * (args.tiles.size - 1)) + args.tiles.start];
         }

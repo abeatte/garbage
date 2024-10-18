@@ -470,22 +470,17 @@ export const boardSlice = createSlice({
         killSelected: (state) => {
             if (state.selected_position !== undefined) {
                 state.follow_selected_combatant = false;
-                let selected = state.combatants.c[state.selected_position];
+                let selected = GetCombatant(state.combatants.c[state.selected_position]);
                 if (selected === undefined && state.selected_position === state.player?.position) {
-                    selected = state.player;
+                    selected = new Player(state.player);
                 }
 
                 if (selected) {
-                    selected.immortal = false;
-                    selected.strength = getStrengthRating({
-                        global_combatant_stats: state.global_combatant_stats,
-                        fitness: selected.fitness,
-                        immortal: selected.immortal
-                    })
-                    selected.state = State.Dead;
-                    if (selected !== state.player) {
+                    selected.setImmortal(false, state.global_combatant_stats);
+                    selected.kill()
+                    if (!selected.isPlayer()) {
                         // must reassign to list to get state to notice the update. 
-                        state.combatants.c[state.selected_position] = selected;
+                        state.combatants.c[state.selected_position] = selected.toModel();
                     }
                 }
             }
@@ -519,7 +514,7 @@ export const boardSlice = createSlice({
 })
 
 const centerViewOnPlayer = (state: BoardState) => {
-    if (state.player && state.player.position >= state.tiles.start) {
+    if (state.player && state.tiles.start <= state.player.position && state.player.position <= state.tiles.end) {
         let new_start = state.player.position;
         // snap to fit horizontal
         new_start -= Math.max(
