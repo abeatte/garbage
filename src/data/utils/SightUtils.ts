@@ -40,10 +40,11 @@ export function viewSurroundings(
             if (!can_create) {
                 return;
             } else {
+                const rand = Math.random();
                 const tile_type =
-                    Math.random() < 0.1 ? TileType.Void :
-                        Math.random() < 0.1 ? TileType.Water :
-                            Math.random() < 0.1 ? TileType.Grass :
+                    rand < 0.1 ? TileType.Void :
+                        rand < 0.2 ? TileType.Water :
+                            rand < 0.3 ? TileType.Grass :
                                 TileType.Rock;
                 addTileToMap(position, tile_type, tiles)
             }
@@ -77,12 +78,12 @@ export function viewSurroundings(
 
     if (can_create) {
         if (!can_go_up) {
-            addTileToMap(position - tiles.width, TileType.Grass, tiles);
+            setSurrounding(position - tiles.width);
             tiles.height++;
             can_go_up = true;
         }
         if (!can_go_down) {
-            addTileToMap(position + tiles.width, TileType.Grass, tiles);
+            setSurrounding(position + tiles.width);
             tiles.height++;
             can_go_down = true;
         }
