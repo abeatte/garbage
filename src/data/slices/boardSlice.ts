@@ -408,7 +408,7 @@ export const boardSlice = createSlice({
             }
         },
         movePlayer: (state, action: PayloadAction<ArrowKey>) => {
-            if (state.player) {
+            if (state.player && state.player.state !== State.Captured) {
                 state.player.target_waypoints[0] =
                     getNewPositionFromArrowKey(state.player.position, action.payload, state.tiles.width, state.tiles.start, state.tiles.end);
             }
