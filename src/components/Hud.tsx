@@ -207,7 +207,7 @@ const Hud = () => {
                                 }
                             )}
                             <div style={{ paddingLeft: "8px" }} >
-                                <span>{`( ${tile.score_potential} )`}</span>
+                                <span>{`( ${tile.score_potential[combatant?.species ?? Character.Bunny]} )`}</span>
                             </div>
                         </div>
                     }
