@@ -4,12 +4,9 @@ import { GlobalCombatantStatsModel, getStrengthRating } from "../../models/Globa
 import { ClockFace, GetCombatant, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH } from "../../data/utils/CombatantUtils";
 import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition, isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
-import Brain from "../../models/Brain";
 import Entity from "../Entity";
 import { MovementLogic } from "../../data/utils/GameUtils";
 import { Combatants, Tiles } from "../../data/slices/boardSlice";
-
-const Brains = Brain.init();
 
 export default abstract class Combatant extends Entity<CombatantModel> {
     protected _model: CombatantModel;
@@ -333,11 +330,6 @@ export default abstract class Combatant extends Entity<CombatantModel> {
         const self = this._model;
         let position: number;
         switch (args.movement_logic) {
-            case MovementLogic.NeuralNetwork:
-                // TODO: the Neural Network is blind to mating situations. 
-                // this causes combatants to just sit in one spot when near others. 
-                position = Brain.move(Brains[self.species], self, args.sight);
-                break;
             case MovementLogic.RandomWalk:
                 position = args.sight.getNewRandomPosition();
                 break;
