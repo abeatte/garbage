@@ -20,7 +20,7 @@ import { TILE_SIZE } from '../../components/Tile';
 import { DASHBOARD_HEIGHT } from '../../components/Dashboard';
 import Player from '../../objects/combatants/Player';
 import { ItemModel, SpiderType, ItemType, Type, DEFAULT_ITEM } from '../../objects/items/Item';
-import { GameState, GameMode, MovementLogic, ArrowKey } from '../utils/GameUtils';
+import { GameState, GameMode, ArrowKey } from '../utils/GameUtils';
 
 export const PLAYER_HIGHLIGHT_COUNT: number = 6;
 export const TILE_START: number = 10000;
@@ -41,7 +41,6 @@ export const GAME_DEFAULTS = {
     game_mode: GameMode.God,
     player_highlight_count: 0,
     initial_num_combatants: 50,
-    movement_logic: MovementLogic.DecisionTree,
     map: Maps['World'].name,
     use_genders: false,
     show_real_tile_images: true,
@@ -79,7 +78,6 @@ interface BoardState {
     items: Items,
     selected_position: number | undefined,
     follow_selected_combatant: boolean,
-    movement_logic: MovementLogic,
     map: string,
 }
 
@@ -334,10 +332,7 @@ const settingsReducers = {
     },
     toggleUseGenders: (state: BoardState & SettingsState) => {
         state.use_genders = !state.use_genders;
-    },
-    setMovementLogic: (state: BoardState & SettingsState, action: PayloadAction<MovementLogic>) => {
-        state.movement_logic = action.payload;
-    },
+    }
 }
 
 export const boardSlice = createSlice({
@@ -420,7 +415,6 @@ export const boardSlice = createSlice({
                 items: state.items,
                 combatants: state.combatants,
                 tiles: state.tiles,
-                movement_logic: state.movement_logic,
                 use_genders: state.use_genders,
                 global_combatant_stats: state.global_combatant_stats
             });
@@ -570,7 +564,6 @@ export const {
     spawnAtRandom,
     toggleShowTilePotentials,
     toggleShowRealTileImages,
-    setMovementLogic,
     setMap,
     toggleUseGenders,
     setInitialNumCombatants,

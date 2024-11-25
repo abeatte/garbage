@@ -28,7 +28,6 @@ import Item from './Item';
 import Analytics from '../analytics';
 import { getCombatantAtTarget } from '../data/utils/TargetingUtils';
 import { isTileValidCombatantPosition } from '../data/utils/TurnProcessingUtils';
-import { MovementLogic } from '../data/utils/GameUtils';
 
 function getEditableField(
     { editing_value, enabled, editing_type, options, label, display, edit, update, done }: {
@@ -287,7 +286,7 @@ const Hud = () => {
                             <div className='Non_editable_row'>
                                 <span className={'Label'}>{'Strength: '}</span><span>{combatant?.strength}</span>
                             </div>
-                            {board.movement_logic === MovementLogic.DecisionTree && getEditableField(
+                            {getEditableField(
                                 {
                                     editing_value: combatant?.decision_type,
                                     options: Object.values(DecisionType).map(

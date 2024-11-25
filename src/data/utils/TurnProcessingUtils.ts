@@ -8,18 +8,17 @@ import Combatant from "../../objects/combatants/Combatant";
 import Player from "../../objects/combatants/Player";
 import { GetItem } from "./ItemUtils";
 import { ItemModel } from "../../objects/items/Item";
-import { MovementLogic } from "./GameUtils";
 
 export function processBoardTick(
-    { player, combatants, items, tiles, movement_logic, use_genders, global_combatant_stats }:
-        { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, movement_logic: MovementLogic, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel }
+    { player, combatants, items, tiles, use_genders, global_combatant_stats }:
+        { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, use_genders: boolean, global_combatant_stats: GlobalCombatantStatsModel }
 ): { player: CombatantModel | undefined, combatants: Combatants, items: Items, tiles: Tiles, global_combatant_stats: GlobalCombatantStatsModel } {
     if (player && player.state !== State.Dead) {
         combatants.c[player.position] = player;
     }
 
     // process combatants (including player) 
-    const combatant_result = processCombatantTick({ combatants, tiles, movement_logic, use_genders, global_combatant_stats });
+    const combatant_result = processCombatantTick({ combatants, tiles, use_genders, global_combatant_stats });
     global_combatant_stats.births += combatant_result.births;
     global_combatant_stats.deaths += combatant_result.deaths;
 
@@ -133,10 +132,9 @@ function processEnvironmentEffects(
 }
 
 function processCombatantTick(
-    { combatants, movement_logic, tiles, use_genders, global_combatant_stats }:
+    { combatants, tiles, use_genders, global_combatant_stats }:
         {
             combatants: Combatants,
-            movement_logic: MovementLogic,
             tiles: Tiles,
             use_genders: boolean,
             global_combatant_stats: Readonly<GlobalCombatantStatsModel>
@@ -162,8 +160,7 @@ function processCombatantTick(
             combatant,
             combatants,
             global_combatant_stats,
-            tiles,
-            movement_logic,
+            tiles
         });
         combatant = newCombatant;
         deaths += newDeaths;
@@ -207,14 +204,13 @@ function processCombatantTick(
 }
 
 function processCombatantMovement(
-    { combatant, use_genders, combatants, global_combatant_stats, tiles, movement_logic }:
+    { combatant, use_genders, combatants, global_combatant_stats, tiles }:
         {
             use_genders: boolean,
             combatant: Combatant,
             combatants: Combatants,
             global_combatant_stats: GlobalCombatantStatsModel,
-            tiles: Tiles,
-            movement_logic: MovementLogic,
+            tiles: Tiles
         }
 ): { combatant: Combatant, deaths: number } {
     let deaths = 0;
@@ -233,13 +229,7 @@ function processCombatantMovement(
             combatants,
         }
     );
-    const new_position = combatant.requestMove(
-        {
-            sight,
-            movement_logic,
-            tiles,
-        });
-
+    const new_position = combatant.requestMove({sight, tiles});
     const occupant = GetCombatant(combatants.c[new_position]);
     if (!occupant) {
         // space is empty; OK to move

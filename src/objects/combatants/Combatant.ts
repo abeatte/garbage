@@ -5,7 +5,6 @@ import { ClockFace, GetCombatant, IllegalMoves, MAX_YOUNGLING_TICK, MIN_HEALTH }
 import { Sight, viewSurroundings } from "../../data/utils/SightUtils";
 import { isTileValidCombatantPosition, isValidCombatantPosition } from "../../data/utils/TurnProcessingUtils";
 import Entity from "../Entity";
-import { MovementLogic } from "../../data/utils/GameUtils";
 import { Combatants, Tiles } from "../../data/slices/boardSlice";
 
 export default abstract class Combatant extends Entity<CombatantModel> {
@@ -323,98 +322,88 @@ export default abstract class Combatant extends Entity<CombatantModel> {
 
     requestMove(args:
         {
-            movement_logic: MovementLogic,
             sight: Sight,
             tiles: Readonly<Tiles>,
         }): number {
         const self = this._model;
-        let position: number;
-        switch (args.movement_logic) {
-            case MovementLogic.RandomWalk:
-                position = args.sight.getNewRandomPosition();
-                break;
-            case MovementLogic.DecisionTree:
-                const bucketed_enemy_strengths: { [key: string]: number[] } = {};
-                const bucketed_ally_strengths: { [key: string]: number[] } = {};
-                const bucketed_mate_strengths: { [key: string]: number[] } = {};
-                const bucketed_empty_tiles: { [key: string]: number[] } = {};
+        
+        const bucketed_enemy_strengths: { [key: string]: number[] } = {};
+        const bucketed_ally_strengths: { [key: string]: number[] } = {};
+        const bucketed_mate_strengths: { [key: string]: number[] } = {};
+        const bucketed_empty_tiles: { [key: string]: number[] } = {};
 
-                args.sight.surroundings.forEach((surrounding, idx, s_arr) => {
-                    if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
-                        return;
+        args.sight.surroundings.forEach((surrounding, idx, s_arr) => {
+            if (surrounding === undefined || !isTileValidCombatantPosition(surrounding.tile)) {
+                return;
+            }
+
+            if ([ClockFace.c, ...IllegalMoves].includes(idx)) {
+                // don't count yourself or diagonal positions
+                return;
+            }
+
+            const occupant = surrounding.occupant;
+            if (!occupant) {
+                if (surrounding.tile !== undefined) {
+                    if (bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] === undefined) {
+                        bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] = [];
                     }
-
-                    if ([ClockFace.c, ...IllegalMoves].includes(idx)) {
-                        // don't count yourself or diagonal positions
-                        return;
-                    }
-
-                    const occupant = surrounding.occupant;
-                    if (!occupant) {
-                        if (surrounding.tile !== undefined) {
-                            if (bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] === undefined) {
-                                bucketed_empty_tiles[surrounding.tile.score_potential[self.species]] = [];
-                            }
-                            bucketed_empty_tiles[surrounding.tile.score_potential[self.species]].push(surrounding.position);
-                        }
-                    } else if (
-                        // same species
-                        occupant.getSpecies() === self.species &&
-                        // not already 'engaged'
-                        !occupant.isMating() &&
-                        // not too young
-                        !occupant.isYoung() &&
-                        // not on hurtful tile
-                        (getMapTileEffect({ species: self.species, tileType: surrounding.tile?.type }) > -1)
-                    ) {
-                        const strength = occupant.getStrength();
-                        if (bucketed_mate_strengths[strength] === undefined) {
-                            bucketed_mate_strengths[strength] = [];
-                        }
-                        bucketed_mate_strengths[strength].push(surrounding.position);
-                    } else if (occupant.getSpecies() === self.species) {
-                        const strength = occupant.getStrength();
-                        if (bucketed_ally_strengths[strength] === undefined) {
-                            bucketed_ally_strengths[strength] = [];
-                        }
-                        bucketed_ally_strengths[strength].push(surrounding.position);
-                    } else if (
-                        // enemy
-                        occupant.getSpecies() !== self.species
-                    ) {
-                        const strength = occupant.getStrength();
-                        if (bucketed_enemy_strengths[strength] === undefined) {
-                            bucketed_enemy_strengths[strength] = [];
-                        }
-                        bucketed_enemy_strengths[strength].push(surrounding.position);
-                    }
-                });
-
-                // position based on best prey (enemy) space
-                let best_target_position = getBestTargetPosition(self, bucketed_enemy_strengths);
-
-                // if a fighter has no enemy to fight then they fight an ally
-                if (
-                    best_target_position === -1 &&
-                    self.decision_type === DecisionType.Fighter
-                ) {
-                    best_target_position = getBestTargetPosition(self, bucketed_ally_strengths);
+                    bucketed_empty_tiles[surrounding.tile.score_potential[self.species]].push(surrounding.position);
                 }
+            } else if (
+                // same species
+                occupant.getSpecies() === self.species &&
+                // not already 'engaged'
+                !occupant.isMating() &&
+                // not too young
+                !occupant.isYoung() &&
+                // not on hurtful tile
+                (getMapTileEffect({ species: self.species, tileType: surrounding.tile?.type }) > -1)
+            ) {
+                const strength = occupant.getStrength();
+                if (bucketed_mate_strengths[strength] === undefined) {
+                    bucketed_mate_strengths[strength] = [];
+                }
+                bucketed_mate_strengths[strength].push(surrounding.position);
+            } else if (occupant.getSpecies() === self.species) {
+                const strength = occupant.getStrength();
+                if (bucketed_ally_strengths[strength] === undefined) {
+                    bucketed_ally_strengths[strength] = [];
+                }
+                bucketed_ally_strengths[strength].push(surrounding.position);
+            } else if (
+                // enemy
+                occupant.getSpecies() !== self.species
+            ) {
+                const strength = occupant.getStrength();
+                if (bucketed_enemy_strengths[strength] === undefined) {
+                    bucketed_enemy_strengths[strength] = [];
+                }
+                bucketed_enemy_strengths[strength].push(surrounding.position);
+            }
+        });
 
-                // position based on best mate space
-                let best_mate_position = getBestTargetPosition(self, bucketed_mate_strengths);
+        // position based on best prey (enemy) space
+        let best_target_position = getBestTargetPosition(self, bucketed_enemy_strengths);
 
-                // position based on best safe space
-                let best_open_position = getBestOpenPosition(self, args.movement_logic, bucketed_empty_tiles);
-
-                // position based on next random space
-                const new_random_position = args.sight.getNewRandomPosition();
-
-                position = this.requestMoveImpl({ tiles: args.tiles, best_target_position, best_mate_position, best_open_position, new_random_position });
-                break;
+        // if a fighter has no enemy to fight then they fight an ally
+        if (
+            best_target_position === -1 &&
+            self.decision_type === DecisionType.Fighter
+        ) {
+            best_target_position = getBestTargetPosition(self, bucketed_ally_strengths);
         }
 
-        return position;
+        // position based on best mate space
+        let best_mate_position = getBestTargetPosition(self, bucketed_mate_strengths);
+
+        // position based on best safe space
+        let best_open_position = getBestOpenPosition(self, bucketed_empty_tiles);
+
+        // position based on next random space
+        const new_random_position = args.sight.getNewRandomPosition();
+
+        return this.requestMoveImpl({ tiles: args.tiles, best_target_position, best_mate_position, best_open_position, new_random_position });
     }
 
     requestMoveImpl(
@@ -498,7 +487,7 @@ function getBestTargetPosition(
 
 // All types like open spaces;
 function getBestOpenPosition(
-    self: CombatantModel, movement_logic: MovementLogic, bucketed_empty_tiles: { [key: string]: number[] }
+    self: CombatantModel, bucketed_empty_tiles: { [key: string]: number[] }
 ): number {
     // position based on best safe space
     const best_empty_bucket = bucketed_empty_tiles[Object.keys(bucketed_empty_tiles)
