@@ -191,7 +191,7 @@ const Hud = () => {
                     </div>
                     {
                         !!tile &&
-                        <div className='Below_image'>
+                        <div className='Below_image' style={{ display: "flex" }}>
                             {getEditableField(
                                 {
                                     editing_value: tile?.type as string,
@@ -206,7 +206,7 @@ const Hud = () => {
                                     },
                                 }
                             )}
-                            <div style={{ paddingLeft: "8px" }} >
+                            <div style={{ paddingLeft: "16px" }} >
                                 <span>{`( ${tile.score_potential[combatant?.species ?? Character.Bunny]} )`}</span>
                             </div>
                         </div>
