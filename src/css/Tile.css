@@ -4,11 +4,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    user-select: none; /* standard syntax */
-    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
-    -moz-user-select: none; /* mozilla browsers */
-    -khtml-user-select: none; /* webkit (konqueror) browsers */
-    -ms-user-select: none; /* IE10+ */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -ms-user-select: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .Paint_palette .Tile {
@@ -18,34 +20,130 @@
 
 .Tile .Tile_potential {
     font-size: 10px;
+    position: relative;
+    z-index: 2;
 }
 
+/* VOID */
 .Tile.Void {
-    background-color: black;
+    background-color: #050508;
+    background-image:
+        radial-gradient(ellipse at 30% 40%, #0d0d1a 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 60%, #0a0a14 0%, transparent 50%);
 }
 
+/* GRASS — layered greens with subtle texture */
 .Tile.Grass {
-    background-color: green;
-} 
+    background-color: #3a7d2c;
+    background-image:
+        radial-gradient(ellipse at 20% 30%, #4e9e38 0%, transparent 40%),
+        radial-gradient(ellipse at 75% 65%, #2d6120 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 80%, #5ab040 0%, transparent 30%),
+        linear-gradient(160deg, #4a8f34 0%, #2e6b1e 100%);
+}
+.Tile.Grass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(circle at 60% 55%, rgba(255,255,255,0.06) 1px, transparent 1px),
+        radial-gradient(circle at 80% 15%, rgba(255,255,255,0.05) 1px, transparent 1px);
+    z-index: 1;
+}
 
+/* WATER — animated shimmer */
 .Tile.Water {
-    background-color: blue;
+    background-color: #1565c0;
+    background-image:
+        linear-gradient(180deg, #42a5f5 0%, #1565c0 40%, #0d47a1 100%);
+    animation: water-shimmer 2.5s ease-in-out infinite alternate;
+}
+.Tile.Water::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(90deg, transparent 20%, rgba(255,255,255,0.18) 35%, transparent 50%),
+        linear-gradient(90deg, transparent 55%, rgba(255,255,255,0.10) 70%, transparent 85%);
+    z-index: 1;
+    animation: water-wave 2s linear infinite alternate;
+}
+@keyframes water-shimmer {
+    from { background-image: linear-gradient(180deg, #42a5f5 0%, #1565c0 40%, #0d47a1 100%); }
+    to   { background-image: linear-gradient(180deg, #64b5f6 0%, #1976d2 40%, #1565c0 100%); }
+}
+@keyframes water-wave {
+    from { transform: translateX(-4px); opacity: 0.7; }
+    to   { transform: translateX(4px);  opacity: 1; }
 }
 
+/* FIRE / LAVA — glowing molten rock */
 .Tile.Fire {
-    background-color: red;
+    background-color: #b71c1c;
+    background-image:
+        radial-gradient(ellipse at 50% 100%, #ff6f00 0%, #e53935 40%, #b71c1c 80%),
+        radial-gradient(ellipse at 20% 60%, #ff8f00 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 40%, #ff6d00 0%, transparent 35%);
+    animation: lava-pulse 1.8s ease-in-out infinite alternate;
+}
+.Tile.Fire::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 40% 70%, rgba(255,200,0,0.35) 2px, transparent 4px),
+        radial-gradient(circle at 70% 30%, rgba(255,150,0,0.25) 2px, transparent 4px);
+    z-index: 1;
+}
+@keyframes lava-pulse {
+    from { filter: brightness(0.9); }
+    to   { filter: brightness(1.15); }
 }
 
+/* ROCK — stony grey with cracks */
 .Tile.Rock {
-    background-color: gray;
+    background-color: #616161;
+    background-image:
+        linear-gradient(135deg, #757575 0%, #424242 60%, #616161 100%),
+        radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.08) 0%, transparent 50%);
+}
+.Tile.Rock::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(45deg, transparent 40%, rgba(0,0,0,0.15) 41%, transparent 42%),
+        linear-gradient(135deg, transparent 55%, rgba(0,0,0,0.12) 56%, transparent 57%),
+        linear-gradient(80deg, transparent 25%, rgba(255,255,255,0.06) 26%, transparent 27%);
+    z-index: 1;
 }
 
+/* SAND — warm layered dunes */
 .Tile.Sand {
-    background-color: yellow;
+    background-color: #c8a84b;
+    background-image:
+        linear-gradient(170deg, #e8c96a 0%, #c8a84b 35%, #a8883a 70%, #c0a045 100%),
+        radial-gradient(ellipse at 60% 20%, rgba(255,240,180,0.4) 0%, transparent 50%);
+}
+.Tile.Sand::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(5deg, transparent 30%, rgba(255,255,255,0.08) 31%, transparent 32%),
+        linear-gradient(175deg, transparent 45%, rgba(255,255,255,0.06) 46%, transparent 47%),
+        linear-gradient(10deg, transparent 60%, rgba(0,0,0,0.06) 61%, transparent 62%);
+    z-index: 1;
 }
 
 .Tile.Highlight {
     background-color: white;
+    background-image: none;
+    animation: none;
+}
+.Tile.Highlight::before {
+    display: none;
 }
 
 .Tile.Selected {
