@@ -1,0 +1,13 @@
+{
+  "name": "Type Check on Save",
+  "version": "1.0.0",
+  "description": "Runs TypeScript type checking after source files are edited",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/**/*.ts", "src/**/*.tsx"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "npm run tsc"
+  }
+}

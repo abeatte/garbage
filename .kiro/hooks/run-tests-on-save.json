@@ -1,0 +1,13 @@
+{
+  "name": "Run Tests on Save",
+  "version": "1.0.0",
+  "description": "Runs the test suite after any source file is edited",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/**/*.ts", "src/**/*.tsx"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "npm run test:ci"
+  }
+}
