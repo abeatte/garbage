@@ -19,7 +19,7 @@ import { AppState } from "../data/store";
 import { faPlay, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GameMode } from '../data/utils/GameUtils';
-import { DEFAULT_TICK_SPEED, MAX_TICK_SPEED, speedChange } from '../data/slices/tickerSlice';
+import { TICK_SPEED_INTERVAL, TICK_SPEED_MAX_STEPS, speedChange } from '../data/slices/tickerSlice';
 
 const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => {
     const ticker = useSelector((state: AppState) => state.ticker);
@@ -115,7 +115,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                     onChange={(input) => {
                         Analytics.logEvent(`input_changed: Game_mode -> ${input.target.value}`);
                         dispatch(setGameMode(input.target.value as GameMode));
-                        dispatch(speedChange(input.target.value === GameMode.Adventure ? DEFAULT_TICK_SPEED : MAX_TICK_SPEED))
+                        dispatch(speedChange(input.target.value === GameMode.Adventure ? TICK_SPEED_INTERVAL : TICK_SPEED_INTERVAL * TICK_SPEED_MAX_STEPS))
                     }}>
                     {Object.values(GameMode).map(m => (<option key={m}>{`${m}`}</option>))}
                 </select>

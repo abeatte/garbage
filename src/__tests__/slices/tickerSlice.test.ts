@@ -6,11 +6,10 @@ import tickerReducer, {
   pauseUnpause,
   speedChange,
   toggleMaxTickSpeed,
-  DEFAULT_TICK_SPEED,
-  MAX_TICK_SPEED,
+  TICK_SPEED_MAX_STEPS,
 } from '../../data/slices/tickerSlice';
 
-const initialState = { tick: 0, tick_speed: MAX_TICK_SPEED, prev_tick_speed: 0 };
+const initialState = { tick: 0, tick_speed: Math.ceil(TICK_SPEED_MAX_STEPS / 2), prev_tick_speed: 0 };
 
 describe('tickerSlice', () => {
   it('has correct initial state', () => {
@@ -28,40 +27,40 @@ describe('tickerSlice', () => {
   });
 
   it('pause sets tick_speed to 0 and saves prev', () => {
-    const state = tickerReducer({ ...initialState, tick_speed: 800 }, pause());
+    const state = tickerReducer({ ...initialState, tick_speed: 5 }, pause());
     expect(state.tick_speed).toBe(0);
-    expect(state.prev_tick_speed).toBe(800);
+    expect(state.prev_tick_speed).toBe(5);
   });
 
   it('pause when already paused does not overwrite prev_tick_speed', () => {
-    const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 500 }, pause());
-    expect(state.prev_tick_speed).toBe(500);
+    const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 3 }, pause());
+    expect(state.prev_tick_speed).toBe(3);
   });
 
   it('unpause restores prev_tick_speed', () => {
-    const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 800 }, unpause());
-    expect(state.tick_speed).toBe(800);
+    const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 5 }, unpause());
+    expect(state.tick_speed).toBe(5);
   });
 
-  it('unpause with no prev uses DEFAULT_TICK_SPEED', () => {
+  it('unpause with no prev defaults to step 1', () => {
     const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 0 }, unpause());
-    expect(state.tick_speed).toBe(DEFAULT_TICK_SPEED);
+    expect(state.tick_speed).toBe(1);
   });
 
   it('pauseUnpause toggles pause on', () => {
-    const state = tickerReducer({ tick: 0, tick_speed: 800, prev_tick_speed: 0 }, pauseUnpause());
+    const state = tickerReducer({ tick: 0, tick_speed: 5, prev_tick_speed: 0 }, pauseUnpause());
     expect(state.tick_speed).toBe(0);
-    expect(state.prev_tick_speed).toBe(800);
+    expect(state.prev_tick_speed).toBe(5);
   });
 
   it('pauseUnpause toggles pause off', () => {
-    const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 800 }, pauseUnpause());
-    expect(state.tick_speed).toBe(800);
+    const state = tickerReducer({ tick: 0, tick_speed: 0, prev_tick_speed: 5 }, pauseUnpause());
+    expect(state.tick_speed).toBe(5);
   });
 
-  it('speedChange clamps to MAX_TICK_SPEED', () => {
+  it('speedChange clamps to TICK_SPEED_MAX_STEPS', () => {
     const state = tickerReducer(initialState, speedChange(9999));
-    expect(state.tick_speed).toBe(MAX_TICK_SPEED);
+    expect(state.tick_speed).toBe(TICK_SPEED_MAX_STEPS);
   });
 
   it('speedChange clamps to 0', () => {
@@ -69,19 +68,19 @@ describe('tickerSlice', () => {
     expect(state.tick_speed).toBe(0);
   });
 
-  it('speedChange sets valid speed', () => {
-    const state = tickerReducer(initialState, speedChange(500));
-    expect(state.tick_speed).toBe(500);
-    expect(state.prev_tick_speed).toBe(MAX_TICK_SPEED);
+  it('speedChange sets valid step', () => {
+    const state = tickerReducer(initialState, speedChange(3));
+    expect(state.tick_speed).toBe(3);
+    expect(state.prev_tick_speed).toBe(Math.ceil(TICK_SPEED_MAX_STEPS / 2));
   });
 
-  it('toggleMaxTickSpeed switches from MAX to DEFAULT', () => {
-    const state = tickerReducer({ ...initialState, tick_speed: MAX_TICK_SPEED }, toggleMaxTickSpeed());
-    expect(state.tick_speed).toBe(DEFAULT_TICK_SPEED);
+  it('toggleMaxTickSpeed switches from MAX to step 1', () => {
+    const state = tickerReducer({ ...initialState, tick_speed: TICK_SPEED_MAX_STEPS }, toggleMaxTickSpeed());
+    expect(state.tick_speed).toBe(1);
   });
 
-  it('toggleMaxTickSpeed switches from DEFAULT to MAX', () => {
-    const state = tickerReducer({ ...initialState, tick_speed: DEFAULT_TICK_SPEED }, toggleMaxTickSpeed());
-    expect(state.tick_speed).toBe(MAX_TICK_SPEED);
+  it('toggleMaxTickSpeed switches from step 1 to MAX', () => {
+    const state = tickerReducer({ ...initialState, tick_speed: 1 }, toggleMaxTickSpeed());
+    expect(state.tick_speed).toBe(TICK_SPEED_MAX_STEPS);
   });
 });

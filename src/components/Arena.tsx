@@ -7,7 +7,7 @@ import {
     reset as resetTicker,
     pause,
     pauseUnpause,
-    MAX_TICK_SPEED
+    tickSpeedToMs,
 } from '../data/slices/tickerSlice'
 import {
     tick as combatantTick,
@@ -35,18 +35,10 @@ import { Pointer } from "../models/PointerModel";
 import { Type as TileType } from "../models/TileModel";
 import { ArrowKey, GameMode } from "../data/utils/GameUtils";
 
-const getTickIntervalFromTickSpeed = (tickSpeed: number) => {
-    if (tickSpeed === 0) {
-        return 0;
-    } else if (tickSpeed === MAX_TICK_SPEED) {
-        return 1;
-    }
-    return Math.abs(tickSpeed - MAX_TICK_SPEED);
-}
-
 class Arena extends React.Component<AppState & DispatchProps> {
 
-    interval: NodeJS.Timer | undefined = undefined;
+    rafHandle: number | undefined = undefined;
+    lastTickTime: number = 0;
     highlightInterval: NodeJS.Timer | undefined = undefined;
 
     playerMovementFunction = (direction: ArrowKey): boolean => {
@@ -104,47 +96,53 @@ class Arena extends React.Component<AppState & DispatchProps> {
         }
     }
 
+    startTickLoop() {
+        this.lastTickTime = performance.now();
+        const loop = (now: number) => {
+            const tick_speed = this.props.ticker.tick_speed;
+            if (tick_speed > 0) {
+                const interval_ms = tickSpeedToMs(tick_speed);
+                if (now - this.lastTickTime >= interval_ms) {
+                    this.lastTickTime = now;
+                    this.props.performTick(this.props.board.game_mode, this.props.ticker.tick);
+                }
+            }
+            this.rafHandle = requestAnimationFrame(loop);
+        };
+        this.rafHandle = requestAnimationFrame(loop);
+    }
+
+    stopTickLoop() {
+        if (this.rafHandle !== undefined) {
+            cancelAnimationFrame(this.rafHandle);
+            this.rafHandle = undefined;
+        }
+    }
+
     componentDidMount() {
         document.addEventListener("keydown", this.auxFunctions, false);
-        const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
-        if (tick_interval > 0) {
-            this.interval = setInterval(
-                () => this.props.performTick(this.props.board.game_mode, this.props.ticker.tick), tick_interval);
-        }
-
+        this.startTickLoop();
         this.highlightPlayerPosition(this.props.board.player_highlight_count);
     }
 
     componentDidUpdate(prevProps: AppState, prevState: AppState) {
-        // handle tick_speed updates
-        const playerJustDied = prevProps.board.player?.state !== this.props.board.player?.state;
-        if (prevProps.ticker.tick_speed !== this.props.ticker.tick_speed || playerJustDied) {
-            const tick_interval = getTickIntervalFromTickSpeed(this.props.ticker.tick_speed);
-            clearInterval(this.interval);
-            if (tick_interval > 0) {
-                this.interval = setInterval(
-                    () => this.props.performTick(this.props.board.game_mode, this.props.ticker.tick), tick_interval);
-            }
-        }
-
         // handle player highlight updates  
         if (prevProps.board.player_highlight_count === 0) {
             this.highlightPlayerPosition(this.props.board.player_highlight_count);
         }
 
-        // handle combatant updates
+        // handle combatant updates — pause when board is empty
         if (
             this.props.board.combatants.size < 1 &&
             this.props.board.items.size < 1 &&
             !this.props.board.player
         ) {
             this.props.pause();
-            clearInterval(this.interval);
         }
     }
 
     componentWillUnmount() {
-        clearInterval(this.interval);
+        this.stopTickLoop();
         document.removeEventListener("keydown", this.auxFunctions, false);
     }
 
