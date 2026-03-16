@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Terrain Tiles</title></head>
+<body>
+<p>Generating terrain tiles... check your Downloads folder.</p>
+<canvas id="c" width="64" height="64" style="display:none"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const SIZE = 64;
+
+function download(name) {
+  const a = document.createElement('a');
+  a.download = name;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+function noise(x, y, scale, seed) {
+  // simple pseudo-random value for a given x,y
+  const n = Math.sin(x * 127.1 * seed + y * 311.7 * seed) * 43758.5453;
+  return (n - Math.floor(n)) * scale;
+}
+
+// ── WATER ──────────────────────────────────────────────────────────────────
+function drawWater() {
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  // deep base
+  const base = ctx.createLinearGradient(0, 0, 0, SIZE);
+  base.addColorStop(0, '#1a6fa8');
+  base.addColorStop(0.5, '#1255a0');
+  base.addColorStop(1, '#0d3d7a');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // ripple lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i < 5; i++) {
+    const y = 8 + i * 12 + noise(i, 0, 4, 1.3);
+    ctx.beginPath();
+    ctx.moveTo(2, y);
+    ctx.bezierCurveTo(16, y - 3, 32, y + 3, 48, y - 2);
+    ctx.bezierCurveTo(54, y - 3, 60, y + 1, 62, y);
+    ctx.stroke();
+  }
+
+  // highlight sheen
+  const sheen = ctx.createLinearGradient(0, 0, SIZE, SIZE * 0.4);
+  sheen.addColorStop(0, 'rgba(100,200,255,0.18)');
+  sheen.addColorStop(1, 'rgba(100,200,255,0)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+}
+
+// ── TREES / GRASS ──────────────────────────────────────────────────────────
+function drawTrees() {
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  // ground
+  const ground = ctx.createLinearGradient(0, 0, 0, SIZE);
+  ground.addColorStop(0, '#3a7d2c');
+  ground.addColorStop(1, '#2a5c1e');
+  ctx.fillStyle = ground;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // grass texture patches
+  for (let i = 0; i < 18; i++) {
+    const x = noise(i, 0, SIZE, 2.1);
+    const y = noise(0, i, SIZE, 3.7);
+    const r = 3 + noise(i, i, 5, 1.1);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(90,180,60,0.35)');
+    g.addColorStop(1, 'rgba(90,180,60,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // tree canopies
+  const trees = [[14, 18], [38, 14], [26, 42], [50, 38], [8, 50]];
+  trees.forEach(([tx, ty]) => {
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.beginPath();
+    ctx.ellipse(tx + 2, ty + 3, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // dark outer canopy
+    ctx.fillStyle = '#1e5c10';
+    ctx.beginPath();
+    ctx.arc(tx, ty, 9, 0, Math.PI * 2);
+    ctx.fill();
+    // mid canopy
+    ctx.fillStyle = '#2e7d1a';
+    ctx.beginPath();
+    ctx.arc(tx - 1, ty - 1, 7, 0, Math.PI * 2);
+    ctx.fill();
+    // highlight
+    ctx.fillStyle = '#4caf30';
+    ctx.beginPath();
+    ctx.arc(tx - 2, ty - 3, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // bright tip
+    ctx.fillStyle = 'rgba(120,220,80,0.5)';
+    ctx.beginPath();
+    ctx.arc(tx - 3, ty - 4, 2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+// ── SAND ───────────────────────────────────────────────────────────────────
+function drawSand() {
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  const base = ctx.createLinearGradient(0, 0, SIZE, SIZE);
+  base.addColorStop(0, '#e8c96a');
+  base.addColorStop(0.4, '#c8a84b');
+  base.addColorStop(1, '#a8883a');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // dune ripples
+  for (let i = 0; i < 7; i++) {
+    const y = 4 + i * 9 + noise(i, 1, 3, 2.2);
+    ctx.strokeStyle = `rgba(180,140,50,${0.25 + noise(i, 2, 0.2, 1.5)})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x <= SIZE; x += 4) {
+      ctx.lineTo(x, y + noise(x, i, 2.5, 0.9) - 1.25);
+    }
+    ctx.stroke();
+  }
+
+  // specular highlight
+  const hi = ctx.createRadialGradient(20, 15, 0, 20, 15, 30);
+  hi.addColorStop(0, 'rgba(255,245,200,0.35)');
+  hi.addColorStop(1, 'rgba(255,245,200,0)');
+  ctx.fillStyle = hi;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // small pebbles
+  for (let i = 0; i < 8; i++) {
+    const px = noise(i, 3, SIZE, 1.7);
+    const py = noise(3, i, SIZE, 2.3);
+    ctx.fillStyle = `rgba(160,120,40,${0.3 + noise(i, i, 0.3, 3.1)})`;
+    ctx.beginPath();
+    ctx.ellipse(px, py, 1.5, 1, noise(i, 0, Math.PI, 1.1), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ── LAVA / FIRE ────────────────────────────────────────────────────────────
+function drawLava() {
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  // dark rock base
+  ctx.fillStyle = '#1a0a00';
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // lava channels
+  const channels = [
+    { x: 10, y: 55, cx1: 20, cy1: 30, cx2: 40, cy2: 40, ex: 55, ey: 10 },
+    { x: 0,  y: 35, cx1: 15, cy1: 20, cx2: 30, cy2: 50, ex: 64, ey: 45 },
+    { x: 25, y: 64, cx1: 35, cy1: 40, cx2: 50, cy2: 20, ex: 60, ey: 5  },
+  ];
+
+  channels.forEach(({ x, y, cx1, cy1, cx2, cy2, ex, ey }, i) => {
+    const g = ctx.createLinearGradient(x, y, ex, ey);
+    g.addColorStop(0, '#ff6f00');
+    g.addColorStop(0.4, '#ff3d00');
+    g.addColorStop(1, '#b71c1c');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 4 + i;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(cx1, cy1, cx2, cy2, ex, ey);
+    ctx.stroke();
+    // bright core
+    ctx.strokeStyle = 'rgba(255,220,80,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(cx1, cy1, cx2, cy2, ex, ey);
+    ctx.stroke();
+  });
+
+  // glow pools
+  [[20, 45], [45, 20], [35, 35]].forEach(([gx, gy]) => {
+    const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, 10);
+    g.addColorStop(0, 'rgba(255,180,0,0.7)');
+    g.addColorStop(0.5, 'rgba(255,80,0,0.3)');
+    g.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, SIZE, SIZE);
+  });
+
+  // rock texture overlay
+  for (let i = 0; i < 12; i++) {
+    const rx = noise(i, 5, SIZE, 1.9);
+    const ry = noise(5, i, SIZE, 2.7);
+    ctx.fillStyle = `rgba(10,5,0,${0.2 + noise(i, i, 0.3, 4.1)})`;
+    ctx.beginPath();
+    ctx.arc(rx, ry, 2 + noise(i, 0, 3, 1.3), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ── STONE / ROCK ───────────────────────────────────────────────────────────
+function drawStone() {
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  const base = ctx.createLinearGradient(0, 0, SIZE, SIZE);
+  base.addColorStop(0, '#8a8a8a');
+  base.addColorStop(0.5, '#5a5a5a');
+  base.addColorStop(1, '#3a3a3a');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // stone blocks / cracks
+  const cracks = [
+    [5, 20, 30, 18],
+    [30, 18, 45, 35],
+    [10, 45, 55, 42],
+    [20, 5, 22, 30],
+    [50, 10, 48, 55],
+  ];
+  cracks.forEach(([x1, y1, x2, y2]) => {
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    const mx = (x1 + x2) / 2 + noise(x1, y1, 6, 1.1) - 3;
+    const my = (y1 + y2) / 2 + noise(x2, y2, 6, 2.3) - 3;
+    ctx.quadraticCurveTo(mx, my, x2, y2);
+    ctx.stroke();
+    // highlight edge
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(x1 + 1, y1 + 1);
+    ctx.quadraticCurveTo(mx + 1, my + 1, x2 + 1, y2 + 1);
+    ctx.stroke();
+  });
+
+  // surface variation
+  for (let i = 0; i < 10; i++) {
+    const sx = noise(i, 7, SIZE, 1.3);
+    const sy = noise(7, i, SIZE, 2.1);
+    const r = 3 + noise(i, i, 8, 0.7);
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, r);
+    g.addColorStop(0, `rgba(${i % 2 ? 255 : 0},${i % 2 ? 255 : 0},${i % 2 ? 255 : 0},0.06)`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // top-left light
+  const light = ctx.createLinearGradient(0, 0, SIZE * 0.6, SIZE * 0.6);
+  light.addColorStop(0, 'rgba(255,255,255,0.12)');
+  light.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = light;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+}
+
+// Generate all and trigger downloads with small delays
+const tiles = [
+  { fn: drawWater, name: 'water.png' },
+  { fn: drawTrees, name: 'trees.png' },
+  { fn: drawSand,  name: 'sand.png'  },
+  { fn: drawLava,  name: 'lava.png'  },
+  { fn: drawStone, name: 'stone.png' },
+];
+
+tiles.forEach(({ fn, name }, i) => {
+  setTimeout(() => {
+    fn();
+    download(name);
+    document.body.innerHTML += `<p>✓ ${name}</p>`;
+  }, i * 300);
+});
+</script>
+</body>
+</html>

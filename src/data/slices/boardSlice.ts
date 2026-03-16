@@ -43,7 +43,7 @@ export const GAME_DEFAULTS = {
     initial_num_combatants: 50,
     map: Maps['World'].name,
     use_genders: false,
-    show_real_tile_images: true,
+    show_real_tile_images: false,
     follow_selected_combatant: false,
     tiles: { height: 30, width: 26, start: TILE_START, end: TILE_START, size: 0, t: {} },
     player: undefined,

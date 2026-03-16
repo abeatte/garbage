@@ -13,7 +13,21 @@
     overflow: hidden;
 }
 
+/* Real tile images — fill tile, smooth scaling, no hard edges */
+.Tile > img {
+    width: 25px;
+    height: 25px;
+    object-fit: cover;
+    image-rendering: auto;
+    display: block;
+}
+
 .Paint_palette .Tile {
+    width: 50px;
+    height: 50px;
+}
+
+.Paint_palette .Tile > img {
     width: 50px;
     height: 50px;
 }

@@ -189,7 +189,7 @@ const Configurables = (props: { onReset?: () => void, onPlay?: () => void }) => 
                         dispatch(toggleShowRealTileImages());
                     }}
                 />
-                <span className={'Label'}>{'Show Real Tiles'}</span>
+                <span className={'Label'}>{'Show Realistic Tiles'}</span>
             </div>
             <div className={classNames('Checkbox_container')}>
                 <input

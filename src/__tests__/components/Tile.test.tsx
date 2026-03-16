@@ -10,6 +10,11 @@ jest.mock('../../images/terrain/trees.png', () => 'trees.png');
 jest.mock('../../images/terrain/sand.png', () => 'sand.png');
 jest.mock('../../images/terrain/lava.png', () => 'lava.png');
 jest.mock('../../images/terrain/stone.png', () => 'stone.png');
+jest.mock('../../images/terrain/water_classic.png', () => 'water_classic.png');
+jest.mock('../../images/terrain/trees_classic.png', () => 'trees_classic.png');
+jest.mock('../../images/terrain/sand_classic.png', () => 'sand_classic.png');
+jest.mock('../../images/terrain/lava_classic.png', () => 'lava_classic.png');
+jest.mock('../../images/terrain/stone_classic.png', () => 'stone_classic.png');
 
 describe('Tile', () => {
   it('renders without crashing for undefined tile', () => {
@@ -41,10 +46,10 @@ describe('Tile', () => {
     expect(screen.getByAltText(TileType.Grass)).toBeInTheDocument();
   });
 
-  it('does not render image when showRealTileImages is false', () => {
+  it('renders classic image when showRealTileImages is false', () => {
     const tile = createTileModel({ index: 0, type: TileType.Grass });
     render(<Tile tile={tile} showRealTileImages={false} />);
-    expect(screen.queryByAltText(TileType.Grass)).not.toBeInTheDocument();
+    expect(screen.getByAltText(TileType.Grass)).toBeInTheDocument();
   });
 
   it('renders score potential when showPotential is true', () => {

@@ -7,11 +7,19 @@ import '../css/Tile.css';
 import classNames from 'classnames';
 import { TileModel, Type as TileType } from '../models/TileModel';
 import { Character, getMapTileEffect } from '../models/CombatantModel';
+// New generated realistic images (shown when "Show Real Tiles" is unchecked)
 const Water = require('../images/terrain/water.png');
 const Trees = require('../images/terrain/trees.png');
 const Sand = require('../images/terrain/sand.png');
 const Lava = require('../images/terrain/lava.png');
 const Stone = require('../images/terrain/stone.png');
+
+// Original classic images (shown when "Show Real Tiles" is checked)
+const WaterClassic = require('../images/terrain/water_classic.png');
+const TreesClassic = require('../images/terrain/trees_classic.png');
+const SandClassic = require('../images/terrain/sand_classic.png');
+const LavaClassic = require('../images/terrain/lava_classic.png');
+const StoneClassic = require('../images/terrain/stone_classic.png');
 
 export const TILE_SIZE = 25;
 
@@ -24,9 +32,17 @@ const TileImages: { [key in TileType]: any } = {
   Water: Water,
 };
 
-const getImage = (tileType: TileType) => {
-  const tileImage = TileImages[tileType];
-  return tileImage;
+const ClassicTileImages: { [key in TileType]: any } = {
+  Void: undefined,
+  Fire: LavaClassic,
+  Grass: TreesClassic,
+  Rock: StoneClassic,
+  Sand: SandClassic,
+  Water: WaterClassic,
+};
+
+const getImage = (tileType: TileType, useClassic: boolean) => {
+  return useClassic ? ClassicTileImages[tileType] : TileImages[tileType];
 }
 
 const Tile = (
@@ -45,7 +61,7 @@ const Tile = (
   }
 ) => {
   const paintRoller = document.getElementById('paint_roller') as HTMLElement;
-  const image = tile?.type && getImage(tile.type);
+  const image = tile?.type && getImage(tile.type, !showRealTileImages);
   const typeClass = tile?.type;
 
   return (
@@ -58,7 +74,7 @@ const Tile = (
         onDragStart={(event) => event.dataTransfer.setDragImage(paintRoller, 8, 8)}
       >
         {
-          image && showRealTileImages && !highlight &&
+          image && !highlight &&
           <img
             style={{ position: "absolute" }}
             className={classNames('Tile', { "Selected": isSelected })}
