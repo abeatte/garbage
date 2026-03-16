@@ -34,8 +34,7 @@ const SpeciesStats = () => {
 
     const species_counts = Object.keys(species).map(t => {
         const spec = t as Character
-        const species_array = [] as JSX.Element[];
-        species[spec]
+        const sorted = species[spec]
             .sort((a, b) => {
                 if (b.immortal) {
                     return 1;
@@ -45,45 +44,49 @@ const SpeciesStats = () => {
                     return b.fitness - a.fitness
                 }
             })
-            .slice(0, 10)
-            .forEach((c: CombatantModel, idx: number, subset: CombatantModel[]) => {
-                if (idx === 0) {
-                    species_array.push(<span key={"["}>{"[ "}</span>);
-                }
+            .slice(0, 10);
 
-                species_array.push(
-                    <span
-                        key={`${c.id}`}
-                        className={selected_position === c.position ? "Selected" : ""}
-                        onClick={() => {
-                            Analytics.logEvent('button_clicked: Stats combatant of species selected');
-                            dispatch(select({ position: c.position, follow_combatant: true }));
-                            dispatch(setActiveHudPanel(HudPanel.DETAILS));
+        const isTruncated = species[spec].length > sorted.length;
 
-                        }}
-                    >
-                        {`${c.immortal ? Infinity : c.fitness}`}
-                    </span>
-                );
+        const species_array = [] as JSX.Element[];
+        sorted.forEach((c: CombatantModel, idx: number) => {
+            if (idx === 0) {
+                species_array.push(<span key={"["}>{"[ "}</span>);
+            }
 
-                if (idx < species[spec].length - 1) {
-                    species_array.push(<span key={`${idx}','`}>{', '}</span>);
-                }
+            species_array.push(
+                <span
+                    key={`${c.id}`}
+                    className={selected_position === c.position ? "Selected" : ""}
+                    onClick={() => {
+                        Analytics.logEvent('button_clicked: Stats combatant of species selected');
+                        dispatch(select({ position: c.position, follow_combatant: true }));
+                        dispatch(setActiveHudPanel(HudPanel.DETAILS));
+                    }}
+                >
+                    {`${c.immortal ? Infinity : c.fitness}`}
+                </span>
+            );
 
-                if (idx === species[spec].length - 1) {
-                    species_array.push(<span key={"]"}>{" ]"}</span>);
-                } else if (idx === subset.length - 1) {
-                    species_array.push(<span key={"...]"}>{" ... ]"}</span>);
-                }
-            });
+            if (idx < sorted.length - 1) {
+                species_array.push(<span key={`${idx}','`}>{', '}</span>);
+            }
+        });
+
+        const suffix = isTruncated ? ' ... ]' : ' ]';
+
         return (
             <div key={spec} className={'Species_group'}>
                 <span className={'Label'}>{`${spec}`}</span><span>{` (${species[spec].length}):`}</span>
                 <div className={classNames("Data_row", "Species", "Clickable")}>
-                    {species[spec].length < 1 ?
-                        (<span>{"[ ]"}</span>) :
-                        species_array
-                    }
+                    {species[spec].length < 1 ? (
+                        <span>{"[ ]"}</span>
+                    ) : (
+                        <span className={'Data_row_inner'}>{species_array}</span>
+                    )}
+                    {species[spec].length >= 1 && (
+                        <span className={'Data_row_suffix'}>{suffix}</span>
+                    )}
                 </div>
             </div>
         );
