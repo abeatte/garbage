@@ -12,6 +12,16 @@ import boardReducer, {
   movePlayer,
   updateSelectedCombatant,
   TILE_START,
+  setGameMode,
+  reset,
+  setInitialNumCombatants,
+  shrinkWidth,
+  growWidth,
+  shrinkHeight,
+  growHeight,
+  setMap,
+  setViewPortSize,
+  GAME_DEFAULTS,
 } from '../../data/slices/boardSlice';
 import { GameState, GameMode, ArrowKey } from '../../data/utils/GameUtils';
 import { Type as TileType, createTileModel } from '../../models/TileModel';
@@ -156,5 +166,156 @@ describe('boardSlice - updateSelectedCombatant', () => {
     const withSel = boardReducer(s0, select({ position: pos }));
     const s1 = boardReducer(withSel, updateSelectedCombatant({ field: 'immortal', value: true }));
     expect(s1.combatants.c[pos]?.strength).toBe('Immortal');
+  });
+});
+
+describe('boardSlice - setGameMode', () => {
+  it('setGameMode to Adventure sets initial_num_combatants to 0, creates player, sets map to Adventure, sets tiles.height to 3', () => {
+    const s0 = getInitialState();
+    expect(s0.game_mode).toBe(GameMode.God);
+    const s1 = boardReducer(s0, setGameMode(GameMode.Adventure));
+    expect(s1.game_mode).toBe(GameMode.Adventure);
+    expect(s1.initial_num_combatants).toBe(0);
+    expect(s1.player).toBeDefined();
+    expect(s1.player?.is_player).toBe(true);
+    expect(s1.map).toBe('Adventure');
+    expect(s1.tiles.height).toBe(3);
+  });
+
+  it('setGameMode to God restores default initial_num_combatants, clears player, restores default map if was Adventure', () => {
+    const s0 = getInitialState();
+    // First switch to Adventure
+    const adventure = boardReducer(s0, setGameMode(GameMode.Adventure));
+    expect(adventure.map).toBe('Adventure');
+    // Then switch back to God
+    const god = boardReducer(adventure, setGameMode(GameMode.God));
+    expect(god.game_mode).toBe(GameMode.God);
+    expect(god.initial_num_combatants).toBe(GAME_DEFAULTS.initial_num_combatants);
+    expect(god.player).toBeUndefined();
+    // Map should be restored to World since it was Adventure
+    expect(god.map).toBe('World');
+  });
+
+  it('setGameMode no-ops when already in the target mode', () => {
+    const s0 = getInitialState();
+    expect(s0.game_mode).toBe(GameMode.God);
+    const s1 = boardReducer(s0, setGameMode(GameMode.God));
+    // State should be identical (no-op)
+    expect(s1).toBe(s0);
+  });
+});
+
+describe('boardSlice - reset', () => {
+  it('reinitializes combatants and tiles', () => {
+    const s0 = getInitialState();
+    const s1 = boardReducer(s0, reset());
+    // combatants.size should match initial_num_combatants
+    expect(s1.combatants.size).toBe(s1.initial_num_combatants);
+    // tiles should be regenerated (t should have entries)
+    expect(Object.keys(s1.tiles.t).length).toBeGreaterThan(0);
+    expect(s1.tiles.width).toBe(s0.tiles.width);
+    expect(s1.tiles.height).toBe(s0.tiles.height);
+  });
+});
+
+describe('boardSlice - setInitialNumCombatants', () => {
+  it('updates combatant count and caps at 20x default (1000)', () => {
+    const s0 = getInitialState();
+    // Set to a normal value
+    const s1 = boardReducer(s0, setInitialNumCombatants(10));
+    expect(s1.initial_num_combatants).toBe(10);
+    expect(s1.combatants.size).toBe(10);
+
+    // Set to a value exceeding the cap (20 * 50 = 1000)
+    const s2 = boardReducer(s0, setInitialNumCombatants(2000));
+    expect(s2.initial_num_combatants).toBe(1000);
+  });
+});
+
+describe('boardSlice - shrinkWidth / growWidth', () => {
+  it('shrinkWidth decreases tiles.width by 1 and repositions combatants', () => {
+    const s0 = getInitialState();
+    const originalWidth = s0.tiles.width;
+    const s1 = boardReducer(s0, shrinkWidth());
+    expect(s1.tiles.width).toBe(originalWidth - 1);
+    // Tiles should be regenerated
+    expect(Object.keys(s1.tiles.t).length).toBeGreaterThan(0);
+  });
+
+  it('growWidth increases tiles.width by 1 and repositions combatants', () => {
+    const s0 = getInitialState();
+    const originalWidth = s0.tiles.width;
+    const s1 = boardReducer(s0, growWidth());
+    expect(s1.tiles.width).toBe(originalWidth + 1);
+    // Tiles should be regenerated
+    expect(Object.keys(s1.tiles.t).length).toBeGreaterThan(0);
+  });
+
+  it('shrinkWidth no-ops when width is 0', () => {
+    let state = getInitialState();
+    // Shrink width down to 0
+    while (state.tiles.width > 0) {
+      state = boardReducer(state, shrinkWidth());
+    }
+    expect(state.tiles.width).toBe(0);
+    // Another shrink should no-op
+    const after = boardReducer(state, shrinkWidth());
+    expect(after.tiles.width).toBe(0);
+  });
+});
+
+describe('boardSlice - shrinkHeight / growHeight', () => {
+  it('shrinkHeight decreases tiles.height by 1', () => {
+    const s0 = getInitialState();
+    const originalHeight = s0.tiles.height;
+    const s1 = boardReducer(s0, shrinkHeight());
+    expect(s1.tiles.height).toBe(originalHeight - 1);
+  });
+
+  it('growHeight increases tiles.height by 1', () => {
+    const s0 = getInitialState();
+    const originalHeight = s0.tiles.height;
+    const s1 = boardReducer(s0, growHeight());
+    expect(s1.tiles.height).toBe(originalHeight + 1);
+  });
+
+  it('shrinkHeight no-ops when height is 0', () => {
+    let state = getInitialState();
+    // Shrink height down to 0
+    while (state.tiles.height > 0) {
+      state = boardReducer(state, shrinkHeight());
+    }
+    expect(state.tiles.height).toBe(0);
+    // Another shrink should no-op
+    const after = boardReducer(state, shrinkHeight());
+    expect(after.tiles.height).toBe(0);
+  });
+});
+
+describe('boardSlice - setMap', () => {
+  it('regenerates tiles with new map and reinitializes combatants', () => {
+    const s0 = getInitialState();
+    const s1 = boardReducer(s0, setMap('Meadow'));
+    expect(s1.map).toBe('Meadow');
+    // All tiles should be Grass for Meadow map
+    const tilePositions = Object.keys(s1.tiles.t).map(Number);
+    expect(tilePositions.length).toBeGreaterThan(0);
+    for (const pos of tilePositions) {
+      expect(s1.tiles.t[pos]?.type).toBe(TileType.Grass);
+    }
+    // Combatants should be reinitialized
+    expect(s1.combatants.size).toBe(s1.initial_num_combatants);
+  });
+});
+
+describe('boardSlice - setViewPortSize', () => {
+  it('updates viewport width/height measurements', () => {
+    const s0 = getInitialState();
+    const s1 = boardReducer(s0, setViewPortSize({ width: 800, height: 600 }));
+    expect(s1.view_port.width_measurement).toBe(800);
+    expect(s1.view_port.height_measurement).toBe(600);
+    // viewport tile dimensions should be recalculated
+    expect(s1.view_port.width).toBeGreaterThan(0);
+    expect(s1.view_port.height).toBeGreaterThan(0);
   });
 });
